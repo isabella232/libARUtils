@@ -242,6 +242,7 @@ void ARUTILS_JNI_FreeARUtilsExceptionJNI(JNIEnv *env)
         if (classException != NULL)
         {
             (*env)->DeleteGlobalRef(env, classException);
+            classException = NULL;
         }
 
         methodId_Exception_Init = NULL;
