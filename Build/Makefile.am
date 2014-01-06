@@ -6,7 +6,8 @@ ACLOCAL_AMFLAGS                                             =   -I m4
 # The list of header files that belong to the library (to be installed later)
 HEADER_FILES                                                =   ../Includes/libARUtils/ARUTILS_Error.h \
                                                                 ../Includes/libARUtils/ARUTILS_FileSystem.h \
-                                                                ../Includes/libARUtils/ARUTILS_Ftp.h
+                                                                ../Includes/libARUtils/ARUTILS_Ftp.h \
+                                                                ../Includes/libARUtils/ARUtils.h
 
 # The sources to add to the library and to add to the source distribution
 SOURCE_FILES                                                =   $(HEADER_FILES)\
