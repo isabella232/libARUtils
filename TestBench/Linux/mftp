@@ -1,0 +1,36 @@
+#!/bin/bash -v
+
+#sudo mkdir /var/vsftpd/a
+#sudo chown ftp:ftp /var/vsftpd/a
+#sudo mkdir /var/vsftpd/b
+#sudo chown ftp:ftp /var/vsftpd/b
+
+#echo "123" | sudo tee -a /var/vsftpd/a/test.txt
+#sudo truncate -s 3 /var/vsftpd/a/test.txt
+#sudo chown -R ftp:ftp /var/vsftpd/a
+
+sudo rm -rf /var/vsftpd/data
+sudo mkdir /var/vsftpd/data
+echo "data1" | sudo tee -a /var/vsftpd/data/data_20131001_235901.pub
+echo "data2" | sudo tee -a /var/vsftpd/data/data_20131002_235902.pub
+sudo chown -R ftp:ftp /var/vsftpd/data
+
+sudo rm -rf /var/vsftpd/medias
+sudo mkdir /var/vsftpd/medias
+echo "photo1" | sudo tee -a /var/vsftpd/medias/photo_20131001_235901.jpg
+echo "photo2" | sudo tee -a /var/vsftpd/medias/photo_20131002_235902.jpg
+#echo "video1" | sudo tee -a /var/vsftpd/medias/video_20131001_235901.mp4
+#echo "video2" | sudo tee -a /var/vsftpd/medias/video_20131002_235902.mp4
+sudo dd if=/dev/zero of=/var/vsftpd/medias/video_20131001_235901.mp4 bs=1024 count=0 seek=$[1024*1]
+sudo dd if=/dev/zero of=/var/vsftpd/medias/video_20131002_235902.mp4 bs=1024 count=0 seek=$[1024*2]
+
+echo "thumbnail video1" | sudo tee -a /var/vsftpd/medias/thumbnail_video_20131001_235901.jpg
+echo "thumbnail video2" | sudo tee -a /var/vsftpd/medias/thumbnail_video_20131002_235902.jpg
+sudo chown -R ftp:ftp /var/vsftpd/medias
+
+sudo service vsftpd stop
+sudo service vsftpd start
+
+sudo ls -l  /var/vsftpd/data
+sudo ls -l /var/vsftpd/medias
+

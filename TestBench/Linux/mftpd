@@ -1,0 +1,7 @@
+#!/bin/bash -v
+
+echo "data1" | sudo tee -a /var/vsftpd/data/data_20131001_235901.pub
+echo "data2" | sudo tee -a /var/vsftpd/data/data_20131002_235902.pub
+
+sudo ls -l  /var/vsftpd/data
+
