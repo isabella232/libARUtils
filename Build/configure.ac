@@ -59,7 +59,7 @@ OBJCFLAGS+="$LOCAL_CFLAGS"
 # Add libARxxx deps
 
 AR_DEPENDS([libARSAL], [Y], [libARSAL/ARSAL.h])
-AR_DEPENDS([libCurl], [Y], [curl/curl.h curl/curlbuild.h curl/curlver.h])
+AR_DEPENDS([libCurl], [Y], [curl/curl.h curl/curlbuild.h curl/curlver.h], [N])
 
 ##########################################################################
 # Checks for programs.
