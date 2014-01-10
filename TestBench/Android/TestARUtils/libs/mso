@@ -1,0 +1,31 @@
+#!/bin/bash
+#-v
+
+rm libARUtils.jar
+rm libARSAL.jar
+rm libcurl.jar
+rm libARUtils_dbg.jar
+rm libARSAL_dbg.jar
+rm libcurl_dbg.jar
+
+if [ -z "$1" ]
+then
+    cp -v /home/smonat/FreeFlight3/ARBuildUtils/Targets/Android/Install/jars/release/libARUtils.jar .
+    cp -v /home/smonat/FreeFlight3/ARBuildUtils/Targets/Android/Install/jars/release/libARSAL.jar .
+    #cp -v /home/smonat/FreeFlight3/ARBuildUtils/Targets/Android/Install/jars/release/libcurl.jar .
+else if [[ "$1" -eq "d" ]]
+then
+    cp -v /home/smonat/FreeFlight3/ARBuildUtils/Targets/Android/Install/jars/debug/libARUtils_dbg.jar .
+    cp -v /home/smonat/FreeFlight3/ARBuildUtils/Targets/Android/Install/jars/debug/libARSAL_dbg.jar .
+    #cp -v /home/smonat/FreeFlight3/ARBuildUtils/Targets/Android/Install/jars/debug/libcurl_dbg.jar .
+else
+echo "-d for debug jars"
+fi
+fi
+
+#cp -v /home/smonat/FreeFlight3/ARBuildUtils/Targets/Android/Install/jars/release/libARUtils.jar .
+#cp -v /home/smonat/FreeFlight3/ARBuildUtils/Targets/Android/Install/jars/release/libARSAL.jar .
+cp -v /home/smonat/FreeFlight3/ARBuildUtils/Targets/Android/Install/jars/release/libcurl.jar .
+
+./extractJars.bash
+
