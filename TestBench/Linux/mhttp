@@ -1,0 +1,7 @@
+
+# htpasswd pwd newuser
+echo "photo1" | sudo tee -a /var/www/photo_20131001_235901.jpg
+
+sudo mkdir  /var/www/private
+echo "photo1" | sudo tee -a /var/www/private/photo_20131001_235901.jpg
+

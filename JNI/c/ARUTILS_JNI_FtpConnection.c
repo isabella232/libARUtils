@@ -22,15 +22,15 @@
 #include <libARSAL/ARSAL_Print.h>
 
 #include "libARUtils/ARUTILS_Error.h"
+#include "libARUtils/ARUTILS_Http.h"
 #include "libARUtils/ARUTILS_Ftp.h"
 
 #include "ARUTILS_JNI.h"
 
 #define ARUTILS_JNI_FTPCONNECTION_TAG       "JNI"
 
-JavaVM* ARUTILS_JNI_FtpConnection_VM = NULL;
 
-jmethodID methodId_Listener_didProgress = NULL;
+jmethodID methodId_FtpListener_didProgress = NULL;
 
 /*****************************************
  *
@@ -42,7 +42,7 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *VM, void *reserved)
 {
     ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_JNI_FTPCONNECTION_TAG, "Library has been loaded: (arutils_android.so) %x", (int)VM);
 
-    ARUTILS_JNI_FtpConnection_VM = VM;
+    ARUTILS_JNI_Manager_VM = VM;
 
     return JNI_VERSION_1_6;
 }
@@ -61,7 +61,7 @@ JNIEXPORT jboolean JNICALL Java_com_parrot_arsdk_arutils_ARUtilsFtpConnection_na
 
     if (error == JNI_OK)
     {
-        error = ARUTILS_JNI_NewListenersJNI(env);
+        error = ARUTILS_JNI_NewFtpListenersJNI(env);
     }
 
     if (error == JNI_OK)
@@ -566,18 +566,18 @@ void ARUTILS_JNI_FtpConnection_ProgressCallback(void* arg, uint8_t percent)
 
     if (callbacks != NULL)
     {
-        if ((ARUTILS_JNI_FtpConnection_VM != NULL) && (callbacks->jProgressListener != NULL) && (methodId_Listener_didProgress != NULL))
+        if ((ARUTILS_JNI_Manager_VM != NULL) && (callbacks->jProgressListener != NULL) && (methodId_FtpListener_didProgress != NULL))
         {
             JNIEnv *env = NULL;
             jint jPercent = 0;
             jint jResultEnv = 0;
             int error = JNI_OK;
 
-            jResultEnv = (*ARUTILS_JNI_FtpConnection_VM)->GetEnv(ARUTILS_JNI_FtpConnection_VM, (void **) &env, JNI_VERSION_1_6);
+            jResultEnv = (*ARUTILS_JNI_Manager_VM)->GetEnv(ARUTILS_JNI_Manager_VM, (void **) &env, JNI_VERSION_1_6);
 
             if (jResultEnv == JNI_EDETACHED)
             {
-                 (*ARUTILS_JNI_FtpConnection_VM)->AttachCurrentThread(ARUTILS_JNI_FtpConnection_VM, &env, NULL);
+                 (*ARUTILS_JNI_Manager_VM)->AttachCurrentThread(ARUTILS_JNI_Manager_VM, &env, NULL);
             }
 
             if (env == NULL)
@@ -585,24 +585,24 @@ void ARUTILS_JNI_FtpConnection_ProgressCallback(void* arg, uint8_t percent)
                 error = JNI_FAILED;
             }
 
-            if ((error == JNI_OK) && (methodId_Listener_didProgress != NULL))
+            if ((error == JNI_OK) && (methodId_FtpListener_didProgress != NULL))
             {
                 jPercent = percent;
 
-                (*env)->CallVoidMethod(env, callbacks->jProgressListener, methodId_Listener_didProgress, callbacks->jProgressArg, jPercent);
+                (*env)->CallVoidMethod(env, callbacks->jProgressListener, methodId_FtpListener_didProgress, callbacks->jProgressArg, jPercent);
             }
 
             if ((jResultEnv == JNI_EDETACHED) && (env != NULL))
             {
-                 (*ARUTILS_JNI_FtpConnection_VM)->DetachCurrentThread(ARUTILS_JNI_FtpConnection_VM);
+                 (*ARUTILS_JNI_Manager_VM)->DetachCurrentThread(ARUTILS_JNI_Manager_VM);
             }
         }
     }
 }
 
-int ARUTILS_JNI_NewListenersJNI(JNIEnv *env)
+int ARUTILS_JNI_NewFtpListenersJNI(JNIEnv *env)
 {
-    jclass classProgressListener = NULL;
+    jclass classFtpProgressListener = NULL;
     int error = JNI_OK;
 
     ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_JNI_FTPCONNECTION_TAG, "");
@@ -612,13 +612,13 @@ int ARUTILS_JNI_NewListenersJNI(JNIEnv *env)
         error = JNI_FAILED;
     }
 
-    if (methodId_Listener_didProgress == NULL)
+    if (methodId_FtpListener_didProgress == NULL)
     {
         if (error == JNI_OK)
         {
-            classProgressListener = (*env)->FindClass(env, "com/parrot/arsdk/arutils/ARUtilsFtpProgressListener");
+            classFtpProgressListener = (*env)->FindClass(env, "com/parrot/arsdk/arutils/ARUtilsFtpProgressListener");
 
-            if (classProgressListener == NULL)
+            if (classFtpProgressListener == NULL)
             {
                 ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_JNI_FTPCONNECTION_TAG, "ARUtilsFtpProgressListener class not found");
                 error = JNI_FAILED;
@@ -627,9 +627,9 @@ int ARUTILS_JNI_NewListenersJNI(JNIEnv *env)
 
         if (error == JNI_OK)
         {
-            methodId_Listener_didProgress = (*env)->GetMethodID(env, classProgressListener, "didProgress", "(Ljava/lang/Object;I)V");
+            methodId_FtpListener_didProgress = (*env)->GetMethodID(env, classFtpProgressListener, "didProgress", "(Ljava/lang/Object;I)V");
 
-            if (methodId_Listener_didProgress == NULL)
+            if (methodId_FtpListener_didProgress == NULL)
             {
                 ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_JNI_FTPCONNECTION_TAG, "Listener didProgress method not found");
             }

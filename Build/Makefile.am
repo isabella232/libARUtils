@@ -6,15 +6,18 @@ ACLOCAL_AMFLAGS                                             =   -I m4
 # The list of header files that belong to the library (to be installed later)
 HEADER_FILES                                                =   ../Includes/libARUtils/ARUTILS_Error.h \
                                                                 ../Includes/libARUtils/ARUTILS_FileSystem.h \
-                                                                ../Includes/libARUtils/ARUTILS_Ftp.h \
+                                                                ../Includes/libARUtils/ARUTILS_Http.h \
+                                                                ../Includes/libARUtils/ARUTILS_Ftp.h \                                                                
                                                                 ../Includes/libARUtils/ARUtils.h
 
 # The sources to add to the library and to add to the source distribution
 SOURCE_FILES                                                =   $(HEADER_FILES)\
                                                                 ../Sources/ARUTILS_Error.c \
                                                                 ../Sources/ARUTILS_FileSystem.c \
+                                                                ../Sources/ARUTILS_Http.c \
+                                                                ../Sources/ARUTILS_Http.h \
                                                                 ../Sources/ARUTILS_Ftp.c \
-                                                                ../Sources/ARUTILS_Ftp.h
+                                                                ../Sources/ARUTILS_Ftp.h                                                                
 
 # The library names to build (note we are building static and shared libs)
 if DEBUG_MODE
@@ -34,7 +37,8 @@ check_PROGRAMS                                              =   ../TestBench/Lin
 # bin_PROGRAMS                                              =   ../TestBench/Linux/autoTest
 
 ___TestBench_Linux_autoTest_SOURCES                         =   ../TestBench/Linux/autoTest.c \
-                                                                ../TestBench/Linux/test_ftp_connection.c
+                                                                ../TestBench/Linux/test_http_connection.c \
+                                                                ../TestBench/Linux/test_ftp_connection.c                                                                
 
 if DEBUG_MODE
 ___TestBench_Linux_autoTest_LDADD                           =   libarutils_dbg.la \
