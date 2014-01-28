@@ -29,7 +29,6 @@ typedef struct _ARUTILS_Http_CallbackData_t_
 {
     int isUploading;
     uint8_t *data;
-    uint32_t dataIndex;
     uint32_t dataSize;
     FILE *file;
     eARUTILS_ERROR error;
@@ -108,14 +107,6 @@ eARUTILS_ERROR ARUTILS_Http_ResetOptions(ARUTILS_Http_Connection_t *connection);
  * @see cURL
  */
 void ARUTILS_Http_FreeCallbackData(ARUTILS_Http_CallbackData_t *cbdata);
-
-/**
- * @brief Check if the connection has received a cancel to it's semaphore
- * @param connection The address of the pointer on the Http Connection
- * @retval On success, returns ARUTILS_OK. Otherwise, it returns an error number of eARUTILS_ERROR.
- * @see cURL
- */
-eARUTILS_ERROR ARUTILS_Http_IsCanceled(ARUTILS_Http_Connection_t *connection);
 
 /**
  * @brief Translate cURL error code to an eARUTILS_ERROR enum error

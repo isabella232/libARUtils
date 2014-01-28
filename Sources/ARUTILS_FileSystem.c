@@ -60,7 +60,7 @@ eARUTILS_ERROR ARUTILS_FileSystem_GetFileSize(const char *namePath, uint32_t *si
     {
         result = ARUTILS_ERROR_SYSTEM;
 
-        if (ENOENT == errno)
+        if (errno == ENOENT)
         {
             result = ARUTILS_ERROR_FILE_NOT_FOUND;
         }
@@ -104,15 +104,18 @@ eARUTILS_ERROR ARUTILS_FileSystem_RemoveFile(const char *localPath)
     return result;
 }
 
-int ARUTILS_FileSystem_RemoveDirCallback(const char* fpath, const struct stat *sb, int typeflag)
+int ARUTILS_FileSystem_RemoveDirCallback(const char* fpath, const struct stat *sb, eARSAL_FTW_TYPE typeflag, ARSAL_FTW_t *ftwbuf)
 {
-	if(typeflag == FTW_F)
+	if(typeflag == ARSAL_FTW_F)
     {
 		remove(fpath);
     }
-    else if(typeflag == FTW_D)
+    else if(typeflag == ARSAL_FTW_D)
     {
-        rmdir(fpath);
+        if (ftwbuf->level > 0)
+        {
+            ARUTILS_FileSystem_RemoveDir(fpath);
+        }
     }
 
 	return 0;
@@ -124,13 +127,24 @@ eARUTILS_ERROR ARUTILS_FileSystem_RemoveDir(const char *localPath)
 
     ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_FILE_SYSTEM_TAG, "%s", localPath ? localPath : "null");
 
-    int resultSys = ARSAL_Ftw(localPath, ARUTILS_FileSystem_RemoveDirCallback, ARUTILS_FILE_SYSTEM_MAX_FD_FOR_FTW);
+    int resultSys = ARSAL_Nftw(localPath, ARUTILS_FileSystem_RemoveDirCallback, ARUTILS_FILE_SYSTEM_MAX_FD_FOR_FTW, ARSAL_FTW_ACTIONRETVAL);
 
     if (resultSys == 0)
     {
         resultSys = rmdir(localPath);
 
         if (resultSys != 0)
+        {
+            result = ARUTILS_ERROR_SYSTEM;
+        }
+    }
+    else
+    {
+        if (errno == ENOENT)
+        {
+            result = ARUTILS_ERROR_FILE_NOT_FOUND;
+        }
+        else
         {
             result = ARUTILS_ERROR_SYSTEM;
         }

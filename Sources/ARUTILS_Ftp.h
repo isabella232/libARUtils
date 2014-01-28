@@ -62,7 +62,6 @@
  * @brief Ftp CallbackData structure
  * @param isUploading Is set to 1 if upploading else 0 of downloading
  * @param data The byte buffer data if data mode else null
- * @param dataIndex The byte buffer data index if data mode else 0
  * @param dataSize The byte buffer data size if data mode else 0
  * @param file The file data if file mode else null
  * @param error The last error
@@ -74,7 +73,6 @@ typedef struct _ARUTILS_Ftp_CallbackData_t_
 {
     int isUploading;
     uint8_t *data;
-    uint32_t dataIndex;
     uint32_t dataSize;
     FILE *file;
     eARUTILS_ERROR error;
@@ -188,14 +186,6 @@ eARUTILS_ERROR ARUTILS_Ftp_GetInternal(ARUTILS_Ftp_Connection_t *connection, con
  * @see cURL
  */
 void ARUTILS_Ftp_FreeCallbackData(ARUTILS_Ftp_CallbackData_t *cbdata);
-
-/**
- * @brief Check if the connection has received a cancel to it's semaphore
- * @param connection The address of the pointer on the Ftp Connection
- * @retval On success, returns ARUTILS_OK. Otherwise, it returns an error number of eARUTILS_ERROR.
- * @see cURL
- */
-eARUTILS_ERROR ARUTILS_Ftp_IsCanceled(ARUTILS_Ftp_Connection_t *connection);
 
 /**
  * @brief Translate cURL error code to an eARUTILS_ERROR enum error

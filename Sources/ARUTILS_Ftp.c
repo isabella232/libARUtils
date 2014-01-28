@@ -1289,6 +1289,145 @@ eARUTILS_ERROR ARUTILS_Ftp_Put(ARUTILS_Ftp_Connection_t *connection, const char 
     return result;
 }
 
+/* Drone2
+drwxr-xr-x    2 0        0             160 Jan  1  2000 data
+-rw-r--r--    1 0        0               7 Jan  1  2000 data_20131001_235901.pub
+*/
+/* vsftp
+drwxr-xr-x    4 122      128          4096 Jan 24 14:34 AR.Drone
+drwxr-xr-x    4 122      128          4096 Jan 24 14:34 Jumping Sumo
+*/
+const char * ARUTILS_Ftp_List_GetNextItem(const char *list, const char **nextItem, const char *prefix, int isDirectory, const char **indexItem, int *itemLen)
+{
+    static char lineData[ARUTILS_FTP_MAX_LIST_LINE_SIZE];
+    char *item = NULL;
+    const char *line;
+    const char *fileIdx;
+    const char *endLine;
+    const char *ptr;
+    
+    if ((list != NULL) && (nextItem != NULL))
+    {
+        if (*nextItem == NULL)
+        {
+            *nextItem = list;
+        }
+        
+        ptr = *nextItem;
+        while ((item == NULL) && (ptr != NULL))
+        {
+            line = *nextItem;
+            endLine = line;
+            ptr = strchr(line, '\n');
+            if (ptr == NULL)
+            {
+                ptr = strchr(line, '\r');
+            }
+            
+            if (ptr != NULL)
+            {
+                endLine = ptr;
+                if (*(endLine - 1) == '\r')
+                {
+                    endLine--;
+                }
+                
+                ptr++;
+                *nextItem = ptr;
+                fileIdx = line;
+                if (*line == ((isDirectory  == 1) ? 'd' : '-'))
+                {
+                    int varSpace = 0;
+                    while (((ptr = strchr(fileIdx, '\x20')) != NULL) && (ptr < endLine) && (varSpace < 7))
+                    {
+                        if ((*(ptr - 1) == '\x20') && (*(ptr + 1) != '\x20') && (varSpace < 3))
+                        {
+                            varSpace++;
+                        }
+                        else if (varSpace >= 3)
+                        {
+                            varSpace++;
+                        }
+                        fileIdx = ++ptr;
+                    }
+                    
+                    if ((prefix != NULL) && (*prefix != '\0'))
+                    {
+                        if (strncmp(fileIdx, prefix, strlen(prefix)) != 0)
+                        {
+                            fileIdx = NULL;
+                        }
+                    }
+                    
+                    if (fileIdx != NULL)
+                    {
+                        int len = ((endLine - fileIdx) < ARUTILS_FTP_MAX_LIST_LINE_SIZE) ? (endLine - fileIdx) : (ARUTILS_FTP_MAX_LIST_LINE_SIZE - 1);
+                        strncpy(lineData, fileIdx, len);
+                        lineData[len] = '\0';
+                        item = lineData;
+                    }
+                }
+            }
+        }
+        
+        if (indexItem != NULL)
+        {
+            *indexItem = line;
+        }
+        
+        if (itemLen != NULL)
+        {
+            *itemLen = endLine - line;
+        }
+    }
+    
+    return item;
+}
+
+const char * ARUTILS_Ftp_List_GetItemSize(const char *line, int lineSize, double *size)
+{
+    const char *fileIdx;
+    const char *sizeIdx;
+    const char *endLine;
+    const char *ptr;
+    const char *item = NULL;
+    int varSpace = 0;
+    int len;
+    
+    if ((line != NULL) && (size != NULL))
+    {
+        *size = 0.f;
+        endLine = line + lineSize;
+        sizeIdx = NULL;
+        fileIdx = line;
+        while ((ptr = strchr(fileIdx, '\x20')) != NULL && (ptr < endLine) && (varSpace < 3))
+        {
+            if ((*(ptr - 1) == '\x20') && (*(ptr + 1) != '\x20'))
+            {
+                varSpace++;
+                if ((*line == '-'))
+                {
+                    if ((varSpace == 3) && (sizeIdx == NULL))
+                    {
+                        sizeIdx = ptr + 1;
+                        len = sscanf(sizeIdx, "%lf", size);
+                        
+                        if (len <= 0)
+                        {
+                            *size = 0.f;
+                        }
+                        
+                        item = sizeIdx;
+                    }
+                }
+            }
+            fileIdx = ++ptr;
+        }
+    }
+    
+    return item;
+}
+
 /*****************************************
  *
  *             Private implementation:
@@ -1494,7 +1633,7 @@ int ARUTILS_Ftp_ProgressCallback(void *userData, double dltotal, double dlnow, d
                 // when 0, downloading isn't started
                 if (ultotal != 0.f)
                 {
-                    percent = dlnow / dltotal;
+                    percent = (ulnow / ultotal) * 100.f;
                     connection->cbdata.progressCallback(connection->cbdata.progressArg, percent);
                 }
             }
@@ -1546,7 +1685,7 @@ eARUTILS_ERROR ARUTILS_Ftp_IsCanceled(ARUTILS_Ftp_Connection_t *connection)
         {
             result = ARUTILS_ERROR_FTP_CANCELED;
 
-            //give back the signal state lossed from trywait
+            //give back the signal state lost from trywait
             ARSAL_Sem_Post(connection->cancelSem);
         }
         else if (errno != EAGAIN)

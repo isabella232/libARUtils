@@ -28,6 +28,11 @@
 #define ARUTILS_FTP_MAX_PATH_SIZE     256
 
 /**
+ * @brief Ftp max list line string size
+ */
+#define ARUTILS_FTP_MAX_LIST_LINE_SIZE     512
+
+/**
  * @brief Ftp Resume enum
  * @see ARUTILS_Ftp_Get
  */
@@ -83,6 +88,14 @@ void ARUTILS_Ftp_Connection_Delete(ARUTILS_Ftp_Connection_t **connection);
 eARUTILS_ERROR ARUTILS_Ftp_Connection_Cancel(ARUTILS_Ftp_Connection_t *connection);
 
 /**
+ * @brief Check if the connection has received a cancel to it's semaphore
+ * @param connection The address of the pointer on the Ftp Connection
+ * @retval On success, returns ARUTILS_OK. Otherwise, it returns an error number of eARUTILS_ERROR.
+ * @see cURL
+ */
+eARUTILS_ERROR ARUTILS_Ftp_IsCanceled(ARUTILS_Ftp_Connection_t *connection);
+
+/**
  * @brief Execute Ftp List command to retrieve directory content
  * @warning This function allocates memory
  * @param connection The address of the pointer on the Ftp Connection
@@ -93,6 +106,29 @@ eARUTILS_ERROR ARUTILS_Ftp_Connection_Cancel(ARUTILS_Ftp_Connection_t *connectio
  * @see ARUTILS_Ftp_NewConnection ()
  */
 eARUTILS_ERROR ARUTILS_Ftp_List(ARUTILS_Ftp_Connection_t *connection, const char *namePath, char **resultList, uint32_t *resultListLen);
+
+/**
+ * @brief File list iterator function
+ * @param list The file list
+ * @param nextItem The the next file
+ * @param prefix The file prefix to match
+ * @param isDirectory The file type requested: 1 directory or 0 file
+ * @param indexItem The beginning of the line item if address is not null
+ * @param itemLen The length of the line item if address is not null
+ * @retval On success, returns the file name of the found item, Otherwise, it returns null
+ * @see ARUTILS_Ftp_List ()
+ */
+const char * ARUTILS_Ftp_List_GetNextItem(const char *list, const char **nextItem, const char *prefix, int isDirectory, const char **indexItem, int *itemLen);
+
+/**
+ * @brief File size accessor function from a file of a File list
+ * @param line The line of the File list wehre to search file size
+ * @param lineSize The size of the given line
+ * @param size The addresse of the pointer to the file size to return
+ * @retval On success, returns the addresse found size string, Otherwise, it returns null
+ * @see ARUTILS_Ftp_List_GetNextItem ()
+*/
+const char * ARUTILS_Ftp_List_GetItemSize(const char *line, int lineSize, double *size);
 
 /**
  * @brief Rename an remote Ftp server file

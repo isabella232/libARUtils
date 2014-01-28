@@ -603,7 +603,7 @@ int ARUTILS_Http_ProgressCallback(void *userData, double dltotal, double dlnow, 
                 // when 0, downloading isn't started
                 if (ultotal != 0.f)
                 {
-                    percent = dlnow / dltotal;
+                    percent = ulnow / ultotal;
                     connection->cbdata.progressCallback(connection->cbdata.progressArg, percent);
                 }
             }
@@ -655,7 +655,7 @@ eARUTILS_ERROR ARUTILS_Http_IsCanceled(ARUTILS_Http_Connection_t *connection)
         {
             result = ARUTILS_ERROR_HTTP_CANCELED;
 
-            //give back the signal state lossed from trywait
+            //give back the signal state lost from trywait
             ARSAL_Sem_Post(connection->cancelSem);
         }
         else if (errno != EAGAIN)

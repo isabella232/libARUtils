@@ -10,6 +10,7 @@
 
 #include <inttypes.h>
 #include <libARSAL/ARSAL_Sem.h>
+
 #include "libARUtils/ARUTILS_Error.h"
 
 /**
@@ -72,6 +73,14 @@ void ARUTILS_Http_Connection_Delete(ARUTILS_Http_Connection_t **connection);
  * @see ARUTILS_Http_NewConnection ()
  */
 eARUTILS_ERROR ARUTILS_Http_Connection_Cancel(ARUTILS_Http_Connection_t *connection);
+
+/**
+ * @brief Check if the connection has received a cancel to it's semaphore
+ * @param connection The address of the pointer on the Http Connection
+ * @retval On success, returns ARUTILS_OK. Otherwise, it returns an error number of eARUTILS_ERROR.
+ * @see cURL
+ */
+eARUTILS_ERROR ARUTILS_Http_IsCanceled(ARUTILS_Http_Connection_t *connection);
 
 /**
  * @brief Get an remote Http server file
