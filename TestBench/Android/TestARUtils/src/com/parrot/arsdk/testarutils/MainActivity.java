@@ -158,8 +158,8 @@ public class MainActivity extends Activity implements ARUtilsFtpProgressListener
     			fs.removeDir(tmp + "/zzz");
 	        	Log.d("DBG", "removeDir ERROR"); 
 	        } catch (ARUtilsException e) { 
-	        	Log.d("DBG", "removeDir " + (e.getError() == ARUTILS_ERROR_ENUM.ARUTILS_ERROR_SYSTEM ? "OK" : "ERROR"));
-	        	assertError(e.getError() == ARUTILS_ERROR_ENUM.ARUTILS_ERROR_SYSTEM);
+	        	Log.d("DBG", "removeDir " + (e.getError() == ARUTILS_ERROR_ENUM.ARUTILS_ERROR_FILE_NOT_FOUND ? "OK" : "ERROR"));
+	        	assertError(e.getError() == ARUTILS_ERROR_ENUM.ARUTILS_ERROR_FILE_NOT_FOUND);
 	        }
     		
     		try { 
@@ -289,6 +289,10 @@ public class MainActivity extends Activity implements ARUtilsFtpProgressListener
     		Log.d("DBG", "cancel " + (result == ARUTILS_ERROR_ENUM.ARUTILS_OK ? "OK" : "ERROR"));
     		assertError(result == ARUTILS_ERROR_ENUM.ARUTILS_OK);
     		
+    		result = connection.isCanceled();
+    		Log.d("DBG", "isCanceled " + (result == ARUTILS_ERROR_ENUM.ARUTILS_ERROR_FTP_CANCELED ? "OK" : "ERROR"));
+    		assertError(result == ARUTILS_ERROR_ENUM.ARUTILS_ERROR_FTP_CANCELED);
+    		
 			connection.closeFtpConnection();
 			Log.d("DBG", "closeFtpConnection OK"); 
 		}
@@ -343,6 +347,10 @@ public class MainActivity extends Activity implements ARUtilsFtpProgressListener
     		Log.d("DBG", "cancel " + (result == ARUTILS_ERROR_ENUM.ARUTILS_OK ? "OK" : "ERROR"));
     		assertError(result == ARUTILS_ERROR_ENUM.ARUTILS_OK);
     		
+    		result = connection.isCanceled();
+    		Log.d("DBG", "isCanceled " + (result == ARUTILS_ERROR_ENUM.ARUTILS_ERROR_HTTP_CANCELED ? "OK" : "ERROR"));
+    		assertError(result == ARUTILS_ERROR_ENUM.ARUTILS_ERROR_HTTP_CANCELED);
+    		
 			connection.closeHttpConnection();
 			Log.d("DBG", "closeHttpConnection OK");
 			
@@ -375,7 +383,12 @@ public class MainActivity extends Activity implements ARUtilsFtpProgressListener
         }
 	}
 
-	public void didProgress(Object arg, int percent)
+	public void didFtpProgress(Object arg, int percent)
+    {
+    	Log.d("DBG", APP_TAG + "ARUtils Ftp/Http Connection, didProgress: " + percent + "%");
+    }
+	
+	public void didHttpProgress(Object arg, int percent)
     {
     	Log.d("DBG", APP_TAG + "ARUtils Ftp/Http Connection, didProgress: " + percent + "%");
     }

@@ -13,6 +13,7 @@ public class ARUtilsHttpConnection
     private native long nativeNewHttpConnection(String server, int port, int security, String username, String password) throws ARUtilsException;
     private native void nativeDeleteHttpConnection(long fptConnection);
     private native int nativeCancel(long fptConnection);
+    private native int nativeIsCanceled(long fptConnection);
     private native int nativeGet(long fptConnection, String namePath, String dstFile, ARUtilsHttpProgressListener progressListener, Object progressArg);
     private native byte[] nativeGetWithBuffer(long fptConnection, String namePath, ARUtilsHttpProgressListener progressListener, Object progressArg) throws ARUtilsException;
 
@@ -76,6 +77,17 @@ public class ARUtilsHttpConnection
 
         ARUTILS_ERROR_ENUM error = ARUTILS_ERROR_ENUM.getFromValue(result);
         return error;
+    }
+    
+    /**
+     * Get Canceled status of the ARUtils Http Connection
+     * @return ARUTILS_OK if success, else an {@link ARUTILS_ERROR_ENUM} error code, ARUTILS_ERROR_HTTP_CANCELED if canceled
+     */
+    public ARUTILS_ERROR_ENUM isCanceled()
+    {
+        int result = nativeIsCanceled(nativeHttpConnection);
+        ARUTILS_ERROR_ENUM error = ARUTILS_ERROR_ENUM.getFromValue(result);
+        return error;        
     }
 
     /**

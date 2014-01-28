@@ -14,5 +14,5 @@ public interface ARUtilsFtpProgressListener
      * @param percent The percent size of the file already downloaded
      * @return void
      */
-     void didProgress(Object arg, int percent);
+     void didFtpProgress(Object arg, int percent);
 }

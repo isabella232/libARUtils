@@ -30,7 +30,7 @@
 #define ARUTILS_JNI_FTPCONNECTION_TAG       "JNI"
 
 
-jmethodID methodId_FtpListener_didProgress = NULL;
+jmethodID methodId_FtpListener_didFtpProgress = NULL;
 
 /*****************************************
  *
@@ -178,6 +178,25 @@ JNIEXPORT jint JNICALL Java_com_parrot_arsdk_arutils_ARUtilsFtpConnection_native
     else
     {
         result = ARUTILS_Ftp_Connection_Cancel(nativeFtpConnection->ftpConnection);
+    }
+
+    return result;
+}
+
+JNIEXPORT jint JNICALL Java_com_parrot_arsdk_arutils_ARUtilsFtpConnection_nativeIsCanceled(JNIEnv *env, jobject jThis, jlong jFtpConnection)
+{
+    ARUTILS_JNI_FtpConnection_t *nativeFtpConnection = (ARUTILS_JNI_FtpConnection_t *)(intptr_t) jFtpConnection;
+    eARUTILS_ERROR result = ARUTILS_OK;
+
+    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_JNI_FTPCONNECTION_TAG, "");
+
+    if (nativeFtpConnection == NULL)
+    {
+        result = ARUTILS_ERROR_SYSTEM;
+    }
+    else
+    {
+        result = ARUTILS_Ftp_IsCanceled(nativeFtpConnection->ftpConnection);
     }
 
     return result;
@@ -566,7 +585,7 @@ void ARUTILS_JNI_FtpConnection_ProgressCallback(void* arg, uint8_t percent)
 
     if (callbacks != NULL)
     {
-        if ((ARUTILS_JNI_Manager_VM != NULL) && (callbacks->jProgressListener != NULL) && (methodId_FtpListener_didProgress != NULL))
+        if ((ARUTILS_JNI_Manager_VM != NULL) && (callbacks->jProgressListener != NULL) && (methodId_FtpListener_didFtpProgress != NULL))
         {
             JNIEnv *env = NULL;
             jint jPercent = 0;
@@ -585,11 +604,11 @@ void ARUTILS_JNI_FtpConnection_ProgressCallback(void* arg, uint8_t percent)
                 error = JNI_FAILED;
             }
 
-            if ((error == JNI_OK) && (methodId_FtpListener_didProgress != NULL))
+            if ((error == JNI_OK) && (methodId_FtpListener_didFtpProgress != NULL))
             {
                 jPercent = percent;
 
-                (*env)->CallVoidMethod(env, callbacks->jProgressListener, methodId_FtpListener_didProgress, callbacks->jProgressArg, jPercent);
+                (*env)->CallVoidMethod(env, callbacks->jProgressListener, methodId_FtpListener_didFtpProgress, callbacks->jProgressArg, jPercent);
             }
 
             if ((jResultEnv == JNI_EDETACHED) && (env != NULL))
@@ -612,7 +631,7 @@ int ARUTILS_JNI_NewFtpListenersJNI(JNIEnv *env)
         error = JNI_FAILED;
     }
 
-    if (methodId_FtpListener_didProgress == NULL)
+    if (methodId_FtpListener_didFtpProgress == NULL)
     {
         if (error == JNI_OK)
         {
@@ -627,11 +646,11 @@ int ARUTILS_JNI_NewFtpListenersJNI(JNIEnv *env)
 
         if (error == JNI_OK)
         {
-            methodId_FtpListener_didProgress = (*env)->GetMethodID(env, classFtpProgressListener, "didProgress", "(Ljava/lang/Object;I)V");
+            methodId_FtpListener_didFtpProgress = (*env)->GetMethodID(env, classFtpProgressListener, "didFtpProgress", "(Ljava/lang/Object;I)V");
 
-            if (methodId_FtpListener_didProgress == NULL)
+            if (methodId_FtpListener_didFtpProgress == NULL)
             {
-                ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_JNI_FTPCONNECTION_TAG, "Listener didProgress method not found");
+                ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_JNI_FTPCONNECTION_TAG, "Listener didFtpProgress method not found");
             }
         }
     }

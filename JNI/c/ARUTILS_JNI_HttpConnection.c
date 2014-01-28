@@ -29,7 +29,7 @@
 
 #define ARUTILS_JNI_HTTPCONNECTION_TAG       "JNI"
 
-jmethodID methodId_HttpListener_didProgress = NULL;
+jmethodID methodId_HttpListener_didHttpProgress = NULL;
 
 /*****************************************
  *
@@ -173,6 +173,25 @@ JNIEXPORT jint JNICALL Java_com_parrot_arsdk_arutils_ARUtilsHttpConnection_nativ
     return result;
 }
 
+JNIEXPORT jint JNICALL Java_com_parrot_arsdk_arutils_ARUtilsHttpConnection_nativeIsCanceled(JNIEnv *env, jobject jThis, jlong jHttpConnection)
+{
+    ARUTILS_JNI_HttpConnection_t *nativeHttpConnection = (ARUTILS_JNI_HttpConnection_t *)(intptr_t) jHttpConnection;
+    eARUTILS_ERROR result = ARUTILS_OK;
+
+    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_JNI_HTTPCONNECTION_TAG, "");
+
+    if (nativeHttpConnection == NULL)
+    {
+        result = ARUTILS_ERROR_SYSTEM;
+    }
+    else
+    {
+        result = ARUTILS_Http_IsCanceled(nativeHttpConnection->httpConnection);
+    }
+
+    return result;
+}
+
 JNIEXPORT jint JNICALL Java_com_parrot_arsdk_arutils_ARUtilsHttpConnection_nativeGet(JNIEnv *env, jobject jThis, jlong jHttpConnection, jstring jNamePath, jstring jDstFile, jobject jProgressListener, jobject jProgressArg)
 {
     ARUTILS_JNI_HttpConnection_t *nativeHttpConnection = (ARUTILS_JNI_HttpConnection_t *)(intptr_t) jHttpConnection;
@@ -263,7 +282,7 @@ void ARUTILS_JNI_HttpConnection_ProgressCallback(void* arg, uint8_t percent)
 
     if (callbacks != NULL)
     {
-        if ((ARUTILS_JNI_Manager_VM != NULL) && (callbacks->jProgressListener != NULL) && (methodId_HttpListener_didProgress != NULL))
+        if ((ARUTILS_JNI_Manager_VM != NULL) && (callbacks->jProgressListener != NULL) && (methodId_HttpListener_didHttpProgress != NULL))
         {
             JNIEnv *env = NULL;
             jint jPercent = 0;
@@ -282,11 +301,11 @@ void ARUTILS_JNI_HttpConnection_ProgressCallback(void* arg, uint8_t percent)
                 error = JNI_FAILED;
             }
 
-            if ((error == JNI_OK) && (methodId_HttpListener_didProgress != NULL))
+            if ((error == JNI_OK) && (methodId_HttpListener_didHttpProgress != NULL))
             {
                 jPercent = percent;
 
-                (*env)->CallVoidMethod(env, callbacks->jProgressListener, methodId_HttpListener_didProgress, callbacks->jProgressArg, jPercent);
+                (*env)->CallVoidMethod(env, callbacks->jProgressListener, methodId_HttpListener_didHttpProgress, callbacks->jProgressArg, jPercent);
             }
 
             if ((jResultEnv == JNI_EDETACHED) && (env != NULL))
@@ -309,7 +328,7 @@ int ARUTILS_JNI_NewHttpListenersJNI(JNIEnv *env)
         error = JNI_FAILED;
     }
 
-    if (methodId_HttpListener_didProgress == NULL)
+    if (methodId_HttpListener_didHttpProgress == NULL)
     {
         if (error == JNI_OK)
         {
@@ -324,11 +343,11 @@ int ARUTILS_JNI_NewHttpListenersJNI(JNIEnv *env)
 
         if (error == JNI_OK)
         {
-            methodId_HttpListener_didProgress = (*env)->GetMethodID(env, classHttpProgressListener, "didProgress", "(Ljava/lang/Object;I)V");
+            methodId_HttpListener_didHttpProgress = (*env)->GetMethodID(env, classHttpProgressListener, "didHttpProgress", "(Ljava/lang/Object;I)V");
 
-            if (methodId_HttpListener_didProgress == NULL)
+            if (methodId_HttpListener_didHttpProgress == NULL)
             {
-                ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_JNI_HTTPCONNECTION_TAG, "Listener didProgress method not found");
+                ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_JNI_HTTPCONNECTION_TAG, "Listener didHttpProgress method not found");
             }
         }
     }
