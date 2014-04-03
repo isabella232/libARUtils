@@ -14,9 +14,14 @@
 #include "libARUtils/ARUTILS_Error.h"
 
 /**
- * @brief Ftp max url string size
+ * @brief Http max url string size
  */
 #define ARUTILS_HTTP_MAX_URL_SIZE      512
+
+/**
+ * @brief Htpp max file name path string size
+ */
+#define ARUTILS_HTTP_MAX_PATH_SIZE     256
 
 /**
  * @brief Http secured enum
