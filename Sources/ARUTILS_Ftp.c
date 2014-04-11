@@ -158,6 +158,7 @@ eARUTILS_ERROR ARUTILS_Ftp_List(ARUTILS_Ftp_Connection_t *connection, const char
     char fileUrl[ARUTILS_FTP_MAX_URL_SIZE];
     char cmd[ARUTILS_FTP_MAX_PATH_SIZE];
     eARUTILS_ERROR result = ARUTILS_OK;
+    struct curl_slist *slist = NULL;
     CURLcode code = CURLE_OK;
     long ftpCode = 0L;
 
@@ -204,15 +205,36 @@ eARUTILS_ERROR ARUTILS_Ftp_List(ARUTILS_Ftp_Connection_t *connection, const char
     {
         result = ARUTILS_Ftp_ResetOptions(connection);
     }
-
+    
+    if (result == ARUTILS_OK)
+    {
+        strncpy(fileUrl, connection->serverUrl, ARUTILS_FTP_MAX_URL_SIZE);
+        fileUrl[ARUTILS_FTP_MAX_URL_SIZE - 1] = '\0';
+        strncat(fileUrl, namePath, ARUTILS_FTP_MAX_URL_SIZE - strlen(fileUrl) - 1);
+        
+        code = curl_easy_setopt(connection->curl, CURLOPT_URL, fileUrl);
+        
+        if (code != CURLE_OK)
+        {
+            result = ARUTILS_ERROR_CURL_SETOPT;
+        }
+    }
+    
     if (result == ARUTILS_OK)
     {
         strncpy(cmd, FTP_CMD_LIST, ARUTILS_FTP_MAX_PATH_SIZE);
         cmd[ARUTILS_FTP_MAX_PATH_SIZE - 1] = '\0';
-        strncat(cmd, namePath, ARUTILS_FTP_MAX_PATH_SIZE - strlen(cmd) - 1);
 
-        code = curl_easy_setopt(connection->curl, CURLOPT_CUSTOMREQUEST, cmd);
-
+        slist = curl_slist_append(slist, cmd);
+        if (slist == NULL)
+        {
+            result = ARUTILS_ERROR_CURL_ALLOC;
+        }
+    }
+    
+    if (result == ARUTILS_OK)
+    {
+        code = curl_easy_setopt(connection->curl, CURLOPT_PREQUOTE, slist);
         if (code != CURLE_OK)
         {
             result = ARUTILS_ERROR_CURL_SETOPT;
@@ -303,6 +325,11 @@ eARUTILS_ERROR ARUTILS_Ftp_List(ARUTILS_Ftp_Connection_t *connection, const char
     if (connection != NULL)
     {
         ARUTILS_Ftp_FreeCallbackData(&connection->cbdata);
+    }
+    
+    if (slist != NULL)
+    {
+        curl_slist_free_all(slist);
     }
 
     return result;
@@ -1289,6 +1316,9 @@ eARUTILS_ERROR ARUTILS_Ftp_Put(ARUTILS_Ftp_Connection_t *connection, const char 
     return result;
 }
 
+/* Drone3
+drwxr-xr-x    5 0        0            16384 Apr 10  2014 AR.Drone\n
+*/
 /* Drone2
 drwxr-xr-x    2 0        0             160 Jan  1  2000 data
 -rw-r--r--    1 0        0               7 Jan  1  2000 data_20131001_235901.pub
@@ -1338,7 +1368,7 @@ const char * ARUTILS_Ftp_List_GetNextItem(const char *list, const char **nextIte
                 if (*line == ((isDirectory  == 1) ? 'd' : '-'))
                 {
                     int varSpace = 0;
-                    while (((ptr = strchr(fileIdx, '\x20')) != NULL) && (ptr < endLine) && (varSpace < 7))
+                    while (((ptr = strchr(fileIdx, '\x20')) != NULL) && (ptr < endLine) && (varSpace < 8))
                     {
                         if ((*(ptr - 1) == '\x20') && (*(ptr + 1) != '\x20') && (varSpace < 3))
                         {
