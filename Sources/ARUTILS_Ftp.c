@@ -1317,7 +1317,7 @@ eARUTILS_ERROR ARUTILS_Ftp_Put(ARUTILS_Ftp_Connection_t *connection, const char 
 }
 
 /* Drone3
-drwxr-xr-x    5 0        0            16384 Apr 10  2014 AR.Drone\n
+drwxr-xr-x    4 0        0            32768 Jan  1  1980 AR.Drone\n
 */
 /* Drone2
 drwxr-xr-x    2 0        0             160 Jan  1  2000 data
@@ -1368,16 +1368,13 @@ const char * ARUTILS_Ftp_List_GetNextItem(const char *list, const char **nextIte
                 if (*line == ((isDirectory  == 1) ? 'd' : '-'))
                 {
                     int varSpace = 0;
-                    while (((ptr = strchr(fileIdx, '\x20')) != NULL) && (ptr < endLine) && (varSpace < 8))
+                    while (((ptr = strchr(fileIdx, '\x20')) != NULL) && (ptr < endLine) && (varSpace < 9))
                     {
-                        if ((*(ptr - 1) == '\x20') && (*(ptr + 1) != '\x20') && (varSpace < 3))
+                        if (*(ptr + 1) != '\x20')
                         {
                             varSpace++;
                         }
-                        else if (varSpace >= 3)
-                        {
-                            varSpace++;
-                        }
+                            
                         fileIdx = ++ptr;
                     }
                     
