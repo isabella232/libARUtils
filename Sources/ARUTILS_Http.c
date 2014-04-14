@@ -26,6 +26,9 @@
 #define ARUTILS_HTTP_CURL_VERBOSE         1
 #endif
 
+// Doc
+//http://curl.haxx.se/libcurl/c/libcurl-easy.html
+
 /*****************************************
  *
  *             Public implementation:
@@ -160,14 +163,12 @@ eARUTILS_ERROR ARUTILS_Http_Get_WithBuffer(ARUTILS_Http_Connection_t *connection
 eARUTILS_ERROR ARUTILS_Http_Get_Internal(ARUTILS_Http_Connection_t *connection, const char *namePath, const char *dstFile, uint8_t **data, uint32_t *dataLen, ARUTILS_Http_ProgressCallback_t progressCallback, void* progressArg)
 {
     char fileUrl[ARUTILS_HTTP_MAX_URL_SIZE];
-    //eARUTILS_ERROR resultResume = ARUTILS_ERROR;
     eARUTILS_ERROR result = ARUTILS_OK;
     CURLcode code = CURLE_OK;
     long httpCode = 0L;
     double remoteSize = 0.f;
     uint32_t localSize = 0;
 
-    //ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_HTTP_TAG, "%s, %s, %d", namePath ? namePath : "null", dstFile ? dstFile : "null", resume);
     ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_HTTP_TAG, "%s, %s", namePath ? namePath : "null", dstFile ? dstFile : "null");
 
     if ((connection == NULL) || (connection->curl == NULL) || (namePath == NULL))
@@ -184,7 +185,7 @@ eARUTILS_ERROR ARUTILS_Http_Get_Internal(ARUTILS_Http_Connection_t *connection, 
     }
     else
     {
-        if ((data == NULL) || (dataLen == NULL)/* || (resume != HTTP_RESUME_FALSE)*/)
+        if ((data == NULL) || (dataLen == NULL))
         {
             result =  ARUTILS_ERROR_BAD_PARAMETER;
         }
@@ -216,14 +217,7 @@ eARUTILS_ERROR ARUTILS_Http_Get_Internal(ARUTILS_Http_Connection_t *connection, 
 
     if ((result == ARUTILS_OK) && (dstFile != NULL))
     {
-        /*if ((resultResume == ARUTILS_OK) && (resume == HTTP_RESUME_TRUE))
-        {
-            connection->cbdata.file = fopen(dstFile, "ab");
-        }
-        else*/
-        {
-            connection->cbdata.file = fopen(dstFile, "wb");
-        }
+        connection->cbdata.file = fopen(dstFile, "wb");
 
         if (connection->cbdata.file == NULL)
         {
@@ -334,16 +328,6 @@ eARUTILS_ERROR ARUTILS_Http_Get_Internal(ARUTILS_Http_Connection_t *connection, 
                 fflush(connection->cbdata.file);
             }
         }
-        /*else if ((resultResume == ARUTILS_OK)
-                 && (resume == HTTP_RESUME_TRUE) && (localSize == (uint32_t)remoteSize)
-                 && (httpCode == 213))
-        {
-            //resume ok
-            if (dstFile != NULL)
-            {
-                fflush(connection->cbdata.file);
-            }
-        }*/
         else if (httpCode == 401)
         {
             result = ARUTILS_ERROR_HTTP_AUTHORIZATION_REQUIRED;
@@ -371,30 +355,264 @@ eARUTILS_ERROR ARUTILS_Http_Get_Internal(ARUTILS_Http_Connection_t *connection, 
         }
     }
 
-    /*if ((result == ARUTILS_OK) && (data != NULL) && (dataLen != NULL))
-    {
-        if (result == ARUTILS_OK)
-        {
-            if (connection->cbdata.dataSize != (uint32_t)remoteSize)
-            {
-                result = ARUTILS_ERROR_HTTP_SIZE;
-            }
-        }
-
-        if (result == ARUTILS_OK)
-        {
-            *data = connection->cbdata.data;
-            connection->cbdata.data = NULL;
-            *dataLen = connection->cbdata.dataSize;
-        }
-    }*/
-
     //cleanup
     if (connection != NULL)
     {
         ARUTILS_Http_FreeCallbackData(&connection->cbdata);
     }
 
+    return result;
+}
+
+eARUTILS_ERROR ARUTILS_Http_Put(ARUTILS_Http_Connection_t *connection, const char *namePath, const char *srcFile, ARUTILS_Http_ProgressCallback_t progressCallback, void* progressArg)
+{
+    return ARUTILS_Http_Put_Internal(connection, namePath, srcFile, NULL, 0, progressCallback, progressArg);
+}
+
+eARUTILS_ERROR ARUTILS_Http_Put_Internal(ARUTILS_Http_Connection_t *connection, const char *namePath, const char *srcFile, uint8_t *data, uint32_t dataLen, ARUTILS_Http_ProgressCallback_t progressCallback, void* progressArg)
+{
+    struct curl_httppost *formItems = NULL;
+    struct curl_httppost *lastFormItem = NULL;
+    char fileUrl[ARUTILS_HTTP_MAX_URL_SIZE];
+    eARUTILS_ERROR result = ARUTILS_OK;
+    CURLFORMcode formCode = CURL_FORMADD_OK;
+    CURLcode code = CURLE_OK;
+    long httpCode = 0L;
+    uint32_t localSize = 0;
+    
+    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_HTTP_TAG, "%s, %s", namePath ? namePath : "null", srcFile ? srcFile : "null");
+    
+    if ((connection == NULL) || (connection->curl == NULL) || (namePath == NULL))
+    {
+        result =  ARUTILS_ERROR_BAD_PARAMETER;
+    }
+    
+    if (srcFile != NULL)
+    {
+        if ((data != NULL) || (dataLen != 0))
+        {
+            result =  ARUTILS_ERROR_BAD_PARAMETER;
+        }
+    }
+    else
+    {
+        if ((data == NULL) || (dataLen == 0))
+        {
+            result =  ARUTILS_ERROR_BAD_PARAMETER;
+        }
+    }
+    
+    if (result == ARUTILS_OK)
+    {
+        result = ARUTILS_Http_IsCanceled(connection);
+    }
+    
+    if (result == ARUTILS_OK)
+    {
+        result = ARUTILS_Http_ResetOptions(connection);
+    }
+    
+    if (result == ARUTILS_OK)
+    {
+        code = curl_easy_setopt(connection->curl, CURLOPT_CUSTOMREQUEST, "PUT");
+        
+        if (code != CURLE_OK)
+        {
+            result = ARUTILS_ERROR_CURL_SETOPT;
+        }
+    }
+    
+    if (result == ARUTILS_OK)
+    {
+        strncpy(fileUrl, connection->serverUrl, ARUTILS_HTTP_MAX_URL_SIZE);
+        fileUrl[ARUTILS_HTTP_MAX_URL_SIZE - 1] = '\0';
+        strncat(fileUrl, namePath, ARUTILS_HTTP_MAX_URL_SIZE - strlen(fileUrl) - 1);
+        
+        code = curl_easy_setopt(connection->curl, CURLOPT_URL, fileUrl);
+        
+        if (code != CURLE_OK)
+        {
+            result = ARUTILS_ERROR_CURL_SETOPT;
+        }
+    }
+    
+    if ((result == ARUTILS_OK) && (srcFile != NULL))
+    {
+        connection->cbdata.file = fopen(srcFile, "rb");
+        
+        if (connection->cbdata.file == NULL)
+        {
+            result = ARUTILS_ERROR_SYSTEM;
+        }
+    }
+    
+    if ((result == ARUTILS_OK) && (srcFile != NULL))
+    {
+        result = ARUTILS_FileSystem_GetFileSize(srcFile, &localSize);
+    }
+    
+    if (result == ARUTILS_OK)
+    {
+        code = curl_easy_setopt(connection->curl, CURLOPT_READDATA, connection);
+        
+        if (code != CURLE_OK)
+        {
+            result = ARUTILS_ERROR_CURL_SETOPT;
+        }
+    }
+    
+    if (result == ARUTILS_OK)
+    {
+        code = curl_easy_setopt(connection->curl, CURLOPT_READFUNCTION, ARUTILS_Http_ReadDataCallback);
+        
+        if (code != CURLE_OK)
+        {
+            result = ARUTILS_ERROR_CURL_SETOPT;
+        }
+    }
+    
+    if (result == ARUTILS_OK)
+    {
+        if (connection->cbdata.file != NULL)
+        {
+            const char *fileName = srcFile + strlen(srcFile);
+            while ((fileName > srcFile) && (*fileName != '/'))
+            {
+                fileName--;
+            }
+            if (*fileName == '/')
+            {
+                fileName++;
+            }
+            
+            formCode = curl_formadd(&formItems, &lastFormItem,
+                                    CURLFORM_COPYNAME, "userfile",
+                                    CURLFORM_STREAM, connection,
+                                    CURLFORM_FILENAME, fileName,
+                                    CURLFORM_CONTENTSLENGTH, (long)localSize,
+                                    //CURLFORM_CONTENTTYPE, "text/plain",
+                                    CURLFORM_END);
+        }
+        else
+        {
+            formCode = curl_formadd(&formItems, &lastFormItem,
+                                                 CURLFORM_COPYNAME, "userdata",
+                                                 //CURLFORM_FILENAME, "data.bin",
+                                                 CURLFORM_COPYCONTENTS, data,
+                                                 CURLFORM_CONTENTSLENGTH, (long)dataLen,
+                                                 CURLFORM_END);
+        }
+        
+        if (formCode != CURL_FORMADD_OK)
+        {
+            result = ARUTILS_ERROR_CURL_SETOPT;
+        }
+    }
+    
+    if (result == ARUTILS_OK)
+    {
+        code = curl_easy_setopt(connection->curl, CURLOPT_HTTPPOST, formItems);
+        
+        if (code != CURLE_OK)
+        {
+            result = ARUTILS_ERROR_CURL_SETOPT;
+        }
+    }
+    
+    if (progressCallback != NULL)
+    {
+        if (result == ARUTILS_OK)
+        {
+            connection->cbdata.progressCallback = progressCallback;
+            connection->cbdata.progressArg = progressArg;
+            
+            code = curl_easy_setopt(connection->curl, CURLOPT_PROGRESSDATA, connection);
+            
+            if (code != CURLE_OK)
+            {
+                result = ARUTILS_ERROR_CURL_SETOPT;
+            }
+        }
+        
+        if (result == ARUTILS_OK)
+        {
+            code = curl_easy_setopt(connection->curl, CURLOPT_PROGRESSFUNCTION, ARUTILS_Http_ProgressCallback);
+            
+            if (code != CURLE_OK)
+            {
+                result = ARUTILS_ERROR_CURL_SETOPT;
+            }
+        }
+        
+        if (result == ARUTILS_OK)
+        {
+            code = curl_easy_setopt(connection->curl, CURLOPT_NOPROGRESS, 0L);
+            
+            if (code != CURLE_OK)
+            {
+                result = ARUTILS_ERROR_CURL_SETOPT;
+            }
+        }
+    }
+    
+    //libcurl process
+    if (result == ARUTILS_OK)
+    {
+        code = curl_easy_perform(connection->curl);
+        
+        if (code != CURLE_OK)
+        {
+            result = ARUTILS_Http_GetErrorFromCode(connection, code);
+        }
+    }
+    
+    if (result == ARUTILS_OK)
+    {
+        code = curl_easy_getinfo(connection->curl, CURLINFO_RESPONSE_CODE, &httpCode);
+        
+        if (code != CURLE_OK)
+        {
+            result = ARUTILS_ERROR_CURL_GETINFO;
+        }
+    }
+    
+    //result checking
+    if ((result == ARUTILS_OK) && (connection->cbdata.error != ARUTILS_OK))
+    {
+        result = connection->cbdata.error;
+    }
+    
+    if (result == ARUTILS_OK)
+    {
+        // GET OK (200)
+        if (httpCode == 200)
+        {
+        }
+        else if (httpCode == 401)
+        {
+            result = ARUTILS_ERROR_HTTP_AUTHORIZATION_REQUIRED;
+        }
+        else if (httpCode == 403)
+        {
+            result = ARUTILS_ERROR_HTTP_ACCESS_DENIED;
+        }
+        else
+        {
+            result = ARUTILS_ERROR_HTTP_CODE;
+        }
+    }
+    
+    //cleanup
+    if (formItems != NULL)
+    {
+        curl_formfree(formItems);
+    }
+    
+    if (connection != NULL)
+    {
+        ARUTILS_Http_FreeCallbackData(&connection->cbdata);
+    }
+    
     return result;
 }
 
@@ -446,7 +664,7 @@ eARUTILS_ERROR ARUTILS_Http_ResetOptions(ARUTILS_Http_Connection_t *connection)
         }
     }
 
-    if ((result == ARUTILS_OK) && (connection->username != NULL))
+    if ((result == ARUTILS_OK) && (connection->username != NULL) && (strlen(connection->username) != 0))
     {
         code = curl_easy_setopt(connection->curl, CURLOPT_USERNAME, connection->username);
 
@@ -456,7 +674,7 @@ eARUTILS_ERROR ARUTILS_Http_ResetOptions(ARUTILS_Http_Connection_t *connection)
         }
     }
 
-    if ((result == ARUTILS_OK) && (connection->password != NULL))
+    if ((result == ARUTILS_OK) && (connection->password != NULL) && (strlen(connection->password) != 0))
     {
         code = curl_easy_setopt(connection->curl, CURLOPT_PASSWORD, connection->password);
 

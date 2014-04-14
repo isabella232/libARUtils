@@ -113,4 +113,16 @@ eARUTILS_ERROR ARUTILS_Http_Get(ARUTILS_Http_Connection_t *connection, const cha
  */
 eARUTILS_ERROR ARUTILS_Http_Get_WithBuffer(ARUTILS_Http_Connection_t *connection, const char *namePath, uint8_t **data, uint32_t *dataLen, ARUTILS_Http_ProgressCallback_t progressCallback, void* progressArg);
 
+/**
+ * @brief Put a file to a remote Http server
+ * @param connection The address of the pointer on the Http Connection
+ * @param namePath The string of the file name path on the remote Http server
+ * @param srcFile The string of the local file name path to be put
+ * @param progressCallback The progress callback function
+ * @param progressArg The progress callback function arg
+ * @retval On success, returns ARUTILS_OK. Otherwise, it returns an error number of eARUTILS_ERROR.
+ * @see ARUTILS_Http_NewConnection (), ARUTILS_Http_ProgressCallback_t
+ */
+eARUTILS_ERROR ARUTILS_Http_Put(ARUTILS_Http_Connection_t *connection, const char *namePath, const char *srcFile, ARUTILS_Http_ProgressCallback_t progressCallback, void* progressArg);
+
 #endif /* _ARUTILS_HTTP_H_ */
