@@ -1368,7 +1368,7 @@ const char * ARUTILS_Ftp_List_GetNextItem(const char *list, const char **nextIte
                 if (*line == ((isDirectory  == 1) ? 'd' : '-'))
                 {
                     int varSpace = 0;
-                    while (((ptr = strchr(fileIdx, '\x20')) != NULL) && (ptr < endLine) && (varSpace < 9))
+                    while (((ptr = strchr(fileIdx, '\x20')) != NULL) && (ptr < endLine) && (varSpace < 8))
                     {
                         if (*(ptr + 1) != '\x20')
                         {
