@@ -9,7 +9,8 @@
 #define _ARUTILS_FTP_H_
 
 #include <inttypes.h>
-#include "libARUtils/ARUTILS_Error.h" 
+#include <libARSAL/ARSAL_Sem.h>
+#include "libARUtils/ARUTILS_Error.h"
 
 /**
  * @brief Ftp anonymous user name
@@ -39,7 +40,7 @@ typedef enum
 {
     FTP_RESUME_FALSE = 0,
     FTP_RESUME_TRUE,
-    
+
 } eARUTILS_FTP_RESUME;
 
 /**
@@ -70,7 +71,7 @@ const char * ARUTILS_Ftp_List_GetNextItem(const char *list, const char **nextIte
  * @param size The addresse of the pointer to the file size to return
  * @retval On success, returns the addresse found size string, Otherwise, it returns null
  * @see ARUTILS_Ftp_List_GetNextItem ()
-*/
+ */
 const char * ARUTILS_Ftp_List_GetItemSize(const char *line, int lineSize, double *size);
 
 
