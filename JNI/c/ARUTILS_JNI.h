@@ -29,7 +29,7 @@ extern JavaVM* ARUTILS_JNI_Manager_VM;
 typedef struct _ARUTILS_JNI_FtpConnection_t_
 {
     ARSAL_Sem_t cancelSem;
-    ARUTILS_Ftp_Connection_t *ftpConnection;
+    ARUTILS_WifiFtp_Connection_t *ftpConnection;
 
 } ARUTILS_JNI_FtpConnection_t;
 

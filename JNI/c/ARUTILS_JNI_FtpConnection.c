@@ -112,7 +112,7 @@ JNIEXPORT jlong JNICALL Java_com_parrot_arsdk_arutils_ARUtilsFtpConnection_nativ
 
     if (result == ARUTILS_OK)
     {
-        nativeFtpConnection->ftpConnection = ARUTILS_Ftp_Connection_New(&nativeFtpConnection->cancelSem, nativeServer, (int)jPort, nativeUsername, nativePassword, &result);
+        nativeFtpConnection->ftpConnection = ARUTILS_WifiFtp_Connection_New(&nativeFtpConnection->cancelSem, nativeServer, (int)jPort, nativeUsername, nativePassword, &result);
     }
 
     if (result != ARUTILS_OK)
@@ -121,7 +121,7 @@ JNIEXPORT jlong JNICALL Java_com_parrot_arsdk_arutils_ARUtilsFtpConnection_nativ
 
         if (nativeFtpConnection != NULL)
         {
-            ARUTILS_Ftp_Connection_Delete(&nativeFtpConnection->ftpConnection);
+            ARUTILS_WifiFtp_Connection_Delete(&nativeFtpConnection->ftpConnection);
             ARSAL_Sem_Destroy(&nativeFtpConnection->cancelSem);
 
             free(nativeFtpConnection);
@@ -157,7 +157,7 @@ JNIEXPORT void JNICALL Java_com_parrot_arsdk_arutils_ARUtilsFtpConnection_native
 
     if (nativeFtpConnection != NULL)
     {
-        ARUTILS_Ftp_Connection_Delete(&nativeFtpConnection->ftpConnection);
+        ARUTILS_WifiFtp_Connection_Delete(&nativeFtpConnection->ftpConnection);
 
         ARSAL_Sem_Destroy(&nativeFtpConnection->cancelSem);
         free(nativeFtpConnection);
@@ -177,7 +177,7 @@ JNIEXPORT jint JNICALL Java_com_parrot_arsdk_arutils_ARUtilsFtpConnection_native
     }
     else
     {
-        result = ARUTILS_Ftp_Connection_Cancel(nativeFtpConnection->ftpConnection);
+        result = ARUTILS_WifiFtp_Connection_Cancel(nativeFtpConnection->ftpConnection);
     }
 
     return result;
@@ -196,7 +196,7 @@ JNIEXPORT jint JNICALL Java_com_parrot_arsdk_arutils_ARUtilsFtpConnection_native
     }
     else
     {
-        result = ARUTILS_Ftp_IsCanceled(nativeFtpConnection->ftpConnection);
+        result = ARUTILS_WifiFtp_IsCanceled(nativeFtpConnection->ftpConnection);
     }
 
     return result;
@@ -219,7 +219,7 @@ JNIEXPORT jstring JNICALL Java_com_parrot_arsdk_arutils_ARUtilsFtpConnection_nat
     }
     else
     {
-        result = ARUTILS_Ftp_List(nativeFtpConnection->ftpConnection, nativeNamePath, &nativeResultList, &nativeResultListLen);
+        result = ARUTILS_WifiFtp_List(nativeFtpConnection->ftpConnection, nativeNamePath, &nativeResultList, &nativeResultListLen);
     }
 
     if (result == ARUTILS_OK)
@@ -259,7 +259,7 @@ JNIEXPORT jint JNICALL Java_com_parrot_arsdk_arutils_ARUtilsFtpConnection_native
     }
     else
     {
-        result = ARUTILS_Ftp_Rename(nativeFtpConnection->ftpConnection, nativeOldNamePath, nativeNewNamePath);
+        result = ARUTILS_WifiFtp_Rename(nativeFtpConnection->ftpConnection, nativeOldNamePath, nativeNewNamePath);
     }
 
     if (nativeOldNamePath != NULL)
@@ -291,7 +291,7 @@ JNIEXPORT jdouble JNICALL Java_com_parrot_arsdk_arutils_ARUtilsFtpConnection_nat
     }
     else
     {
-        result = ARUTILS_Ftp_Size(nativeFtpConnection->ftpConnection, nativeNamePath, &nativeSize);
+        result = ARUTILS_WifiFtp_Size(nativeFtpConnection->ftpConnection, nativeNamePath, &nativeSize);
     }
 
     if (result == ARUTILS_OK)
@@ -325,7 +325,7 @@ JNIEXPORT jint JNICALL Java_com_parrot_arsdk_arutils_ARUtilsFtpConnection_native
     }
     else
     {
-        result = ARUTILS_Ftp_Delete(nativeFtpConnection->ftpConnection, nativeNamePath);
+        result = ARUTILS_WifiFtp_Delete(nativeFtpConnection->ftpConnection, nativeNamePath);
     }
 
     if (nativeNamePath)
@@ -376,7 +376,7 @@ JNIEXPORT jint JNICALL Java_com_parrot_arsdk_arutils_ARUtilsFtpConnection_native
 
     if (result == ARUTILS_OK)
     {
-        result = ARUTILS_Ftp_Get(nativeFtpConnection->ftpConnection, nativeNamePath, nativeDstFile, ARUTILS_JNI_FtpConnection_ProgressCallback, callbacks, (eARUTILS_FTP_RESUME)(int)jResume);
+        result = ARUTILS_WifiFtp_Get(nativeFtpConnection->ftpConnection, nativeNamePath, nativeDstFile, ARUTILS_JNI_FtpConnection_ProgressCallback, callbacks, (eARUTILS_FTP_RESUME)(int)jResume);
     }
 
     if (callbacks != NULL)
@@ -449,7 +449,7 @@ JNIEXPORT jbyteArray JNICALL Java_com_parrot_arsdk_arutils_ARUtilsFtpConnection_
 
     if (result == ARUTILS_OK)
     {
-        result = ARUTILS_Ftp_Get_WithBuffer(nativeFtpConnection->ftpConnection, nativeNamePath, &nativeData, &nativeDataLen,  ARUTILS_JNI_FtpConnection_ProgressCallback, callbacks);
+        result = ARUTILS_WifiFtp_Get_WithBuffer(nativeFtpConnection->ftpConnection, nativeNamePath, &nativeData, &nativeDataLen,  ARUTILS_JNI_FtpConnection_ProgressCallback, callbacks);
     }
 
     if (result == ARUTILS_OK)
@@ -540,7 +540,7 @@ JNIEXPORT jint JNICALL Java_com_parrot_arsdk_arutils_ARUtilsFtpConnection_native
 
     if (result == ARUTILS_OK)
     {
-        result = ARUTILS_Ftp_Put(nativeFtpConnection->ftpConnection, nativeNamePath, nativeSrcFile, ARUTILS_JNI_FtpConnection_ProgressCallback, callbacks, (eARUTILS_FTP_RESUME)(int)jResume);
+        result = ARUTILS_WifiFtp_Put(nativeFtpConnection->ftpConnection, nativeNamePath, nativeSrcFile, ARUTILS_JNI_FtpConnection_ProgressCallback, callbacks, (eARUTILS_FTP_RESUME)(int)jResume);
     }
 
     if (callbacks != NULL)
