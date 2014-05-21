@@ -8,23 +8,19 @@ HEADER_FILES                                                =   ../Includes/libA
                                                                 ../Includes/libARUtils/ARUTILS_Manager.h \
                                                                 ../Includes/libARUtils/ARUTILS_FileSystem.h \
                                                                 ../Includes/libARUtils/ARUTILS_Http.h \
-                                                                ../Includes/libARUtils/ARUTILS_Ftp.h \                                                 
-                                                                ../Includes/libARUtils/ARUTILS_BLEFtp.h \
+                                                                ../Includes/libARUtils/ARUTILS_Ftp.h \
                                                                 ../Includes/libARUtils/ARUtils.h
-
-if HAVE_COREBLUETOOTH
-HEADER_FILES                                                +=  ../Includes/libARUtils/ARUTILS_BLEFtp.h
-endif
                                 
 # The sources to add to the library and to add to the source distribution
 SOURCE_FILES                                                =   $(HEADER_FILES)\
                                                                 ../Sources/ARUTILS_Error.c \
                                                                 ../Sources/ARUTILS_Manager.c \
+                                                                ../Sources/ARUTILS_Manager.h \
                                                                 ../Sources/ARUTILS_FileSystem.c \
                                                                 ../Sources/ARUTILS_Http.c \
                                                                 ../Sources/ARUTILS_Http.h \
-                                                                ../Sources/ARUTILS_Ftp.c \
-                                                                ../Sources/ARUTILS_Ftp.h
+                                                                ../Sources/ARUTILS_WifiFtp.c \
+                                                                ../Sources/ARUTILS_WifiFtp.h
 
 if HAVE_COREBLUETOOTH
 SOURCE_FILES                                               +=  ../Sources/ARUTILS_BLEFtp.m \

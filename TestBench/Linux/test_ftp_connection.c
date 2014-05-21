@@ -14,11 +14,14 @@
 #include <libARUtils/ARUTILS_Error.h>
 #include <libARUtils/ARUTILS_Ftp.h>
 
+#include <curl/curl.h>
+#include "ARUTILS_WifiFtp.h"
+
 #define DEVICE_IP    "172.20.5.117"
 
 void text_list(const char *tmp)
 {
-    ARUTILS_Ftp_Connection_t *connection = NULL;
+    ARUTILS_WifiFtp_Connection_t *connection = NULL;
     eARUTILS_ERROR result;
     ARSAL_Sem_t cancelSem;
     char *resultList = NULL;
@@ -29,10 +32,10 @@ void text_list(const char *tmp)
     
     ARSAL_Sem_Init(&cancelSem, 0, 0);
     
-    connection = ARUTILS_Ftp_Connection_New(&cancelSem, DEVICE_IP, 21, "anonymous", "", &result);
+    connection = ARUTILS_WifiFtp_Connection_New(&cancelSem, DEVICE_IP, 21, "anonymous", "", &result);
     printf("result %d\n", result);
     
-    result = ARUTILS_Ftp_List(connection, "", &resultList, &resultListLen);
+    result = ARUTILS_WifiFtp_List(connection, "", &resultList, &resultListLen);
     printf("result %d\n", result);
     printf("%s\n", resultList ? resultList : "null");
     
@@ -53,7 +56,7 @@ void test_ftp_progress_callback(void* arg, uint8_t percent)
 
 void test_ftp_commands(char *tmp)
 {
-    ARUTILS_Ftp_Connection_t *connection = NULL;
+    ARUTILS_WifiFtp_Connection_t *connection = NULL;
     eARUTILS_ERROR result;
     ARSAL_Sem_t cancelSem;
     char *resultList = NULL;
@@ -62,27 +65,27 @@ void test_ftp_commands(char *tmp)
     
     ARSAL_Sem_Init(&cancelSem, 0, 0);
     
-    connection = ARUTILS_Ftp_Connection_New(&cancelSem, DEVICE_IP, 21, "anonymous", "", &result);
+    connection = ARUTILS_WifiFtp_Connection_New(&cancelSem, DEVICE_IP, 21, "anonymous", "", &result);
     printf("result %d\n", result);
     
-    result = ARUTILS_Ftp_List(connection, "", &resultList, &resultListLen);
+    result = ARUTILS_WifiFtp_List(connection, "", &resultList, &resultListLen);
     printf("result %d\n", result);
     printf("%s\n", resultList ? resultList : "null");
     free(resultList);
     
-    result = ARUTILS_Ftp_Connection_Cancel(connection);
+    result = ARUTILS_WifiFtp_Connection_Cancel(connection);
     printf("result %d\n", result);
     
-    //result = ARUTILS_Ftp_Cd(connection, "a");
+    //result = ARUTILS_WifiFtp_Cd(connection, "a");
     //printf("result %d\n", result);
     
-    result = ARUTILS_Ftp_List(connection, "/b", &resultList, &resultListLen);
+    result = ARUTILS_WifiFtp_List(connection, "/b", &resultList, &resultListLen);
     printf("result %d\n", result);
     printf("%s\n", resultList ? resultList : "null");
     free(resultList);
     
-    result = ARUTILS_Ftp_Size(connection, "a/text0.txt", &fileSize);
-    //result = ARUTILS_Ftp_Size(connection, "test.txt", &fileSize);
+    result = ARUTILS_WifiFtp_Size(connection, "a/text0.txt", &fileSize);
+    //result = ARUTILS_WifiFtp_Size(connection, "test.txt", &fileSize);
     printf("result %d\n", result);
     printf("size %.0f\n", (float)fileSize);
     //CURLINFO_NEW_FILE_PERMS
@@ -93,38 +96,38 @@ void test_ftp_commands(char *tmp)
     strcpy(localFilePath, tmp);
     strcat(localFilePath, "text0.txt");
     
-    result = ARUTILS_Ftp_Get(connection, "a/text0.txt", localFilePath, test_ftp_progress_callback, "progress: ", FTP_RESUME_FALSE);
-    //result = ARUTILS_Ftp_Get(connection, "a/text0.txt", localFilePath, test_ftp_progress_callback, "progress: ", FTP_RESUME_TRUE);
+    result = ARUTILS_WifiFtp_Get(connection, "a/text0.txt", localFilePath, test_ftp_progress_callback, "progress: ", FTP_RESUME_FALSE);
+    //result = ARUTILS_WifiFtp_Get(connection, "a/text0.txt", localFilePath, test_ftp_progress_callback, "progress: ", FTP_RESUME_TRUE);
     printf("result %d\n", result);
     
     //result = ARUTILS_FileSystem_GetFileSize(localFilePath, &localSize);
     //printf("result %d\n", result);
     
-    result = ARUTILS_Ftp_Put(connection, "a/text00.txt", localFilePath, test_ftp_progress_callback, "progress: ", 0);
-    //result = ARUTILS_Ftp_Put(connection, "a/text00.txt", localFilePath, test_ftp_progress_callback, "progress: ", 1);
+    result = ARUTILS_WifiFtp_Put(connection, "a/text00.txt", localFilePath, test_ftp_progress_callback, "progress: ", 0);
+    //result = ARUTILS_WifiFtp_Put(connection, "a/text00.txt", localFilePath, test_ftp_progress_callback, "progress: ", 1);
     printf("result %d\n", result);
     
-    result = ARUTILS_Ftp_Size(connection, "a/text00.txt", &fileSize);
-    printf("result %d\n", result);
-    printf("size %.0f\n", (float)fileSize);
-    
-    result = ARUTILS_Ftp_Delete(connection, "a/text00.txt");
-    printf("result %d\n", result);
-    
-    result = ARUTILS_Ftp_Size(connection, "a/text00.txt", &fileSize);
+    result = ARUTILS_WifiFtp_Size(connection, "a/text00.txt", &fileSize);
     printf("result %d\n", result);
     printf("size %.0f\n", (float)fileSize);
     
-    result = ARUTILS_Ftp_Get(connection, "a/text00.txt", localFilePath, NULL, NULL, 0);
+    result = ARUTILS_WifiFtp_Delete(connection, "a/text00.txt");
     printf("result %d\n", result);
     
-    result = ARUTILS_Ftp_List(connection, "/c", &resultList, &resultListLen);
+    result = ARUTILS_WifiFtp_Size(connection, "a/text00.txt", &fileSize);
+    printf("result %d\n", result);
+    printf("size %.0f\n", (float)fileSize);
+    
+    result = ARUTILS_WifiFtp_Get(connection, "a/text00.txt", localFilePath, NULL, NULL, 0);
+    printf("result %d\n", result);
+    
+    result = ARUTILS_WifiFtp_List(connection, "/c", &resultList, &resultListLen);
     printf("result %d\n", result);
     printf("%s\n", resultList ? resultList : "null");
     free(resultList);
     
     
-    ARUTILS_Ftp_Connection_Delete(&connection);
+    ARUTILS_WifiFtp_Connection_Delete(&connection);
 }
 
 void test_ftp_connection(char *tmp)

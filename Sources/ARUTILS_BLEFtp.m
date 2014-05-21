@@ -11,33 +11,24 @@
 #include <string.h>
 #include <errno.h>
 
-#include <libARSAL/ARSAL_Sem.h>
-#include <libARSAL/ARSAL_Singleton.h>
-#include <libARSAL/ARSAL_Print.h>
-#include <curl/curl.h>
-
-#include "libARUtils/ARUTILS_Error.h"
-#include "libARUtils/ARUTILS_Ftp.h"
-#include "libARUtils/ARUTILS_FileSystem.h"
-#include "libARUtils/ARUTILS_BLEFtp.h"
-
-struct ARUTILS_BLEFtp_Connection_t
-{
-    ARSAL_Sem_t *cancelSem;
-    void *bleFtpObject;
-};
-
-
-
 #import <CoreBluetooth/CoreBluetooth.h>
 #import <libARSAL/ARSAL_CentralManager.h>
 #import <CommonCrypto/CommonDigest.h>
 
-//#import "ARNETWORKAL_Manager.h"
+#include <libARSAL/ARSAL_Sem.h>
+#include <libARSAL/ARSAL_Singleton.h>
+#include <libARSAL/ARSAL_Print.h>
 #import <libARSAL/ARSAL_BLEManager.h>
-//#import "ARNETWORKAL_BLENetwork.h"
-#import "ARUTILS_BLEFtp.h"
 #import <libARSAL/ARSAL_Endianness.h>
+#include <curl/curl.h>
+
+#include "libARUtils/ARUTILS_Error.h"
+#include "libARUtils/ARUTILS_Manager.h"
+#include "libARUtils/ARUTILS_Ftp.h"
+#include "libARUtils/ARUTILS_FileSystem.h"
+#include "ARUTILS_Manager.h"
+#include "ARUTILS_BLEFtp.h"
+
 
 NSString* const kARUTILS_BLEFtp_Getting = @"kARUTILS_BLEFtp_Getting";
 
@@ -1263,7 +1254,7 @@ eARUTILS_ERROR ARUTILS_BLEFtp_Put(ARUTILS_BLEFtp_Connection_t *connection, const
  *
  *****************************************/
 
-eARUTILS_ERROR ARUTILS_Manager_NewBLEFtp(ARUTILS_Manager_t *manager, ARSAL_Sem_t *cancelSem, ARUTILS_BLEDevice_t device)
+eARUTILS_ERROR ARUTILS_Manager_InitBLEFtp(ARUTILS_Manager_t *manager, ARSAL_Sem_t *cancelSem, ARUTILS_BLEDevice_t device)
 {
     eARUTILS_ERROR result = ARUTILS_OK;
     
@@ -1290,7 +1281,7 @@ eARUTILS_ERROR ARUTILS_Manager_NewBLEFtp(ARUTILS_Manager_t *manager, ARSAL_Sem_t
     return result;
 }
 
-void ARUTILS_Manager_DeleteBLEFtp(ARUTILS_Manager_t *manager)
+void ARUTILS_Manager_CloseBLEFtp(ARUTILS_Manager_t *manager)
 {
     if (manager != NULL)
     {

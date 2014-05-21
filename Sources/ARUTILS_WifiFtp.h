@@ -5,8 +5,8 @@
  * @author david.flattin.ext@parrot.com
  **/
 
-#ifndef _ARUTILS_FTP_PRIVATE_H_
-#define _ARUTILS_FTP_PRIVATE_H_
+#ifndef _ARUTILS_WIFI_FTP_PRIVATE_H_
+#define _ARUTILS_WIFI_FTP_PRIVATE_H_
 
 #include "libARUtils/ARUTILS_Manager.h"
 
@@ -69,9 +69,9 @@
  * @param error The last error
  * @param progressCallback The progress callback
  * @param progressArg The progress arg
- * @see ARUTILS_Ftp_ReadDataCallback (), ARUTILS_Ftp_WriteDataCallback ()
+ * @see ARUTILS_WifiFtp_ReadDataCallback (), ARUTILS_WifiFtp_WriteDataCallback ()
  */
-typedef struct _ARUTILS_Ftp_CallbackData_t_
+typedef struct _ARUTILS_WifiFtp_CallbackData_t_
 {
     int isUploading;
     uint8_t *data;
@@ -80,8 +80,8 @@ typedef struct _ARUTILS_Ftp_CallbackData_t_
     eARUTILS_ERROR error;
     ARUTILS_Ftp_ProgressCallback_t progressCallback;
     void *progressArg;
-    
-} ARUTILS_Ftp_CallbackData_t;
+
+} ARUTILS_WifiFtp_CallbackData_t;
 
 /**
  * @brief Ftp Connection structure
@@ -91,17 +91,138 @@ typedef struct _ARUTILS_Ftp_CallbackData_t_
  * @param username The Ftp connection user name
  * @param passwordThe Ftp connection user password
  * @param cbdata The Ftp connection data for callbacks
- * @see ARUTILS_Ftp_ReadDataCallback (), ARUTILS_Ftp_WriteDataCallback ()
+ * @see ARUTILS_WifiFtp_ReadDataCallback (), ARUTILS_WifiFtp_WriteDataCallback ()
  */
-struct ARUTILS_Ftp_Connection_t
+//typedef struct _ARUTILS_WifiFtp_Connection_t_
+struct ARUTILS_WifiFtp_Connection_t
 {
     ARSAL_Sem_t *cancelSem;
     CURL *curl;
     char serverUrl[ARUTILS_FTP_MAX_URL_SIZE];
     char username[ARUTILS_FTP_MAX_USER_SIZE];
     char password[ARUTILS_FTP_MAX_USER_SIZE];
-    ARUTILS_Ftp_CallbackData_t cbdata;
+    ARUTILS_WifiFtp_CallbackData_t cbdata;
 };
+//} ARUTILS_WifiFtp_Connection_t;
+
+/**
+ * @brief Create a new Ftp Connection
+ * @warning This function allocates memory
+ * @param cancelSem The pointer of the Ftp get/put cancel semaphore or null
+ * @param server The Ftp server IP address
+ * @param port The Ftp server port
+ * @param username The Ftp server account name
+ * @param password The Ftp server account password
+ * @param[out] error The pointer of the error code: if success ARUTILS_OK, otherwise an error number of eARUTILS_ERROR
+ * @retval On success, returns an ARUTILS_WifiFtp_Connection_t. Otherwise, it returns null.
+ * @see ARUTILS_WifiFtp_DeleteConnection ()
+ */
+ARUTILS_WifiFtp_Connection_t * ARUTILS_WifiFtp_Connection_New(ARSAL_Sem_t *cancelSem, const char *server, int port, const char *username, const char* password, eARUTILS_ERROR *error);
+
+/**
+ * @brief Delete an Ftp Connection
+ * @warning This function frees memory
+ * @param connection The address of the pointer on the Ftp Connection
+ * @see ARUTILS_WifiFtp_NewConnection ()
+ */
+void ARUTILS_WifiFtp_Connection_Delete(ARUTILS_WifiFtp_Connection_t **connection);
+
+/**
+ * @brief Cancel an Ftp Connection command in progress (get, put, list etc)
+ * @param connection The address of the pointer on the Ftp Connection
+ * @retval On success, returns ARUTILS_OK. Otherwise, it returns an error number of eARUTILS_ERROR.
+ * @see ARUTILS_WifiFtp_NewConnection ()
+ */
+eARUTILS_ERROR ARUTILS_WifiFtp_Connection_Cancel(ARUTILS_WifiFtp_Connection_t *connection);
+
+/**
+ * @brief Check if the connection has received a cancel to it's semaphore
+ * @param connection The address of the pointer on the Ftp Connection
+ * @retval On success, returns ARUTILS_OK. Otherwise, it returns an error number of eARUTILS_ERROR.
+ * @see cURL
+ */
+eARUTILS_ERROR ARUTILS_WifiFtp_IsCanceled(ARUTILS_WifiFtp_Connection_t *connection);
+
+/**
+ * @brief Execute Ftp List command to retrieve directory content
+ * @warning This function allocates memory
+ * @param connection The address of the pointer on the Ftp Connection
+ * @param namePath The string of the directory path on the remote Ftp server
+ * @param resultList The pointer of the string of the directory content null terminated
+ * @param resultListLen The pointer of the lenght of the resultList string including null terminated
+ * @retval On success, returns ARUTILS_OK. Otherwise, it returns an error number of eARUTILS_ERROR.
+ * @see ARUTILS_WifiFtp_NewConnection ()
+ */
+eARUTILS_ERROR ARUTILS_WifiFtp_List(ARUTILS_WifiFtp_Connection_t *connection, const char *namePath, char **resultList, uint32_t *resultListLen);
+
+/**
+ * @brief Rename an remote Ftp server file
+ * @param connection The address of the pointer on the Ftp Connection
+ * @param oldNamePath The string of the old file name path on the remote Ftp server
+ * @param newNamePath The string of the new file name path on the remote Ftp server
+ * @retval On success, returns ARUTILS_OK. Otherwise, it returns an error number of eARUTILS_ERROR.
+ * @see ARUTILS_WifiFtp_NewConnection ()
+ */
+eARUTILS_ERROR ARUTILS_WifiFtp_Rename(ARUTILS_WifiFtp_Connection_t *connection, const char *oldNamePath, const char *newNamePath);
+
+/**
+ * @brief Get the size of an remote Ftp server file
+ * @param connection The address of the pointer on the Ftp Connection
+ * @param namePath The string of the file name path on the remote Ftp server
+ * @retval On success, returns ARUTILS_OK. Otherwise, it returns an error number of eARUTILS_ERROR.
+ * @see ARUTILS_WifiFtp_NewConnection ()
+ */
+eARUTILS_ERROR ARUTILS_WifiFtp_Size(ARUTILS_WifiFtp_Connection_t *connection, const char *namePath, double *size);
+
+/**
+ * @brief Delete an remote Ftp server file
+ * @param connection The address of the pointer on the Ftp Connection
+ * @param namePath The string of the file name path on the remote Ftp server
+ * @retval On success, returns ARUTILS_OK. Otherwise, it returns an error number of eARUTILS_ERROR.
+ * @see ARUTILS_WifiFtp_NewConnection ()
+ */
+eARUTILS_ERROR ARUTILS_WifiFtp_Delete(ARUTILS_WifiFtp_Connection_t *connection, const char *namePath);
+
+/**
+ * @brief Get an remote Ftp server file
+ * @param connection The address of the pointer on the Ftp Connection
+ * @param namePath The string of the file name path on the remote Ftp server
+ * @param dstFile The string of the local file name path to be get
+ * @param progressCallback The progress callback function
+ * @param progressArg The progress callback function arg
+ * @param resume The resume capability requested
+ * @retval On success, returns ARUTILS_OK. Otherwise, it returns an error number of eARUTILS_ERROR.
+ * @see ARUTILS_WifiFtp_NewConnection (), ARUTILS_Ftp_ProgressCallback_t, eARUTILS_FTP_RESUME
+ */
+eARUTILS_ERROR ARUTILS_WifiFtp_Get(ARUTILS_WifiFtp_Connection_t *connection, const char *namePath, const char *dstFile, ARUTILS_Ftp_ProgressCallback_t progressCallback, void* progressArg, eARUTILS_FTP_RESUME resume);
+
+/**
+ * @brief Get an remote Ftp server file
+ * @warning This function allocates memory
+ * @param connection The address of the pointer on the Ftp Connection
+ * @param namePath The string of the file name path on the remote Ftp server
+ * @param data The pointer of the data buffer of the file data
+ * @param dataLen The pointer of the length of the data buffer
+ * @param progressCallback The progress callback function
+ * @param progressArg The progress callback function arg
+ * @retval On success, returns ARUTILS_OK. Otherwise, it returns an error number of eARUTILS_ERROR.
+ * @see ARUTILS_WifiFtp_NewConnection (), ARUTILS_Ftp_ProgressCallback_t, eARUTILS_FTP_RESUME
+ */
+eARUTILS_ERROR ARUTILS_WifiFtp_Get_WithBuffer(ARUTILS_WifiFtp_Connection_t *connection, const char *namePath, uint8_t **data, uint32_t *dataLen,  ARUTILS_Ftp_ProgressCallback_t progressCallback, void* progressArg);
+
+/**
+ * @brief Put an remote Ftp server file
+ * @param connection The address of the pointer on the Ftp Connection
+ * @param namePath The string of the file name path on the remote Ftp server
+ * @param srcFile The string of the local file name path to be put
+ * @param progressCallback The progress callback function
+ * @param progressArg The progress callback function arg
+ * @param resume The resume capability requested
+ * @retval On success, returns ARUTILS_OK. Otherwise, it returns an error number of eARUTILS_ERROR.
+ * @see ARUTILS_WifiFtp_NewConnection (), ARUTILS_Ftp_ProgressCallback_t, eARUTILS_FTP_RESUME
+ */
+eARUTILS_ERROR ARUTILS_WifiFtp_Put(ARUTILS_WifiFtp_Connection_t *connection, const char *namePath, const char *srcFile, ARUTILS_Ftp_ProgressCallback_t progressCallback, void* progressArg, eARUTILS_FTP_RESUME resume);
+
 
 /**
  * @brief ReadData callback of cURL connection
@@ -112,7 +233,7 @@ struct ARUTILS_Ftp_Connection_t
  * @retval On success, returns nmemb. Otherwise, it returns an error code.
  * @see cURL
  */
-size_t ARUTILS_Ftp_ReadDataCallback(void *ptr, size_t size, size_t nmemb, void *userData);
+size_t ARUTILS_WifiFtp_ReadDataCallback(void *ptr, size_t size, size_t nmemb, void *userData);
 
 /**
  * @brief WriteData callback of cURL connection
@@ -123,7 +244,7 @@ size_t ARUTILS_Ftp_ReadDataCallback(void *ptr, size_t size, size_t nmemb, void *
  * @retval On success, returns nmemb. Otherwise, it returns an error code.
  * @see cURL
  */
-size_t ARUTILS_Ftp_WriteDataCallback(void *ptr, size_t size, size_t nmemb, void *userData);
+size_t ARUTILS_WifiFtp_WriteDataCallback(void *ptr, size_t size, size_t nmemb, void *userData);
 
 /**
  * @brief Progress callback of cURL connection
@@ -135,7 +256,7 @@ size_t ARUTILS_Ftp_WriteDataCallback(void *ptr, size_t size, size_t nmemb, void 
  * @retval On success, returns 0. Otherwise, it returns an error code.
  * @see cURL
  */
-int ARUTILS_Ftp_ProgressCallback(void *userData, double dltotal, double dlnow, double ultotal, double ulnow);
+int ARUTILS_WifiFtp_ProgressCallback(void *userData, double dltotal, double dlnow, double ultotal, double ulnow);
 
 /**
  * @brief Execute a command on remote Ftp server file
@@ -146,7 +267,7 @@ int ARUTILS_Ftp_ProgressCallback(void *userData, double dltotal, double dlnow, d
  * @retval On success, returns ARUTILS_OK. Otherwise, it returns an error number of eARUTILS_ERROR.
  * @see cURL
  */
-eARUTILS_ERROR ARUTILS_Ftp_Command(ARUTILS_Ftp_Connection_t *connection, const char *namePath, const char *command, long *ftpCode);
+eARUTILS_ERROR ARUTILS_WifiFtp_Command(ARUTILS_WifiFtp_Connection_t *connection, const char *namePath, const char *command, long *ftpCode);
 
 /**
  * @brief Reset the Ftp connection values
@@ -154,7 +275,7 @@ eARUTILS_ERROR ARUTILS_Ftp_Command(ARUTILS_Ftp_Connection_t *connection, const c
  * @retval On success, returns ARUTILS_OK. Otherwise, it returns an error number of eARUTILS_ERROR.
  * @see cURL
  */
-eARUTILS_ERROR ARUTILS_Ftp_ResetOptions(ARUTILS_Ftp_Connection_t *connection);
+eARUTILS_ERROR ARUTILS_WifiFtp_ResetOptions(ARUTILS_WifiFtp_Connection_t *connection);
 
 /**
  * @brief Execute Cd command on remote Ftp server file
@@ -163,7 +284,7 @@ eARUTILS_ERROR ARUTILS_Ftp_ResetOptions(ARUTILS_Ftp_Connection_t *connection);
  * @retval On success, returns ARUTILS_OK. Otherwise, it returns an error number of eARUTILS_ERROR.
  * @see cURL
  */
-eARUTILS_ERROR ARUTILS_Ftp_Cd(ARUTILS_Ftp_Connection_t *connection, const char *namePath);
+eARUTILS_ERROR ARUTILS_WifiFtp_Cd(ARUTILS_WifiFtp_Connection_t *connection, const char *namePath);
 
 /**
  * @brief Execute Get command on remote Ftp server file
@@ -178,7 +299,7 @@ eARUTILS_ERROR ARUTILS_Ftp_Cd(ARUTILS_Ftp_Connection_t *connection, const char *
  * @retval On success, returns ARUTILS_OK. Otherwise, it returns an error number of eARUTILS_ERROR.
  * @see cURL
  */
-eARUTILS_ERROR ARUTILS_Ftp_GetInternal(ARUTILS_Ftp_Connection_t *connection, const char *namePath, const char *dstFile, uint8_t **data, uint32_t *dataLen, ARUTILS_Ftp_ProgressCallback_t progressCallback, void* progressArg, eARUTILS_FTP_RESUME resume);
+eARUTILS_ERROR ARUTILS_WifiFtp_GetInternal(ARUTILS_WifiFtp_Connection_t *connection, const char *namePath, const char *dstFile, uint8_t **data, uint32_t *dataLen, ARUTILS_Ftp_ProgressCallback_t progressCallback, void* progressArg, eARUTILS_FTP_RESUME resume);
 
 /**
  * @brief Free CallbackData structure
@@ -187,7 +308,7 @@ eARUTILS_ERROR ARUTILS_Ftp_GetInternal(ARUTILS_Ftp_Connection_t *connection, con
  * @param namePath The string of the file name path
  * @see cURL
  */
-void ARUTILS_Ftp_FreeCallbackData(ARUTILS_Ftp_CallbackData_t *cbdata);
+void ARUTILS_WifiFtp_FreeCallbackData(ARUTILS_WifiFtp_CallbackData_t *cbdata);
 
 /**
  * @brief Translate cURL error code to an eARUTILS_ERROR enum error
@@ -196,7 +317,7 @@ void ARUTILS_Ftp_FreeCallbackData(ARUTILS_Ftp_CallbackData_t *cbdata);
  * @retval On success, returns ARUTILS_OK. Otherwise, it returns an error number of eARUTILS_ERROR.
  * @see cURL
  */
-eARUTILS_ERROR ARUTILS_Ftp_GetErrorFromCode(ARUTILS_Ftp_Connection_t *connection, CURLcode code);
+eARUTILS_ERROR ARUTILS_WifiFtp_GetErrorFromCode(ARUTILS_WifiFtp_Connection_t *connection, CURLcode code);
 
 
 /**
@@ -268,4 +389,4 @@ eARUTILS_ERROR ARUTILS_WifiFtpAL_Put(ARUTILS_Manager_t *manager, const char *nam
  */
 eARUTILS_ERROR ARUTILS_WifiFtpAL_Delete(ARUTILS_Manager_t *manager, const char *namePath);
 
-#endif /* _ARUTILS_FTP_PRIVATE_H_ */
+#endif /* _ARUTILS_WIFI_FTP_PRIVATE_H_ */
