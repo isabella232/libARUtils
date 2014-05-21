@@ -10,7 +10,7 @@
 
 
 #include "libARUtils/ARUTILS_Ftp.h"
-#include "libARUtils/ARUTILS_BLEFtp.h"
+
 
 /**
  * @brief Ftp MANAGER structure

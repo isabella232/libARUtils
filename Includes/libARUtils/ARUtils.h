@@ -11,6 +11,7 @@
 #include <libARUtils/ARUTILS_Error.h>
 #include <libARUtils/ARUTILS_Manager.h>
 #include <libARUtils/ARUTILS_Ftp.h>
+#include <libARUtils/ARUTILS_Http.h>
 #include <libARUtils/ARUTILS_FileSystem.h>
 
 #endif /* _ARUTILS_H_ */
