@@ -57,11 +57,14 @@ ARUTILS_Ftp_Connection_t * ARUTILS_Ftp_Connection_New(ARSAL_Sem_t *cancelSem, co
         result = ARUTILS_ERROR_BAD_PARAMETER;
     }
 
-    newConnection = (ARUTILS_Ftp_Connection_t *)calloc(1, sizeof(ARUTILS_Ftp_Connection_t));
-
-    if (newConnection == NULL)
+    if (result == ARUTILS_OK)
     {
-        result = ARUTILS_ERROR_ALLOC;
+        newConnection = (ARUTILS_Ftp_Connection_t *)calloc(1, sizeof(ARUTILS_Ftp_Connection_t));
+
+        if (newConnection == NULL)
+        {
+            result = ARUTILS_ERROR_ALLOC;
+        }
     }
 
     if (result == ARUTILS_OK)
@@ -1765,4 +1768,73 @@ eARUTILS_ERROR ARUTILS_Ftp_GetErrorFromCode(ARUTILS_Ftp_Connection_t *connection
     return result;
 }
 
+/*****************************************
+ *
+ *             Abstract implementation:
+ *
+ *****************************************/
 
+eARUTILS_ERROR ARUTILS_Manager_NewWifiFtp(ARUTILS_Manager_t *manager, ARSAL_Sem_t *cancelSem, const char *server, int port, const char *username, const char* password)
+{
+    eARUTILS_ERROR result = ARUTILS_OK;
+    
+    if ((manager == NULL) || (manager->connectionObject != NULL))
+    {
+        result = ARUTILS_ERROR_BAD_PARAMETER;
+    }
+    
+    if (result == ARUTILS_OK)
+    {
+        manager->connectionObject = ARUTILS_Ftp_Connection_New(cancelSem, server, port, username, password, &result);
+    }
+            
+    if (result == ARUTILS_OK)
+    {
+        manager->ftpConnectionCancel = ARUTILS_WifiFtpAL_Connection_Cancel;
+        manager->ftpList = ARUTILS_WifiFtpAL_List;
+        manager->ftpGetWithBuffer = ARUTILS_WifiFtpAL_Get_WithBuffer;
+        manager->ftpGet = ARUTILS_WifiFtpAL_Get;
+        manager->ftpPut = ARUTILS_WifiFtpAL_Put;
+        manager->ftpDelete = ARUTILS_WifiFtpAL_Delete;
+    }
+ 
+    return result;
+}
+
+void ARUTILS_Manager_DeleteWifiFtp(ARUTILS_Manager_t *manager)
+{
+    if (manager != NULL)
+    {
+        ARUTILS_Ftp_Connection_Delete((ARUTILS_Ftp_Connection_t **)&manager->connectionObject);
+    }
+}
+
+eARUTILS_ERROR ARUTILS_WifiFtpAL_Connection_Cancel(ARUTILS_Manager_t *manager)
+{
+    return ARUTILS_Ftp_Connection_Cancel((ARUTILS_Ftp_Connection_t *)manager->connectionObject);
+}
+
+eARUTILS_ERROR ARUTILS_WifiFtpAL_List(ARUTILS_Manager_t *manager, const char *namePath, char **resultList, uint32_t *resultListLen)
+{
+    return ARUTILS_Ftp_List((ARUTILS_Ftp_Connection_t *)manager->connectionObject, namePath, resultList, resultListLen);
+}
+
+eARUTILS_ERROR ARUTILS_WifiFtpAL_Get_WithBuffer(ARUTILS_Manager_t *manager, const char *namePath, uint8_t **data, uint32_t *dataLen,  ARUTILS_Ftp_ProgressCallback_t progressCallback, void* progressArg)
+{
+    return ARUTILS_Ftp_Get_WithBuffer((ARUTILS_Ftp_Connection_t *)manager->connectionObject, namePath, data, dataLen, progressCallback, progressArg);
+}
+
+eARUTILS_ERROR ARUTILS_WifiFtpAL_Get(ARUTILS_Manager_t *manager, const char *namePath, const char *dstFile, ARUTILS_Ftp_ProgressCallback_t progressCallback, void* progressArg, eARUTILS_FTP_RESUME resume)
+{
+    return ARUTILS_Ftp_Get((ARUTILS_Ftp_Connection_t *)manager->connectionObject, namePath, dstFile, progressCallback, progressArg, resume);
+}
+
+eARUTILS_ERROR ARUTILS_WifiFtpAL_Put(ARUTILS_Manager_t *manager, const char *namePath, const char *srcFile, ARUTILS_Ftp_ProgressCallback_t progressCallback, void* progressArg, eARUTILS_FTP_RESUME resume)
+{
+    return ARUTILS_Ftp_Put((ARUTILS_Ftp_Connection_t *)manager->connectionObject, namePath, srcFile, progressCallback, progressArg, resume);
+}
+
+eARUTILS_ERROR ARUTILS_WifiFtpAL_Delete(ARUTILS_Manager_t *manager, const char *namePath)
+{
+    return ARUTILS_Ftp_Delete((ARUTILS_Ftp_Connection_t *)manager->connectionObject, namePath);
+}

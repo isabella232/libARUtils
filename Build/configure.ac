@@ -95,6 +95,16 @@ AC_HEADER_STDC
 # Check headers
 ##########################################################################
 
+# Check for CoreBluetooth.h
+AC_LANG_PUSH([Objective C])
+if test x$ac_cv_objc_compiler_gnu = xyes; then
+    AC_CHECK_HEADERS([CoreBluetooth/CoreBluetooth.h], ,
+        AC_MSG_WARN(The CoreBluetooth headers are required to use bluetooth features ! ))
+fi
+
+AM_CONDITIONAL([HAVE_COREBLUETOOTH], [test x"$ac_cv_header_CoreBluetooth_CoreBluetooth_h" = x"yes"])
+AC_LANG_POP([Objective C])
+
 # Checks for generic headers
 AC_CHECK_HEADERS([inttypes.h],,AC_MSG_ERROR(The inttypes.h header is required in order to build the library!))
 AC_CHECK_HEADERS([stdlib.h],,AC_MSG_ERROR(The stdlib.h header is required in order to build the library!))

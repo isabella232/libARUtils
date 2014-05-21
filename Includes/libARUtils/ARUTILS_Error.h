@@ -25,15 +25,15 @@ typedef enum
     ARUTILS_ERROR_CURL_GETINFO, /**< curl get info error */
     ARUTILS_ERROR_CURL_PERFORM, /**< curl perform error */
 
-    ARUTILS_ERROR_FILE_NOT_FOUND, /**< file not found error */
+    ARUTILS_ERROR_FILE_NOT_FOUND = -3000, /**< file not found error */
 
-    ARUTILS_ERROR_FTP_CONNECT, /**< ftp connect error */
+    ARUTILS_ERROR_FTP_CONNECT = -4000, /**< ftp connect error */
     ARUTILS_ERROR_FTP_CODE, /**< ftp code error */
     ARUTILS_ERROR_FTP_SIZE, /**< ftp file size error */
     ARUTILS_ERROR_FTP_RESUME, /**< ftp resume error */
     ARUTILS_ERROR_FTP_CANCELED, /**< ftp user canceled error */
 
-    ARUTILS_ERROR_HTTP_CONNECT, /**< http connect error */
+    ARUTILS_ERROR_HTTP_CONNECT = -5000, /**< http connect error */
     ARUTILS_ERROR_HTTP_CODE, /**< http code error */
     ARUTILS_ERROR_HTTP_AUTHORIZATION_REQUIRED, /**< http authorization required */
     ARUTILS_ERROR_HTTP_ACCESS_DENIED, /**< http access denied */
@@ -41,6 +41,7 @@ typedef enum
     ARUTILS_ERROR_HTTP_RESUME, /**< http resume error */
     ARUTILS_ERROR_HTTP_CANCELED, /**< http user canceled error */
 
+    ARUTILS_ERROR_BLE_FAILED = -6000, /**< BLE ftp failed error */
 
 } eARUTILS_ERROR;
 

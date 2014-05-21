@@ -122,7 +122,7 @@ const char * ARUTILS_Ftp_List_GetNextItem(const char *list, const char **nextIte
 
 /**
  * @brief File size accessor function from a file of a File list
- * @param line The line of the File list wehre to search file size
+ * @param line The line of the File list where to search file size
  * @param lineSize The size of the given line
  * @param size The addresse of the pointer to the file size to return
  * @retval On success, returns the addresse found size string, Otherwise, it returns null
@@ -157,7 +157,6 @@ eARUTILS_ERROR ARUTILS_Ftp_Size(ARUTILS_Ftp_Connection_t *connection, const char
  * @see ARUTILS_Ftp_NewConnection ()
  */
 eARUTILS_ERROR ARUTILS_Ftp_Delete(ARUTILS_Ftp_Connection_t *connection, const char *namePath);
-
 
 /**
  * @brief Get an remote Ftp server file
