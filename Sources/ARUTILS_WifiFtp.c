@@ -1776,9 +1776,10 @@ eARUTILS_ERROR ARUTILS_WifiFtp_GetErrorFromCode(ARUTILS_WifiFtp_Connection_t *co
  *
  *****************************************/
 
-eARUTILS_ERROR ARUTILS_Manager_InitWifiFtp(ARUTILS_Manager_t *manager, ARSAL_Sem_t *cancelSem, const char *server, int port, const char *username, const char* password)
+eARUTILS_ERROR ARUTILS_Manager_InitWifiFtp(ARUTILS_Manager_t *manager, const char *server, int port, const char *username, const char* password)
 {
     eARUTILS_ERROR result = ARUTILS_OK;
+    int resultSys = 0;
     
     if ((manager == NULL) || (manager->connectionObject != NULL))
     {
@@ -1787,7 +1788,16 @@ eARUTILS_ERROR ARUTILS_Manager_InitWifiFtp(ARUTILS_Manager_t *manager, ARSAL_Sem
     
     if (result == ARUTILS_OK)
     {
-        manager->connectionObject = ARUTILS_WifiFtp_Connection_New(cancelSem, server, port, username, password, &result);
+        resultSys = ARSAL_Sem_Init(&manager->cancelSem, 0, 0);
+        if (resultSys != 0)
+        {
+            result = ARUTILS_ERROR_SYSTEM;
+        }
+    }
+    
+    if (result == ARUTILS_OK)
+    {
+        manager->connectionObject = ARUTILS_WifiFtp_Connection_New(&manager->cancelSem, server, port, username, password, &result);
     }
             
     if (result == ARUTILS_OK)
@@ -1808,6 +1818,8 @@ void ARUTILS_Manager_CloseWifiFtp(ARUTILS_Manager_t *manager)
     if (manager != NULL)
     {
         ARUTILS_WifiFtp_Connection_Delete((ARUTILS_WifiFtp_Connection_t **)&manager->connectionObject);
+        
+        ARSAL_Sem_Destroy(&manager->cancelSem);
     }
 }
 

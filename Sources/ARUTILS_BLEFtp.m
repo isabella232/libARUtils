@@ -1254,9 +1254,10 @@ eARUTILS_ERROR ARUTILS_BLEFtp_Put(ARUTILS_BLEFtp_Connection_t *connection, const
  *
  *****************************************/
 
-eARUTILS_ERROR ARUTILS_Manager_InitBLEFtp(ARUTILS_Manager_t *manager, ARSAL_Sem_t *cancelSem, ARUTILS_BLEDevice_t device)
+eARUTILS_ERROR ARUTILS_Manager_InitBLEFtp(ARUTILS_Manager_t *manager, ARUTILS_BLEDevice_t device)
 {
     eARUTILS_ERROR result = ARUTILS_OK;
+    int resultSys = 0;
     
     if ((manager == NULL) || (manager->connectionObject != NULL))
     {
@@ -1265,7 +1266,16 @@ eARUTILS_ERROR ARUTILS_Manager_InitBLEFtp(ARUTILS_Manager_t *manager, ARSAL_Sem_
     
     if (result == ARUTILS_OK)
     {
-        manager->connectionObject = ARUTILS_BLEFtp_Connection_New(cancelSem, device, &result);
+        resultSys = ARSAL_Sem_Init(&manager->cancelSem, 0, 0);
+        if (resultSys != 0)
+        {
+            result = ARUTILS_ERROR_SYSTEM;
+        }
+    }
+    
+    if (result == ARUTILS_OK)
+    {
+        manager->connectionObject = ARUTILS_BLEFtp_Connection_New(&manager->cancelSem, device, &result);
     }
     
     if (result == ARUTILS_OK)
@@ -1286,6 +1296,8 @@ void ARUTILS_Manager_CloseBLEFtp(ARUTILS_Manager_t *manager)
     if (manager != NULL)
     {
         ARUTILS_BLEFtp_Connection_Delete((ARUTILS_BLEFtp_Connection_t **)&manager->connectionObject);
+        
+        ARSAL_Sem_Destroy(&manager->cancelSem);
     }
 }
 

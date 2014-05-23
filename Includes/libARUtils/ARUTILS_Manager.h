@@ -22,7 +22,7 @@ typedef struct ARUTILS_Manager_t ARUTILS_Manager_t;
  * @brief BLE Manager (used to send/read data)
  * @note This is an application-provided object, OS Dependant
  */
-typedef void* ARUTILS_BLEDeviceManager_t;
+//typedef void* ARUTILS_BLEDeviceManager_t;
 
 /**
  * @brief BLE Device reference for the @ref ARUTILS_BLEDevice_t
@@ -60,7 +60,7 @@ void ARUTILS_Manager_Delete(ARUTILS_Manager_t **managerAddr);
  * @retval On success, returns an ARUTILS_OK. Otherwise an error number of eARUTILS_ERROR
  * @see ARUTILS_Manager_CloseWifiFtp ()
  */
-eARUTILS_ERROR ARUTILS_Manager_InitWifiFtp(ARUTILS_Manager_t *manager, ARSAL_Sem_t *cancelSem, const char *server, int port, const char *username, const char* password);
+eARUTILS_ERROR ARUTILS_Manager_InitWifiFtp(ARUTILS_Manager_t *manager, const char *server, int port, const char *username, const char* password);
 
 /**
  * @brief Delete an WifiFtp Connection
@@ -82,7 +82,7 @@ void ARUTILS_Manager_CloseWifiFtp(ARUTILS_Manager_t *manager);
  * @retval On success, returns an ARUTILS_OK. Otherwise an error number of eARUTILS_ERROR
  * @see ARUTILS_Manager_CloseBLEFtp ()
  */
-eARUTILS_ERROR ARUTILS_Manager_InitBLEFtp(ARUTILS_Manager_t *manager, ARSAL_Sem_t *cancelSem, ARUTILS_BLEDevice_t device);
+eARUTILS_ERROR ARUTILS_Manager_InitBLEFtp(ARUTILS_Manager_t *manager, ARUTILS_BLEDevice_t device);
 
 /**
  * @brief Delete an WifiFtp Connection

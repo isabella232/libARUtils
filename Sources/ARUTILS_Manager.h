@@ -96,6 +96,7 @@ struct ARUTILS_Manager_t
     ARUTILS_Manager_Ftp_Put_t ftpPut;
     ARUTILS_Manager_Ftp_Delete_t ftpDelete;
     
+    ARSAL_Sem_t cancelSem;
     void *connectionObject;
 };
 
