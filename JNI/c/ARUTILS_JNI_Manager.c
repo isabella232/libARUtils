@@ -41,7 +41,26 @@ jmethodID methodId_Exception_Init = NULL;
  *
  ******************************************/
 
+ /**
+ * @brief save the reference to the java virtual machine
+ * @note this function is automatically called on the JNI startup
+ * @param[in] VM reference to the java virtual machine
+ * @param[in] reserved data reserved
+ * @return JNI version
+ **/
+JNIEXPORT jint JNICALL
+JNI_OnLoad(JavaVM *VM, void *reserved)
+{
+    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_JNI_MANAGER_TAG, "Library has been loaded");
 
+    /** Saving the reference to the java virtual machine */
+    ARUTILS_JNI_Manager_VM = VM;
+    
+    ARSAL_PRINT(ARSAL_PRINT_WARNING, ARUTILS_JNI_MANAGER_TAG, "JNI_OnLoad ARUTILS_JNI_Manager_VM: %d ", ARUTILS_JNI_Manager_VM);
+
+    /** Return the JNI version */
+    return JNI_VERSION_1_6;
+}
 
  /*
  * Class:     com_parrot_arsdk_arutils_ARUtilsManager
