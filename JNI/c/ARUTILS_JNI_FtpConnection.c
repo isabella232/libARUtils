@@ -38,14 +38,6 @@ jmethodID methodId_FtpListener_didFtpProgress = NULL;
  *
  *****************************************/
 
-JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *VM, void *reserved)
-{
-    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_JNI_FTPCONNECTION_TAG, "Library has been loaded: (arutils_android.so) %x", (int)VM);
-
-    ARUTILS_JNI_Manager_VM = VM;
-
-    return JNI_VERSION_1_6;
-}
 
 JNIEXPORT jboolean JNICALL Java_com_parrot_arsdk_arutils_ARUtilsFtpConnection_nativeStaticInit(JNIEnv *env, jclass jClass)
 {

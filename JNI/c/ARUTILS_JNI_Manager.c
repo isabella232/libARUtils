@@ -22,6 +22,7 @@
 #include <libARSAL/ARSAL_Print.h>
 
 #include "libARUtils/ARUTILS_Error.h"
+#include "libARUtils/ARUTILS_Manager.h"
 #include "libARUtils/ARUTILS_Http.h"
 #include "libARUtils/ARUTILS_Ftp.h"
 
@@ -33,6 +34,113 @@ JavaVM* ARUTILS_JNI_Manager_VM = NULL;
 
 jclass classException = NULL;
 jmethodID methodId_Exception_Init = NULL;
+
+/*****************************************
+ *
+ *             JNI implementation :
+ *
+ ******************************************/
+
+
+
+ /*
+ * Class:     com_parrot_arsdk_arutils_ARUtilsManager
+ * Method:    nativeStaticInit
+ * Signature: ()Z
+ */
+JNIEXPORT jboolean JNICALL 
+Java_com_parrot_arsdk_arutils_ARUtilsManager_nativeStaticInit
+  (JNIEnv *env, jclass class)
+{
+    return 0;
+}
+
+/*
+ * Class:     com_parrot_arsdk_arutils_ARUtilsManager
+ * Method:    nativeNew
+ * Signature: ()J
+ */
+JNIEXPORT jlong JNICALL 
+Java_com_parrot_arsdk_arutils_ARUtilsManager_nativeNew
+  (JNIEnv *env, jobject obj)
+{
+    /** -- Create a new manager -- */
+    eARUTILS_ERROR error = ARUTILS_OK;
+    /** local declarations */
+    ARUTILS_Manager_t *manager = ARUTILS_Manager_New(&error);
+
+    /** print error */
+    if(error != ARUTILS_OK)
+    {
+        ARSAL_PRINT(ARSAL_PRINT_ERROR, ARUTILS_JNI_MANAGER_TAG, " error: %d occurred \n", error);
+    }
+
+    return (long) manager;
+}
+
+/*
+ * Class:     com_parrot_arsdk_arutils_ARUtilsManager
+ * Method:    nativeDelete
+ * Signature: (J)I
+ */
+JNIEXPORT jint JNICALL 
+Java_com_parrot_arsdk_arutils_ARUtilsManager_nativeDelete
+  (JNIEnv *env, jobject obj, jlong jManager)
+{
+    /** -- Delete the Manager -- */
+
+    ARUTILS_Manager_t *manager = (ARUTILS_Manager_t*) (intptr_t) jManager;
+    ARUTILS_Manager_Delete(&manager);
+}
+
+/*
+ * Class:     com_parrot_arsdk_arutils_ARUtilsManager
+ * Method:    nativeInitWifiFtp
+ * Signature: (JLjava/lang/String;ILjava/lang/String;Ljava/lang/String;)I
+ */
+JNIEXPORT jint JNICALL 
+Java_com_parrot_arsdk_arutils_ARUtilsManager_nativeInitWifiFtp
+  (JNIEnv *env, jobject obj, jlong jManager, jstring jserver, jint port, jstring jusername, jstring jpassword)
+{
+    /** -- initialize UDP sockets of sending and receiving the data. -- */
+
+    /** local declarations */
+    ARUTILS_Manager_t *manager = (ARUTILS_Manager_t*) (intptr_t) jManager;
+    const char *nativeStrServer = (*env)->GetStringUTFChars(env, jserver, 0);
+    const char *nativeStrUsername = (*env)->GetStringUTFChars(env, jusername, 0);
+    const char *nativeStrPassword = (*env)->GetStringUTFChars(env, jpassword, 0);
+    eARUTILS_ERROR error = ARUTILS_OK;
+
+    error = ARUTILS_Manager_InitWifiFtp(manager, nativeStrServer, port, nativeStrUsername, nativeStrPassword);
+    (*env)->ReleaseStringUTFChars( env, jserver, nativeStrServer );
+    (*env)->ReleaseStringUTFChars( env, jusername, nativeStrUsername );
+    (*env)->ReleaseStringUTFChars( env, jpassword, nativeStrPassword );
+
+    return error;
+}
+
+/*
+ * Class:     com_parrot_arsdk_arutils_ARUtilsManager
+ * Method:    nativeCloseWifiFtp
+ * Signature: (J)I
+ */
+JNIEXPORT jint JNICALL 
+Java_com_parrot_arsdk_arutils_ARUtilsManager_nativeCloseWifiFtp
+  (JNIEnv *env, jobject obj, jlong jManager)
+{
+    ARUTILS_Manager_t *manager = (ARUTILS_Manager_t*) (intptr_t) jManager;
+    eARUTILS_ERROR error = ARUTILS_OK;
+    
+    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_JNI_MANAGER_TAG, " nativeCloseWifiFtp");
+    
+    if(manager)
+    {
+        ARUTILS_Manager_CloseWifiFtp(manager);
+    }
+
+    return error;
+}
+
 
 /*****************************************
  *
