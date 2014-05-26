@@ -82,7 +82,7 @@ void ARUTILS_Manager_CloseWifiFtp(ARUTILS_Manager_t *manager);
  * @retval On success, returns an ARUTILS_OK. Otherwise an error number of eARUTILS_ERROR
  * @see ARUTILS_Manager_CloseBLEFtp ()
  */
-eARUTILS_ERROR ARUTILS_Manager_InitBLEFtp(ARUTILS_Manager_t *manager, ARUTILS_BLEDevice_t device);
+eARUTILS_ERROR ARUTILS_Manager_InitBLEFtp(ARUTILS_Manager_t *manager, ARUTILS_BLEDevice_t device, int port);
 
 /**
  * @brief Delete an WifiFtp Connection

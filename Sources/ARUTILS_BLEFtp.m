@@ -52,6 +52,7 @@ NSString* const kARUTILS_BLEFtp_Getting = @"kARUTILS_BLEFtp_Getting";
 }
 
 @property (nonatomic, assign) ARSAL_Sem_t* cancelSem;
+@property (nonatomic, assign) int port;
 @property (nonatomic, retain) CBPeripheral *peripheral;
 
 @property (nonatomic, retain) CBCharacteristic *transferring;
@@ -64,13 +65,14 @@ NSString* const kARUTILS_BLEFtp_Getting = @"kARUTILS_BLEFtp_Getting";
 
 @implementation ARUtils_BLEFtp
 
-- (id)initWithPeripheral:(CBPeripheral *)peripheral cancelSem:(ARSAL_Sem_t*)cancelSem;
+- (id)initWithPeripheral:(CBPeripheral *)peripheral cancelSem:(ARSAL_Sem_t*)cancelSem port:(int)port
 {
     self = [super init];
     if (self != nil)
     {
         _peripheral = peripheral;
         _cancelSem = cancelSem;
+        _port = port;
     }
     return self;
 }
@@ -98,15 +100,14 @@ NSString* const kARUTILS_BLEFtp_Getting = @"kARUTILS_BLEFtp_Getting";
                 for (CBCharacteristic *characteristic in [service characteristics])
                 {
                     NSLog(@"CBCharacteristic: %@", characteristic.UUID.representativeString);
-                    
-                    if ([characteristic.UUID.representativeString isEqualToString:@"fd01"])
+                    if ([characteristic.UUID.representativeString isEqualToString:[NSString stringWithFormat:@"fd%02d", _port + 1]])
                     {
                         if ((characteristic.properties & CBCharacteristicPropertyWriteWithoutResponse) == CBCharacteristicPropertyWriteWithoutResponse)
                         {
                             _transferring = characteristic;
                         }
                     }
-                    else if ([characteristic.UUID.representativeString isEqualToString:@"fd02"])
+                    else if ([characteristic.UUID.representativeString isEqualToString:[NSString stringWithFormat:@"fd%02d", _port + 2]])
                     {
                         if (((characteristic.properties & CBCharacteristicPropertyRead) == CBCharacteristicPropertyRead)
                             && ((characteristic.properties & CBCharacteristicPropertyWriteWithoutResponse) == CBCharacteristicPropertyWriteWithoutResponse))
@@ -118,7 +119,7 @@ NSString* const kARUTILS_BLEFtp_Getting = @"kARUTILS_BLEFtp_Getting";
                             _arrayGetting = [NSArray arrayWithObject:characteristic];
                         }
                     }
-                    else if ([characteristic.UUID.representativeString isEqualToString:@"fd03"])
+                    else if ([characteristic.UUID.representativeString isEqualToString:[NSString stringWithFormat:@"fd%02d", _port + 3]])
                     {
                         if ((characteristic.properties & CBCharacteristicPropertyWriteWithoutResponse) == CBCharacteristicPropertyWriteWithoutResponse)
                         {
@@ -980,18 +981,25 @@ NSString* const kARUTILS_BLEFtp_Getting = @"kARUTILS_BLEFtp_Getting";
 
 @end
 
-ARUTILS_BLEFtp_Connection_t * ARUTILS_BLEFtp_Connection_New(ARSAL_Sem_t *cancelSem, ARUTILS_BLEDevice_t device, eARUTILS_ERROR *error)
+ARUTILS_BLEFtp_Connection_t * ARUTILS_BLEFtp_Connection_New(ARSAL_Sem_t *cancelSem, ARUTILS_BLEDevice_t device, int port, eARUTILS_ERROR *error)
 {
     ARUTILS_BLEFtp_Connection_t *newConnection = NULL;
     
-    newConnection = calloc(1, sizeof(ARUTILS_BLEFtp_Connection_t));
-    if (newConnection != NULL)
+    if((port == 0) || (((port - 1) % 10) != 1))
     {
-        CBPeripheral *peripheral = (__bridge CBPeripheral *)device;
-        ARUtils_BLEFtp *bleFtpObject = [[ARUtils_BLEFtp alloc] initWithPeripheral:peripheral cancelSem:cancelSem];
-        [bleFtpObject registerCharacteristics];
-        
-        newConnection->bleFtpObject = (__bridge_retained void *)bleFtpObject;
+        *error = ARUTILS_ERROR_BAD_PARAMETER;
+    }
+    else
+    {
+        newConnection = calloc(1, sizeof(ARUTILS_BLEFtp_Connection_t));
+        if (newConnection != NULL)
+        {
+            CBPeripheral *peripheral = (__bridge CBPeripheral *)device;
+            ARUtils_BLEFtp *bleFtpObject = [[ARUtils_BLEFtp alloc] initWithPeripheral:peripheral cancelSem:cancelSem port:port];
+            [bleFtpObject registerCharacteristics];
+            
+            newConnection->bleFtpObject = (__bridge_retained void *)bleFtpObject;
+        }
     }
     
     return newConnection;
@@ -1254,7 +1262,7 @@ eARUTILS_ERROR ARUTILS_BLEFtp_Put(ARUTILS_BLEFtp_Connection_t *connection, const
  *
  *****************************************/
 
-eARUTILS_ERROR ARUTILS_Manager_InitBLEFtp(ARUTILS_Manager_t *manager, ARUTILS_BLEDevice_t device)
+eARUTILS_ERROR ARUTILS_Manager_InitBLEFtp(ARUTILS_Manager_t *manager, ARUTILS_BLEDevice_t device, int port)
 {
     eARUTILS_ERROR result = ARUTILS_OK;
     int resultSys = 0;
@@ -1275,7 +1283,7 @@ eARUTILS_ERROR ARUTILS_Manager_InitBLEFtp(ARUTILS_Manager_t *manager, ARUTILS_BL
     
     if (result == ARUTILS_OK)
     {
-        manager->connectionObject = ARUTILS_BLEFtp_Connection_New(&manager->cancelSem, device, &result);
+        manager->connectionObject = ARUTILS_BLEFtp_Connection_New(&manager->cancelSem, device, port, &result);
     }
     
     if (result == ARUTILS_OK)

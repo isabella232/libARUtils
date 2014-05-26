@@ -13,7 +13,7 @@
 @interface ARUtils_BLEFtp : NSObject
 
 
-- (id)initWithPeripheral:(CBPeripheral *)peripheral cancelSem:(ARSAL_Sem_t*)cancelSem;
+- (id)initWithPeripheral:(CBPeripheral *)peripheral cancelSem:(ARSAL_Sem_t*)cancelSem port:(int)port;
 - (BOOL)registerCharacteristics;
 - (BOOL)unregisterCharacteristics;
 
@@ -49,7 +49,7 @@ typedef struct _ARUTILS_BLEFtp_Connection_t_
  * @retval On success, returns an ARUTILS_FtpAL_Connection_t. Otherwise, it returns null.
  * @see ARUTILS_FtpAL_DeleteConnection ()
  */
-ARUTILS_BLEFtp_Connection_t * ARUTILS_BLEFtp_Connection_New(ARSAL_Sem_t *cancelSem, ARUTILS_BLEDevice_t device, eARUTILS_ERROR *error);
+ARUTILS_BLEFtp_Connection_t * ARUTILS_BLEFtp_Connection_New(ARSAL_Sem_t *cancelSem, ARUTILS_BLEDevice_t device, int port, eARUTILS_ERROR *error);
 
 /**
  * @brief Delete an Ftp Connection
