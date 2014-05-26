@@ -1803,6 +1803,8 @@ eARUTILS_ERROR ARUTILS_Manager_InitWifiFtp(ARUTILS_Manager_t *manager, const cha
     if (result == ARUTILS_OK)
     {
         manager->ftpConnectionCancel = ARUTILS_WifiFtpAL_Connection_Cancel;
+        manager->ftpConnectionIsCanceled = ARUTILS_WifiFtpAL_Connection_IsCanceled;
+        
         manager->ftpList = ARUTILS_WifiFtpAL_List;
         manager->ftpGetWithBuffer = ARUTILS_WifiFtpAL_Get_WithBuffer;
         manager->ftpGet = ARUTILS_WifiFtpAL_Get;
@@ -1826,6 +1828,11 @@ void ARUTILS_Manager_CloseWifiFtp(ARUTILS_Manager_t *manager)
 eARUTILS_ERROR ARUTILS_WifiFtpAL_Connection_Cancel(ARUTILS_Manager_t *manager)
 {
     return ARUTILS_WifiFtp_Connection_Cancel((ARUTILS_WifiFtp_Connection_t *)manager->connectionObject);
+}
+
+eARUTILS_ERROR ARUTILS_WifiFtpAL_Connection_IsCanceled(ARUTILS_Manager_t *manager)
+{
+    return ARUTILS_WifiFtp_IsCanceled((ARUTILS_WifiFtp_Connection_t *)manager->connectionObject);
 }
 
 eARUTILS_ERROR ARUTILS_WifiFtpAL_List(ARUTILS_Manager_t *manager, const char *namePath, char **resultList, uint32_t *resultListLen)

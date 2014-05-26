@@ -151,6 +151,7 @@ eARUTILS_ERROR ARUTILS_BLEFtp_IsCanceledSem(ARSAL_Sem_t *cancelSem);
  * @see ARUTILS_Manager_NewBLEFtp ()
  */
 eARUTILS_ERROR ARUTILS_BLEFtpAL_Connection_Cancel(ARUTILS_Manager_t *manager);
+eARUTILS_ERROR ARUTILS_BLEFtpAL_Connection_IsCanceled(ARUTILS_Manager_t *manager);
 
 /**
  * @brief Execute Ftp List command to retrieve directory content

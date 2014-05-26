@@ -1281,6 +1281,7 @@ eARUTILS_ERROR ARUTILS_Manager_InitBLEFtp(ARUTILS_Manager_t *manager, ARUTILS_BL
     if (result == ARUTILS_OK)
     {
         manager->ftpConnectionCancel = ARUTILS_BLEFtpAL_Connection_Cancel;
+        manager->ftpConnectionIsCanceled = ARUTILS_BLEFtpAL_Connection_IsCanceled;
         manager->ftpList = ARUTILS_BLEFtpAL_List;
         manager->ftpGetWithBuffer = ARUTILS_BLEFtpAL_Get_WithBuffer;
         manager->ftpGet = ARUTILS_BLEFtpAL_Get;
@@ -1304,6 +1305,11 @@ void ARUTILS_Manager_CloseBLEFtp(ARUTILS_Manager_t *manager)
 eARUTILS_ERROR ARUTILS_BLEFtpAL_Connection_Cancel(ARUTILS_Manager_t *manager)
 {
     return ARUTILS_BLEFtp_Connection_Cancel((ARUTILS_BLEFtp_Connection_t *)manager->connectionObject);
+}
+
+eARUTILS_ERROR ARUTILS_BLEFtpAL_Connection_IsCanceled(ARUTILS_Manager_t *manager)
+{
+    return ARUTILS_BLEFtp_IsCanceled((ARUTILS_BLEFtp_Connection_t *)manager->connectionObject);
 }
 
 eARUTILS_ERROR ARUTILS_BLEFtpAL_List(ARUTILS_Manager_t *manager, const char *namePath, char **resultList, uint32_t *resultListLen)

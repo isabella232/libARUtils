@@ -73,8 +73,10 @@ eARUTILS_ERROR ARUTILS_Manager_Ftp_Connection_Cancel(ARUTILS_Manager_t *manager)
 eARUTILS_ERROR ARUTILS_Manager_Ftp_Connection_IsCanceled(ARUTILS_Manager_t *manager)
 {
     eARUTILS_ERROR result = ARUTILS_OK;
+    
     if ((manager == NULL) || (manager->ftpConnectionIsCanceled == NULL))
     {
+        printf("===============> %p, %p", manager, manager->ftpConnectionIsCanceled);
         result = ARUTILS_ERROR_BAD_PARAMETER;
     }
     else

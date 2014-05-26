@@ -328,6 +328,7 @@ eARUTILS_ERROR ARUTILS_WifiFtp_GetErrorFromCode(ARUTILS_WifiFtp_Connection_t *co
 */
 eARUTILS_ERROR ARUTILS_WifiFtpAL_Connection_Cancel(ARUTILS_Manager_t *manager);
 
+eARUTILS_ERROR ARUTILS_WifiFtpAL_Connection_IsCanceled(ARUTILS_Manager_t *manager);
 /**
  * @brief Execute Ftp List command to retrieve directory content
  * @warning This function allocates memory
