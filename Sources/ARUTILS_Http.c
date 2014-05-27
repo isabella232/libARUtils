@@ -156,8 +156,6 @@ eARUTILS_ERROR ARUTILS_Http_Request(ARUTILS_Http_Connection_t *connection, const
     eARUTILS_ERROR result = ARUTILS_OK;
     CURLcode code = CURLE_OK;
     long httpCode = 0L;
-    double remoteSize = 0.f;
-    uint32_t localSize = 0;
     
     ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_HTTP_TAG, "%s, %s", endUrl ? endUrl : "null", urlParams ? urlParams : "null");
     
