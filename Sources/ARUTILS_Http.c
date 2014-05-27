@@ -150,6 +150,143 @@ eARUTILS_ERROR ARUTILS_Http_Connection_Cancel(ARUTILS_Http_Connection_t *connect
     return result;
 }
 
+eARUTILS_ERROR ARUTILS_Http_Request(ARUTILS_Http_Connection_t *connection, const char *endUrl, const char *urlParams, char **data, int *dataLen)
+{
+    char requestUrl[ARUTILS_HTTP_MAX_URL_SIZE];
+    eARUTILS_ERROR result = ARUTILS_OK;
+    CURLcode code = CURLE_OK;
+    long httpCode = 0L;
+    double remoteSize = 0.f;
+    uint32_t localSize = 0;
+    
+    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_HTTP_TAG, "%s, %s", endUrl ? endUrl : "null", urlParams ? urlParams : "null");
+    
+    if ((connection == NULL) || (connection->curl == NULL) || (endUrl == NULL))
+    {
+        result =  ARUTILS_ERROR_BAD_PARAMETER;
+    }
+    
+    if ((data == NULL) || (dataLen == NULL))
+    {
+        result =  ARUTILS_ERROR_BAD_PARAMETER;
+    }
+    
+    if (result == ARUTILS_OK)
+    {
+        result = ARUTILS_Http_IsCanceled(connection);
+    }
+    
+    if (result == ARUTILS_OK)
+    {
+        result = ARUTILS_Http_ResetOptions(connection);
+    }
+    
+    if (result == ARUTILS_OK)
+    {
+        strncpy(requestUrl, connection->serverUrl, ARUTILS_HTTP_MAX_URL_SIZE);
+        requestUrl[ARUTILS_HTTP_MAX_URL_SIZE - 1] = '\0';
+        if (endUrl != NULL)
+        {
+            strncat(requestUrl, endUrl, ARUTILS_HTTP_MAX_URL_SIZE - strlen(requestUrl) - 1);
+        }
+        if (urlParams != NULL)
+        {
+            strncat(requestUrl, urlParams, ARUTILS_HTTP_MAX_URL_SIZE - strlen(requestUrl) - 1);
+        }
+        
+        code = curl_easy_setopt(connection->curl, CURLOPT_URL, requestUrl);
+        
+        if (code != CURLE_OK)
+        {
+            result = ARUTILS_ERROR_CURL_SETOPT;
+        }
+    }
+    
+    if (result == ARUTILS_OK)
+    {
+        code = curl_easy_setopt(connection->curl, CURLOPT_WRITEDATA, connection);
+        
+        if (code != CURLE_OK)
+        {
+            result = ARUTILS_ERROR_CURL_SETOPT;
+        }
+    }
+    
+    if (result == ARUTILS_OK)
+    {
+        code = curl_easy_setopt(connection->curl, CURLOPT_WRITEFUNCTION, ARUTILS_Http_WriteDataCallback);
+        
+        if (code != CURLE_OK)
+        {
+            result = ARUTILS_ERROR_CURL_SETOPT;
+        }
+    }
+    
+    //libcurl process
+    if (result == ARUTILS_OK)
+    {
+        code = curl_easy_perform(connection->curl);
+        
+        if (code != CURLE_OK)
+        {
+            result = ARUTILS_Http_GetErrorFromCode(connection, code);
+        }
+    }
+    
+    if (result == ARUTILS_OK)
+    {
+        code = curl_easy_getinfo(connection->curl, CURLINFO_RESPONSE_CODE, &httpCode);
+        
+        if (code != CURLE_OK)
+        {
+            result = ARUTILS_ERROR_CURL_GETINFO;
+        }
+    }
+    
+    //result checking
+    if ((result == ARUTILS_OK) && (connection->cbdata.error != ARUTILS_OK))
+    {
+        result = connection->cbdata.error;
+    }
+    
+    if (result == ARUTILS_OK)
+    {
+        // GET OK (200)
+        if (httpCode == 200)
+        {
+            
+        }
+        else if (httpCode == 401)
+        {
+            result = ARUTILS_ERROR_HTTP_AUTHORIZATION_REQUIRED;
+        }
+        else if (httpCode == 403)
+        {
+            result = ARUTILS_ERROR_HTTP_ACCESS_DENIED;
+        }
+        else
+        {
+            result = ARUTILS_ERROR_HTTP_CODE;
+        }
+    }
+    
+    if (result == ARUTILS_OK)
+    {
+        *dataLen = connection->cbdata.dataSize;
+        *data = malloc((*dataLen) + 1);
+        strcpy(*data, (char*)connection->cbdata.data);
+        (*data)[*dataLen] = '\0';
+    }
+
+    //cleanup
+    if (connection != NULL)
+    {
+        ARUTILS_Http_FreeCallbackData(&connection->cbdata);
+    }
+    
+    return result;
+}
+
 eARUTILS_ERROR ARUTILS_Http_Get(ARUTILS_Http_Connection_t *connection, const char *namePath, const char *dstFile, ARUTILS_Http_ProgressCallback_t progressCallback, void* progressArg)
 {
     return ARUTILS_Http_Get_Internal(connection, namePath, dstFile, NULL, NULL, progressCallback, progressArg);
