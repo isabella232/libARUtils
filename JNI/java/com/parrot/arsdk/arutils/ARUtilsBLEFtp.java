@@ -26,7 +26,7 @@ public class ARUtilsBLEFtp
 
 	private static final String TAG = "ARUtilsBLEFtp";
 	
-	public final static String BLE_GETTING_KEY = "ARUtilsBLEFtp_GettingKey";
+	public final static String BLE_GETTING_KEY = "kARUTILS_BLEFtp_Getting";
 	
 	public final static String BLE_PACKET_WRITTEN = "FILE WRITTEN";
 	public final static String BLE_PACKET_NOT_WRITTEN = "FILE NOT WRITTEN";
@@ -47,20 +47,22 @@ public class ARUtilsBLEFtp
 	private int resumeIndex = 0;
 	private String readMd5Txt = null;
 	private StringBuffer readList = new StringBuffer();
+	private int port;
 	
-	void initWithManager(ARSALBLEManager bleManager, BluetoothGatt gattDevice)
+	public void initWithDevice(ARSALBLEManager bleManager, BluetoothGatt gattDevice, int port)
 	{
 		this.bleManager = bleManager;
 		this.gattDevice = gattDevice;
+		this.port = port;
 	}
 	
-	public boolean loadCharacteristic()
+	public boolean registerCharacteristics()
 	{
 		List<BluetoothGattService> list = gattDevice.getServices();
 		ARSAL_ERROR_ENUM error = ARSAL_ERROR_ENUM.ARSAL_OK;
 		boolean ret = true;
 		
-		ARSALPrint.d("DBG", TAG + "loadCharacteristic");
+		ARSALPrint.d("DBG", TAG + "registerCharacteristics");
 		
 		Iterator<BluetoothGattService> iterator = list.iterator();
 		while (iterator.hasNext())
@@ -70,7 +72,7 @@ public class ARUtilsBLEFtp
 			String name = service.getUuid().toString();
 			ARSALPrint.d("DBG", TAG + "service " + name);
 			
-			if (serviceUuid.compareTo("fd00") == 0)
+			if (serviceUuid.startsWith("fd"))
 			{
 				List<BluetoothGattCharacteristic> characteristics = service.getCharacteristics();
 				Iterator<BluetoothGattCharacteristic> it = characteristics.iterator();
@@ -81,11 +83,11 @@ public class ARUtilsBLEFtp
 					String characteristicUuid = getShortUuid(characteristic.getUuid());
 					ARSALPrint.d("DBG", TAG + "characteristic " + characteristicUuid);
 					
-					if (characteristicUuid.compareTo("fd01") == 0)
+					if (characteristicUuid.compareTo(String.format("fd%02d", this.port + 1)) == 0)
 					{
 						this.transferring = characteristic;
 					}
-					else if (characteristicUuid.compareTo("fd02") == 0)
+					else if (characteristicUuid.compareTo(String.format("fd%02d", this.port + 2)) == 0)
 					{
 						error = bleManager.setCharacteristicNotification(service, characteristic);
 						if (error != ARSAL_ERROR_ENUM.ARSAL_OK)
@@ -102,7 +104,7 @@ public class ARUtilsBLEFtp
 						ARSALPrint.d("DBG", TAG + "set " + error.toString());
 						this.getting = characteristic;
 					}
-					else if (characteristicUuid.compareTo("fd03") == 0)
+					else if (characteristicUuid.compareTo(String.format("fd%02d", this.port + 3)) == 0)
 					{
 						this.handling = characteristic;
 					}
@@ -284,7 +286,7 @@ public class ARUtilsBLEFtp
 		{
 			System.arraycopy(paramBuff, 0, buffer, index, paramBuff.length);
 			index += paramBuff.length;
-			paramBuff[index++] = 0;
+			buffer[index] = 0;
 		}
 		
 		if (ret == true)

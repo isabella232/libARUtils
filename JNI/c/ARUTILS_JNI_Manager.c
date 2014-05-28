@@ -25,6 +25,7 @@
 #include "libARUtils/ARUTILS_Manager.h"
 #include "libARUtils/ARUTILS_Http.h"
 #include "libARUtils/ARUTILS_Ftp.h"
+#include "ARUTILS_JNI_BLEFtp.h"
 
 #include "ARUTILS_JNI.h"
 
@@ -160,6 +161,65 @@ Java_com_parrot_arsdk_arutils_ARUtilsManager_nativeCloseWifiFtp
     return error;
 }
 
+/*
+ * Class:     com_parrot_arsdk_arutils_ARUtilsManager
+ * Method:    nativeInitBLEFtp
+ */
+JNIEXPORT jint JNICALL 
+Java_com_parrot_arsdk_arutils_ARUtilsManager_nativeInitBLEFtp
+  (JNIEnv *env, jobject obj, jlong jManager, jobject jBleManager, jobject jdevice, jint port)
+{
+    ARUTILS_Manager_t *manager = (ARUTILS_Manager_t*) (intptr_t) jManager;
+    eARUTILS_ERROR error = ARUTILS_OK;
+    int resultSys = 0;
+    ARUTILS_BLEDevice_t device = (ARUTILS_BLEDevice_t) jdevice;
+    ARUTILS_BLEManager_t bleManager = (ARUTILS_BLEManager_t) jBleManager;
+
+    if (error == ARUTILS_OK)
+    {
+        resultSys = ARSAL_Sem_Init(&manager->cancelSem, 0, 0);
+        if (resultSys != 0)
+        {
+            error = ARUTILS_ERROR_SYSTEM;
+        }
+    }
+
+    if (error == ARUTILS_OK)
+    {
+        manager->connectionObject = ARUTILS_BLEFtp_Connection_New(&manager->cancelSem, (ARUTILS_BLEManager_t)jBleManager, (ARUTILS_BLEDevice_t)device, port, &error);
+    }  
+
+    if (manager)
+    {
+        manager->ftpConnectionCancel = ARUTILS_BLEFtpAL_Connection_Cancel;
+        manager->ftpConnectionIsCanceled = ARUTILS_BLEFtpAL_Connection_IsCanceled;
+        manager->ftpList = ARUTILS_BLEFtpAL_List;
+        manager->ftpGetWithBuffer = ARUTILS_BLEFtpAL_Get_WithBuffer;
+        manager->ftpGet = ARUTILS_BLEFtpAL_Get;
+        manager->ftpPut = ARUTILS_BLEFtpAL_Put;
+        manager->ftpDelete = ARUTILS_BLEFtpAL_Delete;
+    }
+
+    return error;
+}
+
+/*
+ * Class:     com_parrot_arsdk_arutils_ARUtilsManager
+ * Method:    nativeInitBLEFtp
+ */
+JNIEXPORT jint JNICALL 
+Java_com_parrot_arsdk_arutils_ARUtilsManager_nativeCloseBLEFtp
+  (JNIEnv *env, jobject obj, jlong jManager)
+{
+    ARUTILS_Manager_t *manager = (ARUTILS_Manager_t*) (intptr_t) jManager;
+
+    if (manager != NULL)
+    {
+        ARUTILS_BLEFtp_Connection_Delete((ARUTILS_BLEFtp_Connection_t **)&manager->connectionObject);
+
+        ARSAL_Sem_Destroy(&manager->cancelSem);
+    }
+}
 
 /*****************************************
  *

@@ -1,9 +1,12 @@
 
 package com.parrot.arsdk.arutils;
 
+import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import com.parrot.arsdk.arsal.ARSALBLEManager;
+import com.parrot.arsdk.arsal.ARSAL_ERROR_ENUM;
 
 /**
  * ARUtils Manager module
@@ -16,6 +19,8 @@ public class ARUtilsManager
     private native int nativeDelete(long jManager);
     private native int nativeInitWifiFtp(long jManager, String jserver, int port, String jusername, String jpassword);
     private native int nativeCloseWifiFtp(long jManager);
+    private native int nativeInitBLEFtp(long jManager, ARSALBLEManager bleManager, BluetoothGatt device, int port);
+    private native void nativeCloseBLEFtp(long jManager);
 
     private long m_managerPtr;
     private boolean m_initOk;
@@ -107,7 +112,7 @@ public class ARUtilsManager
     /**
      * Closes Wifi network
      */
-    public ARUTILS_ERROR_ENUM closeWifiNetwork()
+    public ARUTILS_ERROR_ENUM closeWifiFtp()
     {
         ARUTILS_ERROR_ENUM error = ARUTILS_ERROR_ENUM.ARUTILS_ERROR;
         int intError = nativeCloseWifiFtp(m_managerPtr);
@@ -118,12 +123,17 @@ public class ARUtilsManager
     /**
      * Initialize BLE network to send and receive data
      */
-    public ARUTILS_ERROR_ENUM initBLEFtp(Context context, BluetoothDevice device)
+    public ARUTILS_ERROR_ENUM initBLEFtp(Context context, BluetoothDevice device, int port)
     {
         ARUTILS_ERROR_ENUM error = ARUTILS_ERROR_ENUM.ARUTILS_OK;
         
         /* check parameters */
         if (context == null)
+        {
+            error = ARUTILS_ERROR_ENUM.ARUTILS_ERROR_BAD_PARAMETER;
+        }
+
+        if((port == 0) || (((port - 1) % 10) != 1))
         {
             error = ARUTILS_ERROR_ENUM.ARUTILS_ERROR_BAD_PARAMETER;
         }
@@ -136,18 +146,18 @@ public class ARUtilsManager
                 error = ARUTILS_ERROR_ENUM.ARUTILS_ERROR_NETWORK_TYPE;
             }
         }
-        
+        ARSALBLEManager bleManager = ARSALBLEManager.getInstance(context.getApplicationContext());
         if (error == ARUTILS_ERROR_ENUM.ARUTILS_OK)
         {
-            /*ARNetworkALBLEManager bleManager = new ARNetworkALBLEManager(context.getApplicationContext());
-            ARSALBLEManager bleManager = ARSALBLEManager.getInstance(context.getApplicationContext());
 
-            ARUtilsBLEFtp 
+            if (bleManager.connect(device) != ARSAL_ERROR_ENUM.ARSAL_OK) {
+                error = ARUTILS_ERROR_ENUM.ARUTILS_ERROR_BLE_FAILED;
+            }
+        }
 
-            */
-
-            //int intError = nativeInitBLEFtp(m_managerPtr, device);
-            error =  ARUTILS_ERROR_ENUM.ARUTILS_OK;
+        if (error == ARUTILS_ERROR_ENUM.ARUTILS_OK)
+        {
+            nativeInitBLEFtp(m_managerPtr, bleManager, bleManager.getGatt(), port);
         }
         
         return error;
@@ -199,11 +209,10 @@ public class ARUtilsManager
         
         if (error == ARUTILS_ERROR_ENUM.ARUTILS_OK)
         {
-            /* close the ARNetworkALBLEManager */
-            //int intError = nativeCloseBLEFtp(m_managerPtr);
-            //error = ARUTILS_ERROR_ENUM.getFromValue(intError);
+            nativeCloseBLEFtp(m_managerPtr);
+            ARSALBLEManager bleManager = ARSALBLEManager.getInstance(context.getApplicationContext());
+            bleManager.disconnect();
         }
-        
         return error;
     }
     
