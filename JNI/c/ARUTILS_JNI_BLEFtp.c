@@ -37,16 +37,6 @@ static jmethodID ARUTILS_JNI_BLEFTP_METHOD_GET;
 static jmethodID ARUTILS_JNI_BLEFTP_METHOD_PUT;
 static jmethodID ARUTILS_JNI_BLEFTP_METHOD_DELETE;
 
-/**
- * @brief JNI BLE Network
- */
-//typedef struct
-//{
-//    jobject bleFtpObject; /**< java BLENetwork manager */
-//   ARUTILS_Manager_t *manager; /**< ARUtils manager */
-//    ARSAL_Sem_t *cancelSem;
-//} ARUTILS_BLEFtp_Connection_t;
-
 
 
 /*****************************************
@@ -222,53 +212,27 @@ eARUTILS_ERROR ARUTILS_BLEFtp_Connection_Cancel(ARUTILS_BLEFtp_Connection_t *con
     
     ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_JNI_BLEFTP_TAG, " BLEFtp_Connection_Cancel ");
 
-    /* local declarations */
-    JNIEnv *env = NULL;
-    jint getEnvResult = JNI_OK;
-    eARUTILS_ERROR error = ARUTILS_OK;
-
-    /* Check parameters */
-    if (connection == NULL || (connection->bleFtpObject == NULL))
+    eARUTILS_ERROR result = ARUTILS_OK;
+    int resutlSys = 0;
+    
+    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_JNI_BLEFTP_TAG, "");
+    
+    if ((connection == NULL) || (connection->cancelSem == NULL))
     {
-        error = ARUTILS_ERROR_BAD_PARAMETER;
+        result = ARUTILS_ERROR_BAD_PARAMETER;
     }
     
-    if(error == ARUTILS_OK)
+    if (result == ARUTILS_OK)
     {
-        /* get the environment */
-        if (ARUTILS_JNI_Manager_VM != NULL)
-        {
-            getEnvResult = (*ARUTILS_JNI_Manager_VM)->GetEnv(ARUTILS_JNI_Manager_VM, (void **) &env, JNI_VERSION_1_6);
-        }
-        /* if no environment then attach the thread to the virtual machine */
-        if (getEnvResult == JNI_EDETACHED)
-        {
-            ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_JNI_BLEFTP_TAG, "attach the thread to the virtual machine ...");
-            (*ARUTILS_JNI_Manager_VM)->AttachCurrentThread(ARUTILS_JNI_Manager_VM, &env, NULL);
-        }
-        /* check the environment  */
-        if (env == NULL)
-        {
-            error = ARUTILS_ERROR;
-        }
-    }
-    
-    if(error == ARUTILS_OK)
-    {
-        /* cancel jniBLEFtp connection */
+        resutlSys = ARSAL_Sem_Post(connection->cancelSem);
         
-        jobject bleFtpObject = connection->bleFtpObject;
-        // No cancel method on the Java side for now
-        //(*env)->CallVoidMethod(env, bleFtpObject, ARUTILS_JNI_BLEFTP_METHOD_IS_CANCELED);
+        if (resutlSys != 0)
+        {
+            result = ARUTILS_ERROR_SYSTEM;
+        }
     }
     
-    /* if the thread has been attached then detach the thread from the virtual machine */
-    if ((getEnvResult == JNI_EDETACHED) && (env != NULL))
-    {
-        (*ARUTILS_JNI_Manager_VM)->DetachCurrentThread(ARUTILS_JNI_Manager_VM);
-    }
-
-    return error;
+    return result;
 }
 
 /**
@@ -518,7 +482,6 @@ eARUTILS_ERROR ARUTILS_BLEFtp_Get_WithBuffer(ARUTILS_BLEFtp_Connection_t *connec
     
     if (error == ARUTILS_OK)
     {
-        /* cancel jniBLEFtp connection */
         
         jobject bleFtpObject = connection->bleFtpObject;
         jstring jRemotePath = (*env)->NewStringUTF(env, remotePath);
