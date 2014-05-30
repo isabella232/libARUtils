@@ -149,10 +149,10 @@ public class ARUtilsManager
         ARSALBLEManager bleManager = ARSALBLEManager.getInstance(context.getApplicationContext());
         if (error == ARUTILS_ERROR_ENUM.ARUTILS_OK)
         {
-
-            if (bleManager.connect(device) != ARSAL_ERROR_ENUM.ARSAL_OK) {
-                error = ARUTILS_ERROR_ENUM.ARUTILS_ERROR_BLE_FAILED;
-            }
+            // No need to connect because we will always be connected before reaching this step (in FreeFlight!)
+            //if (bleManager.connect(device) != ARSAL_ERROR_ENUM.ARSAL_OK) {
+            //    error = ARUTILS_ERROR_ENUM.ARUTILS_ERROR_BLE_FAILED;
+            //}
         }
 
         if (error == ARUTILS_ERROR_ENUM.ARUTILS_OK)
