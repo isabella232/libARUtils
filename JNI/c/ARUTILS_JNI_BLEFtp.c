@@ -29,8 +29,6 @@
 
 extern JavaVM *ARUTILS_JNI_Manager_VM; /** reference to the java virtual machine */
  
-static jmethodID ARUTILS_JNI_BLEFTP_METHOD_CANCEL;
-static jmethodID ARUTILS_JNI_BLEFTP_METHOD_IS_CANCELED;
 static jmethodID ARUTILS_JNI_BLEFTP_METHOD_FTP_LIST;
 static jmethodID ARUTILS_JNI_BLEFTP_METHOD_GET_WITH_BUFFER;
 static jmethodID ARUTILS_JNI_BLEFTP_METHOD_GET; 
@@ -44,6 +42,26 @@ static jmethodID ARUTILS_JNI_BLEFTP_METHOD_DELETE;
  *             implementation :
  *
  *****************************************/
+
+
+JNIEXPORT void JNICALL
+Java_com_parrot_arsdk_arutils_ARUtilsBLEFtp_nativeJNIInit(JNIEnv *env, jobject obj)
+{
+    /* -- initialize the JNI part -- */
+    /* load the references of java methods */
+    
+    jclass jBLEFtpCls = (*env)->FindClass(env, "com/parrot/arsdk/arutils/ARUtilsBLEFtp");
+    
+    ARUTILS_JNI_BLEFTP_METHOD_FTP_LIST = (*env)->GetMethodID(env, jBLEFtpCls, "listFiles", "(Ljava/lang/String;)Z");
+    ARUTILS_JNI_BLEFTP_METHOD_GET_WITH_BUFFER = (*env)->GetMethodID(env, jBLEFtpCls, "getWithBuffer", "()V");
+    ARUTILS_JNI_BLEFTP_METHOD_GET = (*env)->GetMethodID(env, jBLEFtpCls, "getFile", "(Ljava/lang/String;Ljava/lang/String;)Z");
+    ARUTILS_JNI_BLEFTP_METHOD_PUT = (*env)->GetMethodID(env, jBLEFtpCls, "putFile", "(Ljava/lang/String;Ljava/lang/String;)Z");
+    ARUTILS_JNI_BLEFTP_METHOD_DELETE = (*env)->GetMethodID(env, jBLEFtpCls, "deleteFile", "(Ljava/lang/String;)Z");
+    
+    /* cleanup */
+    (*env)->DeleteLocalRef (env, jBLEFtpCls);
+}
+
 
 /**
  * @brief Create a new Ftp Connection

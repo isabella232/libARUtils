@@ -36,6 +36,8 @@ public class ARUtilsBLEFtp
 	public final static int BLE_PACKET_BLOCK_GETTING_COUNT = 100;
 	
 	public final static long BLE_PACKET_WRITE_SLEEP = 20;
+
+	private native static void nativeJNIInit();
 	
 	private ARSALBLEManager bleManager = null;
 	private BluetoothGatt gattDevice = null;
@@ -48,6 +50,11 @@ public class ARUtilsBLEFtp
 	private String readMd5Txt = null;
 	private StringBuffer readList = new StringBuffer();
 	private int port;
+
+	static
+    {
+        nativeJNIInit();
+    }
 	
 	public void initWithDevice(ARSALBLEManager bleManager, BluetoothGatt gattDevice, int port)
 	{
