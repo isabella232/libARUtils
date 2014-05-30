@@ -272,7 +272,7 @@ eARUTILS_ERROR ARUTILS_Http_Request(ARUTILS_Http_Connection_t *connection, const
     {
         *dataLen = connection->cbdata.dataSize;
         *data = malloc((*dataLen) + 1);
-        strcpy(*data, (char*)connection->cbdata.data);
+        memcpy(*data, (char*)connection->cbdata.data, *dataLen);
         (*data)[*dataLen] = '\0';
     }
 
