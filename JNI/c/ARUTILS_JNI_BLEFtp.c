@@ -147,6 +147,12 @@ ARUTILS_BLEFtp_Connection_t * ARUTILS_BLEFtp_Connection_New(ARSAL_Sem_t *cancelS
         }
     }
 
+    /* if the thread has been attached then detach the thread from the virtual machine */
+    if ((getEnvResult == JNI_EDETACHED) && (env != NULL))
+    {
+        (*ARUTILS_JNI_Manager_VM)->DetachCurrentThread(ARUTILS_JNI_Manager_VM);
+    }
+
     /* cleanup */
 
     if (bleFtpObjectCls != NULL)
