@@ -985,7 +985,7 @@ ARUTILS_BLEFtp_Connection_t * ARUTILS_BLEFtp_Connection_New(ARSAL_Sem_t *cancelS
 {
     ARUTILS_BLEFtp_Connection_t *newConnection = NULL;
     
-    if((port == 0) || (((port - 1) % 10) != 1))
+    if((port == 0) || ((port % 10) != 1))
     {
         *error = ARUTILS_ERROR_BAD_PARAMETER;
     }
