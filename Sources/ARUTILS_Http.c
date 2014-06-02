@@ -488,6 +488,24 @@ eARUTILS_ERROR ARUTILS_Http_Get_Internal(ARUTILS_Http_Connection_t *connection, 
                 result = ARUTILS_ERROR_HTTP_SIZE;
             }
         }
+    }    
+    
+    if ((result == ARUTILS_OK) && (data != NULL) && (dataLen != NULL))
+    {
+        if (result == ARUTILS_OK)
+        {
+            if (connection->cbdata.dataSize != (uint32_t)remoteSize)
+            {
+                result = ARUTILS_ERROR_FTP_SIZE;
+            }
+        }
+        
+        if (result == ARUTILS_OK)
+        {
+            *data = connection->cbdata.data;
+            connection->cbdata.data = NULL;
+            *dataLen = connection->cbdata.dataSize;
+        }
     }
 
     //cleanup
