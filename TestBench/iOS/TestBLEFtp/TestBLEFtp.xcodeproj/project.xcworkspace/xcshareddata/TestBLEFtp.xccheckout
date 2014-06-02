@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>IDESourceControlProjectFavoriteDictionaryKey</key>
+	<false/>
+	<key>IDESourceControlProjectIdentifier</key>
+	<string>154633F3-926C-4155-8B73-B0E78D7ACD2F</string>
+	<key>IDESourceControlProjectName</key>
+	<string>TestBLEFtp</string>
+	<key>IDESourceControlProjectOriginsDictionary</key>
+	<dict>
+		<key>04E08BA1-E9BD-4B4A-A7E5-D340AA0DF9A9</key>
+		<string>ssh://canari.parrot.biz/aftermarket/ARDroneSDK3/libARUtils.git</string>
+	</dict>
+	<key>IDESourceControlProjectPath</key>
+	<string>TestBench/iOS/TestBLEFtp/TestBLEFtp.xcodeproj/project.xcworkspace</string>
+	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
+	<dict>
+		<key>04E08BA1-E9BD-4B4A-A7E5-D340AA0DF9A9</key>
+		<string>../../../../..</string>
+	</dict>
+	<key>IDESourceControlProjectURL</key>
+	<string>ssh://canari.parrot.biz/aftermarket/ARDroneSDK3/libARUtils.git</string>
+	<key>IDESourceControlProjectVersion</key>
+	<integer>110</integer>
+	<key>IDESourceControlProjectWCCIdentifier</key>
+	<string>04E08BA1-E9BD-4B4A-A7E5-D340AA0DF9A9</string>
+	<key>IDESourceControlProjectWCConfigurations</key>
+	<array>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>04E08BA1-E9BD-4B4A-A7E5-D340AA0DF9A9</string>
+			<key>IDESourceControlWCCName</key>
+			<string>libARUtils</string>
+		</dict>
+	</array>
+</dict>
+</plist>

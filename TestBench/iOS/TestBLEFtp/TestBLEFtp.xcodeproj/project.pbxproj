@@ -1,0 +1,413 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		63B6F4BF1938FAC600C8EA98 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 63B6F4BE1938FAC600C8EA98 /* Foundation.framework */; };
+		63B6F4C11938FAC600C8EA98 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 63B6F4C01938FAC600C8EA98 /* CoreGraphics.framework */; };
+		63B6F4C31938FAC600C8EA98 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 63B6F4C21938FAC600C8EA98 /* UIKit.framework */; };
+		63B6F4C91938FAC600C8EA98 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 63B6F4C71938FAC600C8EA98 /* InfoPlist.strings */; };
+		63B6F4CB1938FAC600C8EA98 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 63B6F4CA1938FAC600C8EA98 /* main.m */; };
+		63B6F4CF1938FAC600C8EA98 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 63B6F4CE1938FAC600C8EA98 /* AppDelegate.m */; };
+		63B6F4D21938FAC600C8EA98 /* Main_iPhone.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 63B6F4D01938FAC600C8EA98 /* Main_iPhone.storyboard */; };
+		63B6F4D51938FAC600C8EA98 /* Main_iPad.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 63B6F4D31938FAC600C8EA98 /* Main_iPad.storyboard */; };
+		63B6F4D81938FAC600C8EA98 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 63B6F4D71938FAC600C8EA98 /* ViewController.m */; };
+		63B6F4DA1938FAC600C8EA98 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 63B6F4D91938FAC600C8EA98 /* Images.xcassets */; };
+		63B6F4F91938FB0B00C8EA98 /* autoTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 63B6F4F81938FB0B00C8EA98 /* autoTest.m */; };
+		63B6F4FD193C58FA00C8EA98 /* ARUTILS_BLEFtp.m in Sources */ = {isa = PBXBuildFile; fileRef = 63B6F4FC193C58FA00C8EA98 /* ARUTILS_BLEFtp.m */; };
+		63B6F501193C592400C8EA98 /* ARSAL_BLEManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 63B6F4FF193C592400C8EA98 /* ARSAL_BLEManager.m */; };
+		63B6F502193C592400C8EA98 /* ARSAL_CentralManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 63B6F500193C592400C8EA98 /* ARSAL_CentralManager.m */; };
+		63B6F506193C5A9C00C8EA98 /* libARSAL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 63B6F505193C5A9C00C8EA98 /* libARSAL.framework */; };
+		63B6F524193C630200C8EA98 /* ARUTILS_FileSystem.c in Sources */ = {isa = PBXBuildFile; fileRef = 63B6F523193C630200C8EA98 /* ARUTILS_FileSystem.c */; };
+		63B6F528193C63DE00C8EA98 /* ARUTILS_WifiFtp.c in Sources */ = {isa = PBXBuildFile; fileRef = 63B6F526193C63DE00C8EA98 /* ARUTILS_WifiFtp.c */; };
+		63B6F52A193C640900C8EA98 /* libARDiscovery.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 63B6F529193C640900C8EA98 /* libARDiscovery.framework */; };
+		63B6F52C193C643700C8EA98 /* libcurl.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 63B6F52B193C643700C8EA98 /* libcurl.framework */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		63B6F4BB1938FAC600C8EA98 /* TestBLEFtp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TestBLEFtp.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		63B6F4BE1938FAC600C8EA98 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
+		63B6F4C01938FAC600C8EA98 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
+		63B6F4C21938FAC600C8EA98 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
+		63B6F4C61938FAC600C8EA98 /* TestBLEFtp-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "TestBLEFtp-Info.plist"; sourceTree = "<group>"; };
+		63B6F4C81938FAC600C8EA98 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		63B6F4CA1938FAC600C8EA98 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		63B6F4CC1938FAC600C8EA98 /* TestBLEFtp-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "TestBLEFtp-Prefix.pch"; sourceTree = "<group>"; };
+		63B6F4CD1938FAC600C8EA98 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
+		63B6F4CE1938FAC600C8EA98 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
+		63B6F4D11938FAC600C8EA98 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main_iPhone.storyboard; sourceTree = "<group>"; };
+		63B6F4D41938FAC600C8EA98 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main_iPad.storyboard; sourceTree = "<group>"; };
+		63B6F4D61938FAC600C8EA98 /* ViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ViewController.h; sourceTree = "<group>"; };
+		63B6F4D71938FAC600C8EA98 /* ViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ViewController.m; sourceTree = "<group>"; };
+		63B6F4D91938FAC600C8EA98 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
+		63B6F4E01938FAC600C8EA98 /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Library/Frameworks/XCTest.framework; sourceTree = DEVELOPER_DIR; };
+		63B6F4F71938FB0B00C8EA98 /* autoTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = autoTest.h; path = TestBLEFtp/autoTest.h; sourceTree = "<group>"; };
+		63B6F4F81938FB0B00C8EA98 /* autoTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = autoTest.m; path = TestBLEFtp/autoTest.m; sourceTree = "<group>"; };
+		63B6F4FB193C58FA00C8EA98 /* ARUTILS_BLEFtp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ARUTILS_BLEFtp.h; path = ../../../Sources/ARUTILS_BLEFtp.h; sourceTree = "<group>"; };
+		63B6F4FC193C58FA00C8EA98 /* ARUTILS_BLEFtp.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = ARUTILS_BLEFtp.m; path = ../../../Sources/ARUTILS_BLEFtp.m; sourceTree = "<group>"; };
+		63B6F4FF193C592400C8EA98 /* ARSAL_BLEManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = ARSAL_BLEManager.m; path = ../../../../libARSAL/Sources/ARSAL_BLEManager.m; sourceTree = "<group>"; };
+		63B6F500193C592400C8EA98 /* ARSAL_CentralManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = ARSAL_CentralManager.m; path = ../../../../libARSAL/Sources/ARSAL_CentralManager.m; sourceTree = "<group>"; };
+		63B6F503193C594B00C8EA98 /* ARSAL_BLEManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ARSAL_BLEManager.h; path = ../../../../libARSAL/Includes/libARSAL/ARSAL_BLEManager.h; sourceTree = "<group>"; };
+		63B6F504193C594B00C8EA98 /* ARSAL_CentralManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ARSAL_CentralManager.h; path = ../../../../libARSAL/Includes/libARSAL/ARSAL_CentralManager.h; sourceTree = "<group>"; };
+		63B6F505193C5A9C00C8EA98 /* libARSAL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = libARSAL.framework; path = ../../../../ARBuildUtils/Targets/iOS/Install/Frameworks/libARSAL.framework; sourceTree = "<group>"; };
+		63B6F523193C630200C8EA98 /* ARUTILS_FileSystem.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = ARUTILS_FileSystem.c; path = ../../../Sources/ARUTILS_FileSystem.c; sourceTree = "<group>"; };
+		63B6F525193C63A600C8EA98 /* config.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = config.h; path = ../../../../ARBuildUtils/Targets/iOS/Build/libARUtils_armv7/config.h; sourceTree = "<group>"; };
+		63B6F526193C63DE00C8EA98 /* ARUTILS_WifiFtp.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = ARUTILS_WifiFtp.c; path = ../../../Sources/ARUTILS_WifiFtp.c; sourceTree = "<group>"; };
+		63B6F527193C63DE00C8EA98 /* ARUTILS_WifiFtp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ARUTILS_WifiFtp.h; path = ../../../Sources/ARUTILS_WifiFtp.h; sourceTree = "<group>"; };
+		63B6F529193C640900C8EA98 /* libARDiscovery.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = libARDiscovery.framework; path = ../../../../ARBuildUtils/Targets/iOS/Install/Frameworks/libARDiscovery.framework; sourceTree = "<group>"; };
+		63B6F52B193C643700C8EA98 /* libcurl.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = libcurl.framework; path = ../../../../ARBuildUtils/Targets/iOS/Install/Frameworks/libcurl.framework; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		63B6F4B81938FAC600C8EA98 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				63B6F52C193C643700C8EA98 /* libcurl.framework in Frameworks */,
+				63B6F52A193C640900C8EA98 /* libARDiscovery.framework in Frameworks */,
+				63B6F506193C5A9C00C8EA98 /* libARSAL.framework in Frameworks */,
+				63B6F4C11938FAC600C8EA98 /* CoreGraphics.framework in Frameworks */,
+				63B6F4C31938FAC600C8EA98 /* UIKit.framework in Frameworks */,
+				63B6F4BF1938FAC600C8EA98 /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		63B6F4B21938FAC600C8EA98 = {
+			isa = PBXGroup;
+			children = (
+				63B6F4FE193C590100C8EA98 /* ARSAL */,
+				63B6F4F61938FAFE00C8EA98 /* Test */,
+				63B6F4FA193C58B100C8EA98 /* BLEFtp */,
+				63B6F4C41938FAC600C8EA98 /* TestBLEFtp */,
+				63B6F4BD1938FAC600C8EA98 /* Frameworks */,
+				63B6F4BC1938FAC600C8EA98 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		63B6F4BC1938FAC600C8EA98 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				63B6F4BB1938FAC600C8EA98 /* TestBLEFtp.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		63B6F4BD1938FAC600C8EA98 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				63B6F52B193C643700C8EA98 /* libcurl.framework */,
+				63B6F529193C640900C8EA98 /* libARDiscovery.framework */,
+				63B6F505193C5A9C00C8EA98 /* libARSAL.framework */,
+				63B6F4BE1938FAC600C8EA98 /* Foundation.framework */,
+				63B6F4C01938FAC600C8EA98 /* CoreGraphics.framework */,
+				63B6F4C21938FAC600C8EA98 /* UIKit.framework */,
+				63B6F4E01938FAC600C8EA98 /* XCTest.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		63B6F4C41938FAC600C8EA98 /* TestBLEFtp */ = {
+			isa = PBXGroup;
+			children = (
+				63B6F4CD1938FAC600C8EA98 /* AppDelegate.h */,
+				63B6F4CE1938FAC600C8EA98 /* AppDelegate.m */,
+				63B6F4D01938FAC600C8EA98 /* Main_iPhone.storyboard */,
+				63B6F4D31938FAC600C8EA98 /* Main_iPad.storyboard */,
+				63B6F4D61938FAC600C8EA98 /* ViewController.h */,
+				63B6F4D71938FAC600C8EA98 /* ViewController.m */,
+				63B6F4D91938FAC600C8EA98 /* Images.xcassets */,
+				63B6F4C51938FAC600C8EA98 /* Supporting Files */,
+			);
+			path = TestBLEFtp;
+			sourceTree = "<group>";
+		};
+		63B6F4C51938FAC600C8EA98 /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				63B6F4C61938FAC600C8EA98 /* TestBLEFtp-Info.plist */,
+				63B6F4C71938FAC600C8EA98 /* InfoPlist.strings */,
+				63B6F4CA1938FAC600C8EA98 /* main.m */,
+				63B6F4CC1938FAC600C8EA98 /* TestBLEFtp-Prefix.pch */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		63B6F4F61938FAFE00C8EA98 /* Test */ = {
+			isa = PBXGroup;
+			children = (
+				63B6F4F71938FB0B00C8EA98 /* autoTest.h */,
+				63B6F4F81938FB0B00C8EA98 /* autoTest.m */,
+			);
+			name = Test;
+			sourceTree = "<group>";
+		};
+		63B6F4FA193C58B100C8EA98 /* BLEFtp */ = {
+			isa = PBXGroup;
+			children = (
+				63B6F526193C63DE00C8EA98 /* ARUTILS_WifiFtp.c */,
+				63B6F527193C63DE00C8EA98 /* ARUTILS_WifiFtp.h */,
+				63B6F525193C63A600C8EA98 /* config.h */,
+				63B6F523193C630200C8EA98 /* ARUTILS_FileSystem.c */,
+				63B6F4FB193C58FA00C8EA98 /* ARUTILS_BLEFtp.h */,
+				63B6F4FC193C58FA00C8EA98 /* ARUTILS_BLEFtp.m */,
+			);
+			name = BLEFtp;
+			sourceTree = "<group>";
+		};
+		63B6F4FE193C590100C8EA98 /* ARSAL */ = {
+			isa = PBXGroup;
+			children = (
+				63B6F503193C594B00C8EA98 /* ARSAL_BLEManager.h */,
+				63B6F504193C594B00C8EA98 /* ARSAL_CentralManager.h */,
+				63B6F4FF193C592400C8EA98 /* ARSAL_BLEManager.m */,
+				63B6F500193C592400C8EA98 /* ARSAL_CentralManager.m */,
+			);
+			name = ARSAL;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		63B6F4BA1938FAC600C8EA98 /* TestBLEFtp */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 63B6F4F01938FAC600C8EA98 /* Build configuration list for PBXNativeTarget "TestBLEFtp" */;
+			buildPhases = (
+				63B6F4B71938FAC600C8EA98 /* Sources */,
+				63B6F4B81938FAC600C8EA98 /* Frameworks */,
+				63B6F4B91938FAC600C8EA98 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = TestBLEFtp;
+			productName = TestBLEFtp;
+			productReference = 63B6F4BB1938FAC600C8EA98 /* TestBLEFtp.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		63B6F4B31938FAC600C8EA98 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0510;
+				ORGANIZATIONNAME = "___PARROT___";
+			};
+			buildConfigurationList = 63B6F4B61938FAC600C8EA98 /* Build configuration list for PBXProject "TestBLEFtp" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 63B6F4B21938FAC600C8EA98;
+			productRefGroup = 63B6F4BC1938FAC600C8EA98 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				63B6F4BA1938FAC600C8EA98 /* TestBLEFtp */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		63B6F4B91938FAC600C8EA98 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				63B6F4D51938FAC600C8EA98 /* Main_iPad.storyboard in Resources */,
+				63B6F4DA1938FAC600C8EA98 /* Images.xcassets in Resources */,
+				63B6F4D21938FAC600C8EA98 /* Main_iPhone.storyboard in Resources */,
+				63B6F4C91938FAC600C8EA98 /* InfoPlist.strings in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		63B6F4B71938FAC600C8EA98 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				63B6F528193C63DE00C8EA98 /* ARUTILS_WifiFtp.c in Sources */,
+				63B6F4D81938FAC600C8EA98 /* ViewController.m in Sources */,
+				63B6F501193C592400C8EA98 /* ARSAL_BLEManager.m in Sources */,
+				63B6F4CF1938FAC600C8EA98 /* AppDelegate.m in Sources */,
+				63B6F502193C592400C8EA98 /* ARSAL_CentralManager.m in Sources */,
+				63B6F4FD193C58FA00C8EA98 /* ARUTILS_BLEFtp.m in Sources */,
+				63B6F524193C630200C8EA98 /* ARUTILS_FileSystem.c in Sources */,
+				63B6F4F91938FB0B00C8EA98 /* autoTest.m in Sources */,
+				63B6F4CB1938FAC600C8EA98 /* main.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+		63B6F4C71938FAC600C8EA98 /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				63B6F4C81938FAC600C8EA98 /* en */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+		63B6F4D01938FAC600C8EA98 /* Main_iPhone.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				63B6F4D11938FAC600C8EA98 /* Base */,
+			);
+			name = Main_iPhone.storyboard;
+			sourceTree = "<group>";
+		};
+		63B6F4D31938FAC600C8EA98 /* Main_iPad.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				63B6F4D41938FAC600C8EA98 /* Base */,
+			);
+			name = Main_iPad.storyboard;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		63B6F4EE1938FAC600C8EA98 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 7.1;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		63B6F4EF1938FAC600C8EA98 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = YES;
+				ENABLE_NS_ASSERTIONS = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 7.1;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		63B6F4F11938FAC600C8EA98 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					/Users/David/FreeFlight3/ARBuildUtils/Targets/iOS/Install/Frameworks,
+				);
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "TestBLEFtp/TestBLEFtp-Prefix.pch";
+				INFOPLIST_FILE = "TestBLEFtp/TestBLEFtp-Info.plist";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				WRAPPER_EXTENSION = app;
+			};
+			name = Debug;
+		};
+		63B6F4F21938FAC600C8EA98 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					/Users/David/FreeFlight3/ARBuildUtils/Targets/iOS/Install/Frameworks,
+				);
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "TestBLEFtp/TestBLEFtp-Prefix.pch";
+				INFOPLIST_FILE = "TestBLEFtp/TestBLEFtp-Info.plist";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				WRAPPER_EXTENSION = app;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		63B6F4B61938FAC600C8EA98 /* Build configuration list for PBXProject "TestBLEFtp" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				63B6F4EE1938FAC600C8EA98 /* Debug */,
+				63B6F4EF1938FAC600C8EA98 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		63B6F4F01938FAC600C8EA98 /* Build configuration list for PBXNativeTarget "TestBLEFtp" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				63B6F4F11938FAC600C8EA98 /* Debug */,
+				63B6F4F21938FAC600C8EA98 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 63B6F4B31938FAC600C8EA98 /* Project object */;
+}
