@@ -88,18 +88,6 @@ eARUTILS_ERROR ARUTILS_Http_Connection_Cancel(ARUTILS_Http_Connection_t *connect
 eARUTILS_ERROR ARUTILS_Http_IsCanceled(ARUTILS_Http_Connection_t *connection);
 
 /**
- * @brief Make a request
- * @param connection The address of the pointer on the Http Connection
- * @param[in] endUrl The url to make a request (after the server part)
- * @param[in] params Params of the request
- * @param[out] data : the result of the request
- * @param[out] dataLen The length of the data
- * @retval On success, returns ARUTILS_OK. Otherwise, it returns an error number of eARUTILS_ERROR.
- * @see ARUTILS_Http_NewConnection ()
- */
-eARUTILS_ERROR ARUTILS_Http_Request(ARUTILS_Http_Connection_t *connection, const char *endUrl, const char *params, char **data, int *dataLen);
-
-/**
  * @brief Get an remote Http server file
  * @param connection The address of the pointer on the Http Connection
  * @param namePath The string of the file name path on the remote Http server
