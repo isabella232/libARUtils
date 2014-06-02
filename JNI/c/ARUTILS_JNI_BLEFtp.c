@@ -379,6 +379,12 @@ eARUTILS_ERROR ARUTILS_BLEFtp_List(ARUTILS_BLEFtp_Connection_t *connection, cons
                 (*env)->ReleaseStringUTFChars(env, jList, dataList);
             }
         }
+
+        /* Cleanup */
+        if (jRemotePath != NULL)
+        {
+            (*env)->DeleteLocalRef(env, jRemotePath);
+        }
         
     }
     
@@ -444,6 +450,12 @@ eARUTILS_ERROR ARUTILS_BLEFtp_Delete(ARUTILS_BLEFtp_Connection_t *connection, co
         if (ret == 0)
         {
             error = ARUTILS_ERROR_BLE_FAILED;
+        }
+
+        /* Cleanup */
+        if (jRemotePath != NULL)
+        {
+            (*env)->DeleteLocalRef(env, jRemotePath);
         }
     }
     
@@ -515,6 +527,12 @@ eARUTILS_ERROR ARUTILS_BLEFtp_Get_WithBuffer(ARUTILS_BLEFtp_Connection_t *connec
         {
             error = ARUTILS_ERROR_BLE_FAILED;
         }
+
+        /* Cleanup */
+        if (jRemotePath != NULL)
+        {
+            (*env)->DeleteLocalRef(env, jRemotePath);
+        }
     }
     
     /* if the thread has been attached then detach the thread from the virtual machine */
@@ -584,6 +602,17 @@ eARUTILS_ERROR ARUTILS_BLEFtp_Get(ARUTILS_BLEFtp_Connection_t *connection, const
         {
             error = ARUTILS_ERROR_BLE_FAILED;
         }
+
+        /* Cleanup */
+        if (jRemotePath != NULL)
+        {
+            (*env)->DeleteLocalRef(env, jRemotePath);
+        }
+
+        if (jDstFile != NULL)
+        {
+            (*env)->DeleteLocalRef(env, jDstFile);
+        }
     }
     
     /* if the thread has been attached then detach the thread from the virtual machine */
@@ -652,6 +681,17 @@ eARUTILS_ERROR ARUTILS_BLEFtp_Put(ARUTILS_BLEFtp_Connection_t *connection, const
         if (ret == 0)
         {
             error = ARUTILS_ERROR_BLE_FAILED;
+        }
+
+        /* Cleanup */
+        if (jRemotePath != NULL)
+        {
+            (*env)->DeleteLocalRef(env, jRemotePath);
+        }
+
+        if (jSrcFile != NULL)
+        {
+            (*env)->DeleteLocalRef(env, jSrcFile);
         }
     }
     
