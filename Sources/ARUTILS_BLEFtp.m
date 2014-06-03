@@ -89,7 +89,7 @@ NSString* const kARUTILS_BLEFtp_Getting = @"kARUTILS_BLEFtp_Getting";
         CBService *service = [[_peripheral services] objectAtIndex:i];
         NSLog(@"Service : %@, %04x", [service.UUID representativeString], (unsigned int)service.UUID);
         
-        if([[service.UUID representativeString] hasPrefix:@"fd"])
+        if([[service.UUID representativeString] hasPrefix:[NSString stringWithFormat:@"fd%02d", _port]])
         {
             discoverCharacteristicsResult = [SINGLETON_FOR_CLASS(ARSAL_BLEManager) discoverNetworkCharacteristics:nil forService:service];
             
