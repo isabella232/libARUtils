@@ -298,35 +298,41 @@ NSString* const kARUTILS_BLEFtp_Getting = @"kARUTILS_BLEFtp_Getting";
     return ret;
 }
 
-- (BOOL)putFile:(NSString*)remoteFile localFile:(NSString*)localFile progressCallback:(ARUTILS_Ftp_ProgressCallback_t)progressCallback progressArg:(void *)progressArg
+- (BOOL)putFile:(NSString*)remoteFile localFile:(NSString*)localFile progressCallback:(ARUTILS_Ftp_ProgressCallback_t)progressCallback progressArg:(void *)progressArg resume:(BOOL)resume
 {
     eARUTILS_ERROR error;
     FILE *srcFile = NULL;
     int resumeIndex = 0;
-    BOOL resume = YES;
     BOOL ret = YES;
     uint32_t totalSize = 0;
     
-    error = ARUTILS_FileSystem_GetFileSize([localFile UTF8String], &totalSize);
-    if (error != ARUTILS_OK)
+    if (resume == NO)
     {
-        ret = NO;
+        [self abortPutFile:remoteFile];
     }
-    
-    if (ret == YES)
+    else
     {
-        ret = [self readPutResumeIndex:&resumeIndex];
-        if (ret == NO)
+        error = ARUTILS_FileSystem_GetFileSize([localFile UTF8String], &totalSize);
+        if (error != ARUTILS_OK)
         {
-            ret = YES;
-            resumeIndex = 0;
-            resume = NO;
+            ret = NO;
         }
-    }
-    
-    if (resumeIndex > 0)
-    {
-        resume = YES;
+        
+        if (ret == YES)
+        {
+            ret = [self readPutResumeIndex:&resumeIndex];
+            if (ret == NO)
+            {
+                ret = YES;
+                resumeIndex = 0;
+                resume = NO;
+            }
+        }
+        
+        if (resumeIndex > 0)
+        {
+            resume = YES;
+        }
     }
     
     if (ret == YES)
@@ -1247,7 +1253,7 @@ eARUTILS_ERROR ARUTILS_BLEFtp_Put(ARUTILS_BLEFtp_Connection_t *connection, const
     {
         bleFtpObject = (__bridge ARUtils_BLEFtp *)connection->bleFtpObject;
         
-        ret = [bleFtpObject putFile:[NSString stringWithUTF8String:remotePath] localFile:[NSString stringWithUTF8String:srcFile] progressCallback:progressCallback progressArg:progressArg];
+        ret = [bleFtpObject putFile:[NSString stringWithUTF8String:remotePath] localFile:[NSString stringWithUTF8String:srcFile] progressCallback:progressCallback progressArg:progressArg resume:(resume == FTP_RESUME_TRUE) ? YES : NO];
         if (ret == NO)
         {
             result = ARUTILS_ERROR_BLE_FAILED;
