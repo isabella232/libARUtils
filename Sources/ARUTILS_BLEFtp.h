@@ -15,7 +15,6 @@
 
 - (id)initWithPeripheral:(CBPeripheral *)peripheral cancelSem:(ARSAL_Sem_t*)cancelSem port:(int)port;
 - (BOOL)registerCharacteristics;
-- (BOOL)unregisterCharacteristics;
 
 - (BOOL)listFiles:(NSString*)remotePath list:(NSMutableString*)list;
 - (BOOL)sizeFile:(NSString*)remoteFile fileSize:(double*)fileSize;

@@ -41,8 +41,8 @@ NSString* const kARUTILS_BLEFtp_Getting = @"kARUTILS_BLEFtp_Getting";
 #define BLE_PACKET_BLOCK_GETTING_COUNT     100
 #define BLE_PACKET_BLOCK_PUTTING_COUNT     500
 
-//#define BLE_PACKET_WRITE_SLEEP             15000000
-#define BLE_PACKET_WRITE_SLEEP             20000000
+
+#define BLE_PACKET_WRITE_SLEEP             20000000 /* 18ms */
 
 #define ARUTILS_BLEFTP_TAG      "BLEFtp"
 
@@ -81,7 +81,7 @@ NSString* const kARUTILS_BLEFtp_Getting = @"kARUTILS_BLEFtp_Getting";
 {
     eARSAL_ERROR result = ARSAL_OK;
     eARSAL_ERROR discoverCharacteristicsResult = ARSAL_OK;
-    eARSAL_ERROR setNotifCharacteristicResult = ARSAL_OK;
+    //eARSAL_ERROR setNotifCharacteristicResult = ARSAL_OK;
     BOOL ret = NO;
     
     for(int i = 0 ; (i < [[_peripheral services] count]) && (result == ARSAL_OK) && ((_transferring == nil) || (_getting == nil) || (_handling == nil)) ; i++)
@@ -91,8 +91,9 @@ NSString* const kARUTILS_BLEFtp_Getting = @"kARUTILS_BLEFtp_Getting";
         
         if([[service.UUID representativeString] hasPrefix:[NSString stringWithFormat:@"fd%02d", _port]])
         {
-            discoverCharacteristicsResult = [SINGLETON_FOR_CLASS(ARSAL_BLEManager) discoverNetworkCharacteristics:nil forService:service];
+            //discoverCharacteristicsResult = [SINGLETON_FOR_CLASS(ARSAL_BLEManager) discoverNetworkCharacteristics:nil forService:service];
             
+            discoverCharacteristicsResult = ARSAL_OK;
             if (discoverCharacteristicsResult == ARSAL_OK)
             {
                 result = ARSAL_OK;
@@ -136,14 +137,14 @@ NSString* const kARUTILS_BLEFtp_Getting = @"kARUTILS_BLEFtp_Getting";
         result = ARSAL_OK;
         ret = YES;
         
-        if (ret == YES)
+        /*if (ret == YES)
         {
             setNotifCharacteristicResult = [SINGLETON_FOR_CLASS(ARSAL_BLEManager) setNotificationCharacteristic:_getting];
             if (setNotifCharacteristicResult != ARSAL_OK)
             {
                 ret = NO;
             }
-        }
+        }*/
         
         if (ret == YES)
         {
@@ -155,13 +156,6 @@ NSString* const kARUTILS_BLEFtp_Getting = @"kARUTILS_BLEFtp_Getting";
         result = ARSAL_ERROR_BLE_CHARACTERISTICS_DISCOVERING;
         ret = NO;
     }
-    
-    return ret;
-}
-
-- (BOOL)unregisterCharacteristics
-{
-    BOOL ret = NO;
     
     return ret;
 }
@@ -312,12 +306,6 @@ NSString* const kARUTILS_BLEFtp_Getting = @"kARUTILS_BLEFtp_Getting";
     }
     else
     {
-        error = ARUTILS_FileSystem_GetFileSize([localFile UTF8String], &totalSize);
-        if (error != ARUTILS_OK)
-        {
-            ret = NO;
-        }
-        
         if (ret == YES)
         {
             ret = [self readPutResumeIndex:&resumeIndex];
@@ -333,6 +321,12 @@ NSString* const kARUTILS_BLEFtp_Getting = @"kARUTILS_BLEFtp_Getting";
         {
             resume = YES;
         }
+    }
+    
+    error = ARUTILS_FileSystem_GetFileSize([localFile UTF8String], &totalSize);
+    if (error != ARUTILS_OK)
+    {
+        ret = NO;
     }
     
     if (ret == YES)
@@ -443,13 +437,16 @@ NSString* const kARUTILS_BLEFtp_Getting = @"kARUTILS_BLEFtp_Getting";
                 
                 if (progressCallback != NULL)
                 {
-                    progressCallback(progressArg, (fileSize / totalSize) * 100);
+                    progressCallback(progressArg, ((float)totalSize / (float)fileSize) * 100.f);
                 }
                 
-                error = ARUTILS_BLEFtp_IsCanceledSem(_cancelSem);
-                if (error != ARUTILS_OK)
+                if (_cancelSem != NULL)
                 {
-                    ret = NO;
+                    error = ARUTILS_BLEFtp_IsCanceledSem(_cancelSem);
+                    if (error != ARUTILS_OK)
+                    {
+                        ret = NO;
+                    }
                 }
                 
                 NSLog(@"packet %d, %d, %d", packetCount, packetLen, totalSize);
@@ -776,13 +773,16 @@ NSString* const kARUTILS_BLEFtp_Getting = @"kARUTILS_BLEFtp_Getting";
                             
                             if (progressCallback != NULL)
                             {
-                                progressCallback(progressArg, (fileSize / totalSize) * 100);
+                                progressCallback(progressArg, ((float)totalSize / (float)fileSize) * 100.f);
                             }
                             
-                            error = ARUTILS_BLEFtp_IsCanceledSem(_cancelSem);
-                            if (error != ARUTILS_OK)
+                            if (_cancelSem != NULL)
                             {
-                                ret = NO;
+                                error = ARUTILS_BLEFtp_IsCanceledSem(_cancelSem);
+                                if (error != ARUTILS_OK)
+                                {
+                                    ret = NO;
+                                }
                             }
                             
                             //NSLog(@"packet %d, %d, %d", packetCount, packetLen, totalSize);
@@ -990,6 +990,8 @@ NSString* const kARUTILS_BLEFtp_Getting = @"kARUTILS_BLEFtp_Getting";
 ARUTILS_BLEFtp_Connection_t * ARUTILS_BLEFtp_Connection_New(ARSAL_Sem_t *cancelSem, ARUTILS_BLEDevice_t device, int port, eARUTILS_ERROR *error)
 {
     ARUTILS_BLEFtp_Connection_t *newConnection = NULL;
+    eARUTILS_ERROR result = ARUTILS_OK;
+    BOOL ret = YES;
     
     if((port == 0) || ((port % 10) != 1))
     {
@@ -1003,11 +1005,23 @@ ARUTILS_BLEFtp_Connection_t * ARUTILS_BLEFtp_Connection_New(ARSAL_Sem_t *cancelS
             CBPeripheral *peripheral = (__bridge CBPeripheral *)device;
             ARUtils_BLEFtp *bleFtpObject = [[ARUtils_BLEFtp alloc] initWithPeripheral:peripheral cancelSem:cancelSem port:port];
             [bleFtpObject registerCharacteristics];
-            
-            newConnection->bleFtpObject = (__bridge_retained void *)bleFtpObject;
+            if (ret == NO)
+            {
+                result = ARUTILS_ERROR_BLE_FAILED;
+            }
+            else
+            {
+                newConnection->bleFtpObject = (__bridge_retained void *)bleFtpObject;
+            }
         }
     }
     
+    if (result != ARUTILS_OK)
+    {
+        ARUTILS_BLEFtp_Connection_Delete(&newConnection);
+    }
+        
+    *error = result;
     return newConnection;
 }
 
@@ -1018,8 +1032,8 @@ void ARUTILS_BLEFtp_Connection_Delete(ARUTILS_BLEFtp_Connection_t **connectionAd
         ARUTILS_BLEFtp_Connection_t *connection = *connectionAddr;
         if (connection != NULL)
         {
-            ARUtils_BLEFtp *bleFtpObject = (__bridge ARUtils_BLEFtp *)connection->bleFtpObject;
-            [bleFtpObject unregisterCharacteristics];
+            //ARUtils_BLEFtp *bleFtpObject = (__bridge ARUtils_BLEFtp *)connection->bleFtpObject;
+
             CFRelease(connection->bleFtpObject);
             connection->bleFtpObject = NULL;
             
