@@ -19,6 +19,7 @@
 - (BOOL)listFiles:(NSString*)remotePath list:(NSMutableString*)list;
 - (BOOL)sizeFile:(NSString*)remoteFile fileSize:(double*)fileSize;
 - (BOOL)getFile:(NSString*)remoteFile localFile:(NSString*)localFile progressCallback:(ARUTILS_Ftp_ProgressCallback_t)progressCallback progressArg:(void *)progressArg;
+- (BOOL)getFileWithBuffer:(NSString*)remoteFile data:(uint8_t**)data dataLen:(uint32_t*)dataLen progressCallback:(ARUTILS_Ftp_ProgressCallback_t)progressCallback progressArg:(void *)progressArg;
 - (BOOL)putFile:(NSString*)remoteFile localFile:(NSString*)localFile progressCallback:(ARUTILS_Ftp_ProgressCallback_t)progressCallback progressArg:(void *)progressArg resume:(BOOL)resume;
 - (BOOL)abortPutFile:(NSString*)remoteFile;
 - (BOOL)deleteFile:(NSString*)remoteFile;

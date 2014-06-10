@@ -1340,9 +1340,9 @@ const char * ARUTILS_Ftp_List_GetNextItem(const char *list, const char **nextIte
 {
     static char lineData[ARUTILS_FTP_MAX_LIST_LINE_SIZE];
     char *item = NULL;
-    const char *line;
+    const char *line = NULL;
     const char *fileIdx;
-    const char *endLine;
+    const char *endLine = NULL;
     const char *ptr;
     
     if ((list != NULL) && (nextItem != NULL))

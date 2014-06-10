@@ -219,7 +219,7 @@ NSString* const kARUTILS_BLEFtp_Getting = @"kARUTILS_BLEFtp_Getting";
     return ret;
 }
 
-- (BOOL)getFile:(NSString*)remoteFile localFile:(NSString*)localFile progressCallback:(ARUTILS_Ftp_ProgressCallback_t)progressCallback progressArg:(void *)progressArg
+- (BOOL)getFileInternal:(NSString*)remoteFile localFile:(NSString*)localFile data:(uint8_t**)data dataLen:(uint32_t*)dataLen progressCallback:(ARUTILS_Ftp_ProgressCallback_t)progressCallback progressArg:(void *)progressArg
 {
     FILE *dstFile = NULL;
     BOOL ret = NO;
@@ -231,7 +231,7 @@ NSString* const kARUTILS_BLEFtp_Getting = @"kARUTILS_BLEFtp_Getting";
         ret = [self sendCommand:"GET" param:[remoteFile UTF8String] characteristic:_handling];
     }
     
-    if (ret == YES)
+    if ((ret == YES) && (localFile != nil))
     {
         dstFile = fopen([localFile UTF8String], "wb");
         if (dstFile == NULL)
@@ -242,13 +242,30 @@ NSString* const kARUTILS_BLEFtp_Getting = @"kARUTILS_BLEFtp_Getting";
     
     if (ret == YES)
     {
-        ret = [self readGetData:(uint32_t)totalSize dstFile:dstFile progressCallback:progressCallback progressArg:progressArg];
+        ret = [self readGetData:(uint32_t)totalSize dstFile:dstFile data:data dataLen:dataLen progressCallback:progressCallback progressArg:progressArg];
     }
     
     if (dstFile != NULL)
     {
         fclose(dstFile);
     }
+    
+    return ret;
+}
+
+- (BOOL)getFile:(NSString*)remoteFile localFile:(NSString*)localFile progressCallback:(ARUTILS_Ftp_ProgressCallback_t)progressCallback progressArg:(void *)progressArg
+{
+    BOOL ret = NO;
+    
+    ret = [self getFileInternal:remoteFile localFile:localFile data:NULL dataLen:NULL progressCallback:progressCallback progressArg:progressArg];
+    return ret;
+}
+
+- (BOOL)getFileWithBuffer:(NSString*)remoteFile data:(uint8_t**)data dataLen:(uint32_t*)dataLen progressCallback:(ARUTILS_Ftp_ProgressCallback_t)progressCallback progressArg:(void *)progressArg
+{
+    BOOL ret = NO;
+    
+    ret = [self getFileInternal:remoteFile localFile:nil data:data dataLen:dataLen progressCallback:progressCallback progressArg:progressArg];
     
     return ret;
 }
@@ -689,7 +706,7 @@ NSString* const kARUTILS_BLEFtp_Getting = @"kARUTILS_BLEFtp_Getting";
     return ret;
 }
 
-- (BOOL)readGetData:(uint32_t)fileSize dstFile:(FILE*)dstFile progressCallback:(ARUTILS_Ftp_ProgressCallback_t)progressCallback progressArg:(void *)progressArg
+- (BOOL)readGetData:(uint32_t)fileSize dstFile:(FILE*)dstFile data:(uint8_t**)data dataLen:(uint32_t*)dataLen progressCallback:(ARUTILS_Ftp_ProgressCallback_t)progressCallback progressArg:(void *)progressArg
 {
     NSMutableArray *receivedNotifications = [NSMutableArray array];
     //NSMutableArray *removeNotifications = [NSMutableArray array];
@@ -706,6 +723,7 @@ NSString* const kARUTILS_BLEFtp_Getting = @"kARUTILS_BLEFtp_Getting";
     BOOL endMD5 = NO;
     int failedMd5 = 0;
     size_t count;
+    uint8_t *oldData;
     eARUTILS_ERROR error;
     
     CC_MD5_Init(&ctxEnd);
@@ -808,13 +826,32 @@ NSString* const kARUTILS_BLEFtp_Getting = @"kARUTILS_BLEFtp_Getting";
                             totalSize += packetLen;
                             CC_MD5_Update(&ctx, packet, packetLen);
                             CC_MD5_Update(&ctxEnd, packet, packetLen);
-                            count = fwrite(packet, sizeof(char), packetLen, dstFile);
-                            if (count != packetLen)
+                            
+                            if (dstFile != NULL)
                             {
+                                count = fwrite(packet, sizeof(char), packetLen, dstFile);
+                            
+                                if (count != packetLen)
+                                {
 #if ARUTILS_BLEFTP_ENABLE_LOG
-                                NSLog(@"failed writting file");
+                                    NSLog(@"failed writting file");
 #endif
-                                ret = NO;
+                                    ret = NO;
+                                }
+                            }
+                            else
+                            {
+                                oldData = *data;
+                                *data = realloc(*data, totalSize * sizeof(uint8_t));
+                                if (*data == NULL)
+                                {
+                                    *data = oldData;
+                                    ret = NO;
+                                }
+                                else
+                                {
+                                    memcpy(&(*data)[totalSize - packetLen], packet, packetLen);
+                                }
                             }
                             
                             if (progressCallback != NULL)
@@ -1279,7 +1316,7 @@ eARUTILS_ERROR ARUTILS_BLEFtp_Delete(ARUTILS_BLEFtp_Connection_t *connection, co
     return result;
 }
 
-eARUTILS_ERROR ARUTILS_BLEFtp_Get_WithBuffer(ARUTILS_BLEFtp_Connection_t *connection, const char *namePath, uint8_t **data, uint32_t *dataLen,  ARUTILS_Ftp_ProgressCallback_t progressCallback, void* progressArg)
+eARUTILS_ERROR ARUTILS_BLEFtp_Get_WithBuffer(ARUTILS_BLEFtp_Connection_t *connection, const char *remotePath, uint8_t **data, uint32_t *dataLen,  ARUTILS_Ftp_ProgressCallback_t progressCallback, void* progressArg)
 {
     ARUtils_BLEFtp *bleFtpObject = nil;
     eARUTILS_ERROR result = ARUTILS_OK;
@@ -1294,7 +1331,7 @@ eARUTILS_ERROR ARUTILS_BLEFtp_Get_WithBuffer(ARUTILS_BLEFtp_Connection_t *connec
     {
         bleFtpObject = (__bridge ARUtils_BLEFtp *)connection->bleFtpObject;
         
-        //ret = [bleFtpObject getFileWithBuffer:[NSString stringWithUTF8String:remotePath] localFile:[NSString stringWithUTF8String:dstFile]];
+        ret = [bleFtpObject getFileWithBuffer:[NSString stringWithUTF8String:remotePath] data:data dataLen:dataLen progressCallback:progressCallback progressArg:progressArg];
         if (ret == NO)
         {
             result = ARUTILS_ERROR_BLE_FAILED;
