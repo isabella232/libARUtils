@@ -383,12 +383,12 @@ public class MainActivity extends Activity implements ARUtilsFtpProgressListener
         }
 	}
 
-	public void didFtpProgress(Object arg, int percent)
+	public void didFtpProgress(Object arg, float percent)
     {
     	Log.d("DBG", APP_TAG + "ARUtils Ftp/Http Connection, didProgress: " + percent + "%");
     }
 	
-	public void didHttpProgress(Object arg, int percent)
+	public void didHttpProgress(Object arg, float percent)
     {
     	Log.d("DBG", APP_TAG + "ARUtils Ftp/Http Connection, didProgress: " + percent + "%");
     }

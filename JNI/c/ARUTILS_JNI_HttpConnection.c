@@ -274,7 +274,7 @@ JNIEXPORT jbyteArray JNICALL Java_com_parrot_arsdk_arutils_ARUtilsHttpConnection
  *
  *****************************************/
 
-void ARUTILS_JNI_HttpConnection_ProgressCallback(void* arg, uint8_t percent)
+void ARUTILS_JNI_HttpConnection_ProgressCallback(void* arg, float percent)
 {
     ARUTILS_JNI_HttpConnectionCallbacks_t *callbacks = (ARUTILS_JNI_HttpConnectionCallbacks_t *)arg;
 
@@ -285,7 +285,7 @@ void ARUTILS_JNI_HttpConnection_ProgressCallback(void* arg, uint8_t percent)
         if ((ARUTILS_JNI_Manager_VM != NULL) && (callbacks->jProgressListener != NULL) && (methodId_HttpListener_didHttpProgress != NULL))
         {
             JNIEnv *env = NULL;
-            jint jPercent = 0;
+            jfloat jPercent = 0;
             jint jResultEnv = 0;
             int error = JNI_OK;
 
@@ -343,7 +343,7 @@ int ARUTILS_JNI_NewHttpListenersJNI(JNIEnv *env)
 
         if (error == JNI_OK)
         {
-            methodId_HttpListener_didHttpProgress = (*env)->GetMethodID(env, classHttpProgressListener, "didHttpProgress", "(Ljava/lang/Object;I)V");
+            methodId_HttpListener_didHttpProgress = (*env)->GetMethodID(env, classHttpProgressListener, "didHttpProgress", "(Ljava/lang/Object;F)V");
 
             if (methodId_HttpListener_didHttpProgress == NULL)
             {

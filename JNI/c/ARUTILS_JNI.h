@@ -145,7 +145,7 @@ void ARUTILS_JNI_FreeHttpListenersJNI(JNIEnv *env);
  * @retval void
  * @see ARDATATRANSFER_JNI_MediasDownloader_FreeListenersJNI
  */
-void ARUTILS_JNI_FtpConnection_ProgressCallback(void* arg, uint8_t percent);
+void ARUTILS_JNI_FtpConnection_ProgressCallback(void* arg, float percent);
 
 /**
  * @brief Callback that give the file download progress percent
@@ -154,6 +154,6 @@ void ARUTILS_JNI_FtpConnection_ProgressCallback(void* arg, uint8_t percent);
  * @retval void
  * @see ARDATATRANSFER_JNI_MediasDownloader_FreeListenersJNI
  */
-void ARUTILS_JNI_HttpConnection_ProgressCallback(void* arg, uint8_t percent);
+void ARUTILS_JNI_HttpConnection_ProgressCallback(void* arg, float percent);
 
 #endif /* _ARUTILS_JNI_H_ */

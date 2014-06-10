@@ -569,7 +569,7 @@ JNIEXPORT jint JNICALL Java_com_parrot_arsdk_arutils_ARUtilsFtpConnection_native
  *
  *****************************************/
 
-void ARUTILS_JNI_FtpConnection_ProgressCallback(void* arg, uint8_t percent)
+void ARUTILS_JNI_FtpConnection_ProgressCallback(void* arg, float percent)
 {
     ARUTILS_JNI_FtpConnectionCallbacks_t *callbacks = (ARUTILS_JNI_FtpConnectionCallbacks_t *)arg;
 
@@ -580,7 +580,7 @@ void ARUTILS_JNI_FtpConnection_ProgressCallback(void* arg, uint8_t percent)
         if ((ARUTILS_JNI_Manager_VM != NULL) && (callbacks->jProgressListener != NULL) && (methodId_FtpListener_didFtpProgress != NULL))
         {
             JNIEnv *env = NULL;
-            jint jPercent = 0;
+            jfloat jPercent = 0;
             jint jResultEnv = 0;
             int error = JNI_OK;
 
@@ -638,7 +638,7 @@ int ARUTILS_JNI_NewFtpListenersJNI(JNIEnv *env)
 
         if (error == JNI_OK)
         {
-            methodId_FtpListener_didFtpProgress = (*env)->GetMethodID(env, classFtpProgressListener, "didFtpProgress", "(Ljava/lang/Object;I)V");
+            methodId_FtpListener_didFtpProgress = (*env)->GetMethodID(env, classFtpProgressListener, "didFtpProgress", "(Ljava/lang/Object;F)V");
 
             if (methodId_FtpListener_didFtpProgress == NULL)
             {

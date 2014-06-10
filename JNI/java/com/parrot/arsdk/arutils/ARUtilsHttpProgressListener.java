@@ -14,5 +14,5 @@ public interface ARUtilsHttpProgressListener
      * @param percent The percent size of the file already downloaded
      * @return void
      */
-     void didHttpProgress(Object arg, int percent);
+     void didHttpProgress(Object arg, float percent);
 }
