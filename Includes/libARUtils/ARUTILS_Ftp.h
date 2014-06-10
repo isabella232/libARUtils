@@ -49,7 +49,7 @@ typedef enum
  * @param percent The percent size of the media file already downloaded
  * @see ARUTILS_Ftp_Get ()
  */
-typedef void (*ARUTILS_Ftp_ProgressCallback_t)(void* arg, uint8_t percent);
+typedef void (*ARUTILS_Ftp_ProgressCallback_t)(void* arg, float percent);
 
 /**
  * @brief File list iterator function

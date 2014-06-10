@@ -47,11 +47,11 @@ void text_list(const char *tmp)
     free(resultList);
 }
 
-void test_ftp_progress_callback(void* arg, uint8_t percent)
+void test_ftp_progress_callback(void* arg, float percent)
 {
     char *message = (char *)arg;
     
-    printf("%s %d%%\n", message ? message : "null", percent);
+    printf("%s %02f%%\n", message ? message : "null", percent);
 }
 
 void test_ftp_commands(char *tmp)

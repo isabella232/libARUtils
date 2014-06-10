@@ -42,9 +42,13 @@ NSString* const kARUTILS_BLEFtp_Getting = @"kARUTILS_BLEFtp_Getting";
 #define BLE_PACKET_BLOCK_PUTTING_COUNT     500
 
 
-#define BLE_PACKET_WRITE_SLEEP             20000000 /* 18ms */
+//#define BLE_PACKET_WRITE_SLEEP             18000000 /* 18ms */
+#define BLE_PACKET_WRITE_SLEEP               26000000
 
 #define ARUTILS_BLEFTP_TAG      "BLEFtp"
+
+//#define ARUTILS_BLEFTP_ENABLE_LOG (1)
+#define ARUTILS_BLEFTP_ENABLE_LOG (0)
 
 @interface  ARUtils_BLEFtp ()
 {
@@ -87,7 +91,9 @@ NSString* const kARUTILS_BLEFtp_Getting = @"kARUTILS_BLEFtp_Getting";
     for(int i = 0 ; (i < [[_peripheral services] count]) && (result == ARSAL_OK) && ((_transferring == nil) || (_getting == nil) || (_handling == nil)) ; i++)
     {
         CBService *service = [[_peripheral services] objectAtIndex:i];
+#if ARUTILS_BLEFTP_ENABLE_LOG
         NSLog(@"Service : %@, %04x", [service.UUID representativeString], (unsigned int)service.UUID);
+#endif
         
         if([[service.UUID representativeString] hasPrefix:[NSString stringWithFormat:@"fd%02d", _port]])
         {
@@ -100,7 +106,9 @@ NSString* const kARUTILS_BLEFtp_Getting = @"kARUTILS_BLEFtp_Getting";
                 
                 for (CBCharacteristic *characteristic in [service characteristics])
                 {
+#if ARUTILS_BLEFTP_ENABLE_LOG
                     NSLog(@"CBCharacteristic: %@", characteristic.UUID.representativeString);
+#endif
                     if ([characteristic.UUID.representativeString isEqualToString:[NSString stringWithFormat:@"fd%02d", _port + 1]])
                     {
                         if ((characteristic.properties & CBCharacteristicPropertyWriteWithoutResponse) == CBCharacteristicPropertyWriteWithoutResponse)
@@ -434,26 +442,29 @@ NSString* const kARUTILS_BLEFtp_Getting = @"kARUTILS_BLEFtp_Getting";
                 ARSAL_Sem_Timedwait(&timeSem, &timeout);
                 NSData *data = [NSData dataWithBytes:packet length:packetLen];
                 ret = [SINGLETON_FOR_CLASS(ARSAL_BLEManager) writeData:data toCharacteristic:_transferring];
-                
-                if (progressCallback != NULL)
-                {
-                    progressCallback(progressArg, ((float)totalSize / (float)fileSize) * 100.f);
-                }
-                
-                if (_cancelSem != NULL)
-                {
-                    error = ARUTILS_BLEFtp_IsCanceledSem(_cancelSem);
-                    if (error != ARUTILS_OK)
-                    {
-                        ret = NO;
-                    }
-                }
-                
+#if ARUTILS_BLEFTP_ENABLE_LOG
                 NSLog(@"packet %d, %d, %d", packetCount, packetLen, totalSize);
+#endif
             }
             else
             {
+#if ARUTILS_BLEFTP_ENABLE_LOG
                 NSLog(@"resume %d, %d, %d", packetCount, BLE_PACKET_MAX_SIZE, totalSize);
+#endif
+            }
+            
+            if (progressCallback != NULL)
+            {
+                progressCallback(progressArg, ((float)totalSize / (float)fileSize) * 100.f);
+            }
+            
+            if (_cancelSem != NULL)
+            {
+                error = ARUTILS_BLEFtp_IsCanceledSem(_cancelSem);
+                if (error != ARUTILS_OK)
+                {
+                    ret = NO;
+                }
             }
         }
         else
@@ -478,8 +489,9 @@ NSString* const kARUTILS_BLEFtp_Getting = @"kARUTILS_BLEFtp_Getting";
                     sprintf(&md5Txt[3 + (i * 2)], "%02x", md5[i]);
                 }
                 md5Txt[(CC_MD5_DIGEST_LENGTH * 2) + 3] = '\0';
-                
+#if ARUTILS_BLEFTP_ENABLE_LOG
                 NSLog(@"sending md5: %s", md5Txt);
+#endif
                 
                 ARSAL_Sem_Timedwait(&timeSem, &timeout);
                 NSData *data = [NSData dataWithBytes:md5Txt length:strlen(md5Txt)];
@@ -511,17 +523,22 @@ NSString* const kARUTILS_BLEFtp_Getting = @"kARUTILS_BLEFtp_Getting";
                 sprintf(&md5Txt[i * 2], "%02x", md5[i]);
             }
             md5Txt[CC_MD5_DIGEST_LENGTH * 2] = '\0';
+#if ARUTILS_BLEFTP_ENABLE_LOG
             NSLog(@"md5 end %s", md5Txt);
             NSLog(@"file size %d", totalSize);
-            
+#endif
             if (strncmp(md5Msg, md5Txt, CC_MD5_DIGEST_LENGTH * 2) != 0)
             {
+#if ARUTILS_BLEFTP_ENABLE_LOG
                 NSLog(@"MD5 End Failed");
+#endif
                 ret = NO;
             }
             else
             {
+#if ARUTILS_BLEFTP_ENABLE_LOG
                 NSLog(@"MD5 End OK");
+#endif
             }
         }
     }
@@ -553,7 +570,9 @@ NSString* const kARUTILS_BLEFtp_Getting = @"kARUTILS_BLEFtp_Getting";
                 {
                     int size = (0xFF & packet[0]) | (0xFF00 & (packet[1] << 8)) | (0xFF0000 & (packet[2] << 16));
                     *resumeIndex = size;
+#if ARUTILS_BLEFTP_ENABLE_LOG
                     NSLog(@"resume index %d,  %02x, %02x, %02x", size, packet[0], packet[1], packet[2]);
+#endif
                 }
                 else
                 {
@@ -593,29 +612,39 @@ NSString* const kARUTILS_BLEFtp_Getting = @"kARUTILS_BLEFtp_Getting";
                 if ((packetLen == (strlen(BLE_PACKET_WRITTEN) + 1)) && (strncmp((char*)packet, BLE_PACKET_WRITTEN, strlen(BLE_PACKET_WRITTEN)) == 0))
                 {
                     ret = YES;
+#if ARUTILS_BLEFTP_ENABLE_LOG
                     NSLog(@"written OK");
+#endif
                 }
                 else if ((packetLen == (strlen(BLE_PACKET_NOT_WRITTEN) + 1)) && (strncmp((char*)packet, BLE_PACKET_NOT_WRITTEN, strlen(BLE_PACKET_NOT_WRITTEN)) == 0))
                 {
                     ret = NO;
+#if ARUTILS_BLEFTP_ENABLE_LOG
                     NSLog(@"NOT written");
+#endif
                 }
                 else
                 {
                     ret = NO;
+#if ARUTILS_BLEFTP_ENABLE_LOG
                     NSLog(@"UNKNOWN written");
+#endif
                 }
             }
             else
             {
                 ret = NO;
+#if ARUTILS_BLEFTP_ENABLE_LOG
                 NSLog(@"UNKNOWN written");
+#endif
             }
         }
         else
         {
             ret = NO;
+#if ARUTILS_BLEFTP_ENABLE_LOG
             NSLog(@"UNKNOWN written");
+#endif
         }
     }
     
@@ -642,7 +671,9 @@ NSString* const kARUTILS_BLEFtp_Getting = @"kARUTILS_BLEFtp_Getting";
             {
                 strncpy(md5Txt, (char*)packet, packetLen);//TOFIX len
                 md5Txt[packetLen] = '\0';
+#if ARUTILS_BLEFTP_ENABLE_LOG
                 NSLog(@"md5 end received %s", md5Txt);
+#endif
             }
             else
             {
@@ -716,11 +747,15 @@ NSString* const kARUTILS_BLEFtp_Getting = @"kARUTILS_BLEFtp_Getting";
                             {
                                 strncpy(md5Msg, (char*)packet, CC_MD5_DIGEST_LENGTH * 2);
                                 md5Msg[CC_MD5_DIGEST_LENGTH * 2] = '\0';
+#if ARUTILS_BLEFTP_ENABLE_LOG
                                 NSLog(@"md5 END received %s", packet);
+#endif
                             }
                             else
                             {
+#if ARUTILS_BLEFTP_ENABLE_LOG
                                 NSLog(@"md5 END Failed SIZE %d", packetLen);
+#endif
                                 ret = NO;
                             }
                         }
@@ -730,11 +765,15 @@ NSString* const kARUTILS_BLEFtp_Getting = @"kARUTILS_BLEFtp_Getting";
                             
                             if (packetLen == (strlen(BLE_PACKET_EOF) + 1))
                             {
+#if ARUTILS_BLEFTP_ENABLE_LOG
                                 NSLog(@"END received %d, %s", packetCount, packet);
+#endif
                             }
                             else
                             {
+#if ARUTILS_BLEFTP_ENABLE_LOG
                                 NSLog(@"END Failed SIZE %d", packetLen);
+#endif
                                 ret = NO;
                             }
                         }
@@ -742,7 +781,9 @@ NSString* const kARUTILS_BLEFtp_Getting = @"kARUTILS_BLEFtp_Getting";
                         {
                             if (packetCount > (BLE_PACKET_BLOCK_GETTING_COUNT + 1))
                             {
+#if ARUTILS_BLEFTP_ENABLE_LOG
                                 NSLog(@"md5 FAILD packet COUNT %s", packet);
+#endif
                             }
                             
                             if (packetLen == ((CC_MD5_DIGEST_LENGTH * 2) + 3))
@@ -750,12 +791,15 @@ NSString* const kARUTILS_BLEFtp_Getting = @"kARUTILS_BLEFtp_Getting";
                                 blockMD5 = YES;
                                 strncpy(md5Msg, (char*)(packet + 3), CC_MD5_DIGEST_LENGTH * 2);
                                 md5Msg[CC_MD5_DIGEST_LENGTH * 2] = '\0';
-                                
+#if ARUTILS_BLEFTP_ENABLE_LOG
                                 NSLog(@"md5 received %d, %s", packetCount, packet);
+#endif
                             }
                             else
                             {
+#if ARUTILS_BLEFTP_ENABLE_LOG
                                 NSLog(@"md5 received Failed SIZE %d", packetLen);
+#endif
                                 ret = NO;
                             }
                         }
@@ -767,7 +811,9 @@ NSString* const kARUTILS_BLEFtp_Getting = @"kARUTILS_BLEFtp_Getting";
                             count = fwrite(packet, sizeof(char), packetLen, dstFile);
                             if (count != packetLen)
                             {
+#if ARUTILS_BLEFTP_ENABLE_LOG
                                 NSLog(@"failed writting file");
+#endif
                                 ret = NO;
                             }
                             
@@ -784,8 +830,9 @@ NSString* const kARUTILS_BLEFtp_Getting = @"kARUTILS_BLEFtp_Getting";
                                     ret = NO;
                                 }
                             }
-                            
-                            //NSLog(@"packet %d, %d, %d", packetCount, packetLen, totalSize);
+#if ARUTILS_BLEFTP_ENABLE_LOG
+                            NSLog(@"packet %d, %d, %d", packetCount, packetLen, totalSize);
+#endif
                         }
                     }
                     else
@@ -811,18 +858,24 @@ NSString* const kARUTILS_BLEFtp_Getting = @"kARUTILS_BLEFtp_Getting";
                 sprintf(&md5Txt[i * 2], "%02x", md5[i]);
             }
             md5Txt[CC_MD5_DIGEST_LENGTH * 2] = '\0';
+#if ARUTILS_BLEFTP_ENABLE_LOG
             NSLog(@"md5 computed %s", md5Txt);
+#endif
             
             if (strncmp(md5Txt, md5Msg, CC_MD5_DIGEST_LENGTH * 2) != 0)
             {
                 failedMd5++;
+#if ARUTILS_BLEFTP_ENABLE_LOG
                 NSLog(@"MD5 block Failed");
+#endif
                 //TOFIX some 1st md5 are failed !!!!!!!!!!!
                 //ret = NO;
             }
             else
             {
+#if ARUTILS_BLEFTP_ENABLE_LOG
                 NSLog(@"MD5 block OK");
+#endif
             }
             
             ret = [self sendCommand:"MD5 OK" param:NULL characteristic:_getting];
@@ -837,20 +890,28 @@ NSString* const kARUTILS_BLEFtp_Getting = @"kARUTILS_BLEFtp_Getting";
             sprintf(&md5Txt[i * 2], "%02x", md5[i]);
         }
         md5Txt[CC_MD5_DIGEST_LENGTH * 2] = '\0';
+#if ARUTILS_BLEFTP_ENABLE_LOG
         NSLog(@"md5 END computed %s", md5Txt);
         NSLog(@"file size %d", totalSize);
+#endif
         
         if (strncmp(md5Txt, md5Msg, CC_MD5_DIGEST_LENGTH * 2) != 0)
         {
+#if ARUTILS_BLEFTP_ENABLE_LOG
             NSLog(@"MD5 end Failed");
+#endif
             ret = NO;
         }
         else
         {
+#if ARUTILS_BLEFTP_ENABLE_LOG
             NSLog(@"MD5 end OK");
+#endif
         }
-        
+      
+#if ARUTILS_BLEFTP_ENABLE_LOG
         NSLog(@"Failed block MD5 %d", failedMd5);
+#endif
     }
     else
     {
@@ -900,7 +961,7 @@ NSString* const kARUTILS_BLEFtp_Getting = @"kARUTILS_BLEFtp_Getting";
                     packetCount++;
                     //[removeNotifications addObject:notificationData];
                     
-                    NSLog(@"%s", packet);
+                    //NSLog(@"%s", packet);
                     
                     if (packetLen > 0)
                     {
@@ -918,11 +979,15 @@ NSString* const kARUTILS_BLEFtp_Getting = @"kARUTILS_BLEFtp_Getting";
                              
                              if (packetLen == (strlen(BLE_PACKET_EOF) + 1))
                              {
+#if ARUTILS_BLEFTP_ENABLE_LOG
                                  NSLog(@"END received %d, %s", packetCount, packet);
+#endif
                              }
                              else
                              {
+#if ARUTILS_BLEFTP_ENABLE_LOG
                                  NSLog(@"END Failed SIZE %d", packetLen);
+#endif
                                  ret = NO;
                              }
                          }
@@ -937,13 +1002,17 @@ NSString* const kARUTILS_BLEFtp_Getting = @"kARUTILS_BLEFtp_Getting";
                              [list appendString:[NSString stringWithCString:txt encoding:NSASCIIStringEncoding]];
                              
                              //NSLog(@"%s", packet);
+#if ARUTILS_BLEFTP_ENABLE_LOG
                              NSLog(@"packet %d, %d, %d", packetCount, packetLen, totalSize);
+#endif
                          }
                     }
                     else
                     {
                         endFile = YES;
+#if ARUTILS_BLEFTP_ENABLE_LOG
                         NSLog(@"end received");
+#endif
                     }
                 }
             }
@@ -963,19 +1032,27 @@ NSString* const kARUTILS_BLEFtp_Getting = @"kARUTILS_BLEFtp_Getting";
             sprintf(&md5Txt[i * 2], "%02x", md5[i]);
         }
         md5Txt[CC_MD5_DIGEST_LENGTH * 2] = '\0';
+#if ARUTILS_BLEFTP_ENABLE_LOG
         NSLog(@"md5 END computed %s", md5Txt);
+#endif
         
         if (strncmp(md5Txt, md5Msg, CC_MD5_DIGEST_LENGTH * 2) != 0)
         {
+#if ARUTILS_BLEFTP_ENABLE_LOG
             NSLog(@"MD5 End Failed");
+#endif
             ret = NO;
         }
         else
         {
+#if ARUTILS_BLEFTP_ENABLE_LOG
             NSLog(@"MD5 End OK");
+#endif
         }
-        
+      
+#if ARUTILS_BLEFTP_ENABLE_LOG
         NSLog(@"end of");
+#endif
     }
     else
     {

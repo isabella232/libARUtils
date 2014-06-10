@@ -809,7 +809,7 @@ size_t ARUTILS_Http_WriteDataCallback(void *ptr, size_t size, size_t nmemb, void
 int ARUTILS_Http_ProgressCallback(void *userData, double dltotal, double dlnow, double ultotal, double ulnow)
 {
     ARUTILS_Http_Connection_t *connection = (ARUTILS_Http_Connection_t *)userData;
-    uint8_t percent;
+    float percent;
 
     //ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_HTTP_TAG, "%.0f, %.0f, %.0f, %.0f", dltotal, dlnow, ultotal, ulnow);
 

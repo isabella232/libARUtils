@@ -1647,7 +1647,7 @@ size_t ARUTILS_WifiFtp_WriteDataCallback(void *ptr, size_t size, size_t nmemb, v
 int ARUTILS_WifiFtp_ProgressCallback(void *userData, double dltotal, double dlnow, double ultotal, double ulnow)
 {
     ARUTILS_WifiFtp_Connection_t *connection = (ARUTILS_WifiFtp_Connection_t *)userData;
-    uint8_t percent;
+    float percent;
 
     //ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_WIFIFTP_TAG, "%.0f, %.0f, %.0f, %.0f", dltotal, dlnow, ultotal, ulnow);
 

@@ -46,7 +46,7 @@ typedef struct ARUTILS_Http_Connection_t ARUTILS_Http_Connection_t;
  * @param percent The percent size of the media file already downloaded
  * @see ARUTILS_Http_Get ()
  */
-typedef void (*ARUTILS_Http_ProgressCallback_t)(void* arg, uint8_t percent);
+typedef void (*ARUTILS_Http_ProgressCallback_t)(void* arg, float percent);
 
 /**
  * @brief Create a new Http Connection
