@@ -1462,6 +1462,7 @@ eARUTILS_ERROR ARUTILS_Manager_InitBLEFtp(ARUTILS_Manager_t *manager, ARUTILS_BL
         manager->ftpGet = ARUTILS_BLEFtpAL_Get;
         manager->ftpPut = ARUTILS_BLEFtpAL_Put;
         manager->ftpDelete = ARUTILS_BLEFtpAL_Delete;
+        manager->ftpRename = ARUTILS_BLEFtpAL_Rename;
     }
     
     return result;

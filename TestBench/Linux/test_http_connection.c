@@ -18,11 +18,11 @@
 #define HTTP_PORT     80
 
 
-void test_http_progress_callback(void* arg, uint8_t percent)
+void test_http_progress_callback(void* arg, float percent)
 {
     char *message = (char *)arg;
 
-    printf("%s %d%%\n", message ? message : "null", percent);
+    printf("%s %02f%%\n", message ? message : "null", percent);
 }
 
 void test_http_connection_public(char *tmp)

@@ -1814,6 +1814,7 @@ eARUTILS_ERROR ARUTILS_Manager_InitWifiFtp(ARUTILS_Manager_t *manager, const cha
         manager->ftpGet = ARUTILS_WifiFtpAL_Get;
         manager->ftpPut = ARUTILS_WifiFtpAL_Put;
         manager->ftpDelete = ARUTILS_WifiFtpAL_Delete;
+        manager->ftpRename = ARUTILS_WifiFtpAL_Rename;
     }
  
     return result;

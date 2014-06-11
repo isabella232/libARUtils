@@ -208,11 +208,21 @@ eARUTILS_ERROR ARUTILS_BLEFtpAL_Put(ARUTILS_Manager_t *manager, const char *name
 
 /**
  * @brief Delete an remote Ftp server file
- * @param delete The address of the pointer on the Ftp Connection
+ * @param manager The address of the pointer on the Ftp Connection
  * @param namePath The string of the file name path on the remote Ftp server
  * @retval On success, returns ARUTILS_OK. Otherwise, it returns an error number of eARUTILS_ERROR.
  * @see ARUTILS_Manager_NewBLEFtp ()
  */
 eARUTILS_ERROR ARUTILS_BLEFtpAL_Delete(ARUTILS_Manager_t *manager, const char *namePath);
+
+/**
+ * @brief Rename an remote Ftp server file
+ * @param manager The address of the pointer on the Ftp Connection
+ * @param oldNamePath The string of the old file name path on the remote Ftp server
+ * @param newNamePath The string of the new file name path on the remote Ftp server
+ * @retval On success, returns ARUTILS_OK. Otherwise, it returns an error number of eARUTILS_ERROR.
+ * @see ARUTILS_Manager_NewWifiFtp ()
+ */
+eARUTILS_ERROR ARUTILS_BLEFtpAL_Rename(ARUTILS_Manager_t *manager, const char *oldNamePath, const char *newNamePath);
 
 #endif /* _ARUTILS_BLE_FTP_PRIVATE_H_ */
