@@ -23,6 +23,7 @@
 - (BOOL)putFile:(NSString*)remoteFile localFile:(NSString*)localFile progressCallback:(ARUTILS_Ftp_ProgressCallback_t)progressCallback progressArg:(void *)progressArg resume:(BOOL)resume;
 - (BOOL)abortPutFile:(NSString*)remoteFile;
 - (BOOL)deleteFile:(NSString*)remoteFile;
+- (BOOL)renameFile:(NSString*)oldNamePath newNamePath:(NSString*)newNamePath;
 
 @end
 

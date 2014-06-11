@@ -155,3 +155,17 @@ eARUTILS_ERROR ARUTILS_Manager_Ftp_Delete(ARUTILS_Manager_t *manager, const char
     }
     return result;
 }
+
+eARUTILS_ERROR ARUTILS_Manager_Ftp_Rename(ARUTILS_Manager_t *manager, const char *oldNamePath, const char *newNamePath)
+{
+    eARUTILS_ERROR result = ARUTILS_OK;
+    if ((manager == NULL) || (manager->ftpRename == NULL))
+    {
+        result = ARUTILS_ERROR_BAD_PARAMETER;
+    }
+    else
+    {
+        result = manager->ftpRename(manager, oldNamePath, newNamePath);
+    }
+    return result;
+}

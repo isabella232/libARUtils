@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		631793181948933F00B8448C /* ARUTILS_Manager.c in Sources */ = {isa = PBXBuildFile; fileRef = 631793161948933F00B8448C /* ARUTILS_Manager.c */; };
 		63B6F4BF1938FAC600C8EA98 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 63B6F4BE1938FAC600C8EA98 /* Foundation.framework */; };
 		63B6F4C11938FAC600C8EA98 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 63B6F4C01938FAC600C8EA98 /* CoreGraphics.framework */; };
 		63B6F4C31938FAC600C8EA98 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 63B6F4C21938FAC600C8EA98 /* UIKit.framework */; };
@@ -29,6 +30,9 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		631793161948933F00B8448C /* ARUTILS_Manager.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = ARUTILS_Manager.c; path = ../../../Sources/ARUTILS_Manager.c; sourceTree = "<group>"; };
+		631793171948933F00B8448C /* ARUTILS_Manager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ARUTILS_Manager.h; path = ../../../Sources/ARUTILS_Manager.h; sourceTree = "<group>"; };
+		631793191948935200B8448C /* ARUTILS_Manager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ARUTILS_Manager.h; path = ../../../Includes/libARUtils/ARUTILS_Manager.h; sourceTree = "<group>"; };
 		63B6F4BB1938FAC600C8EA98 /* TestBLEFtp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TestBLEFtp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		63B6F4BE1938FAC600C8EA98 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		63B6F4C01938FAC600C8EA98 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
@@ -81,9 +85,22 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		631793151948931100B8448C /* Ftp */ = {
+			isa = PBXGroup;
+			children = (
+				631793161948933F00B8448C /* ARUTILS_Manager.c */,
+				631793171948933F00B8448C /* ARUTILS_Manager.h */,
+				631793191948935200B8448C /* ARUTILS_Manager.h */,
+				63B6F526193C63DE00C8EA98 /* ARUTILS_WifiFtp.c */,
+				63B6F527193C63DE00C8EA98 /* ARUTILS_WifiFtp.h */,
+			);
+			name = Ftp;
+			sourceTree = "<group>";
+		};
 		63B6F4B21938FAC600C8EA98 = {
 			isa = PBXGroup;
 			children = (
+				631793151948931100B8448C /* Ftp */,
 				63B6F62619404DA700C8EA98 /* NetworkAL */,
 				63B6F4FE193C590100C8EA98 /* ARSAL */,
 				63B6F4F61938FAFE00C8EA98 /* Test */,
@@ -154,8 +171,6 @@
 		63B6F4FA193C58B100C8EA98 /* BLEFtp */ = {
 			isa = PBXGroup;
 			children = (
-				63B6F526193C63DE00C8EA98 /* ARUTILS_WifiFtp.c */,
-				63B6F527193C63DE00C8EA98 /* ARUTILS_WifiFtp.h */,
 				63B6F525193C63A600C8EA98 /* config.h */,
 				63B6F523193C630200C8EA98 /* ARUTILS_FileSystem.c */,
 				63B6F4FB193C58FA00C8EA98 /* ARUTILS_BLEFtp.h */,
@@ -256,6 +271,7 @@
 				63B6F4CF1938FAC600C8EA98 /* AppDelegate.m in Sources */,
 				63B6F502193C592400C8EA98 /* ARSAL_CentralManager.m in Sources */,
 				63B6F4FD193C58FA00C8EA98 /* ARUTILS_BLEFtp.m in Sources */,
+				631793181948933F00B8448C /* ARUTILS_Manager.c in Sources */,
 				63B6F524193C630200C8EA98 /* ARUTILS_FileSystem.c in Sources */,
 				63B6F4F91938FB0B00C8EA98 /* autoTest.m in Sources */,
 				63B6F4CB1938FAC600C8EA98 /* main.m in Sources */,

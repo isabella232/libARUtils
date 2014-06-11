@@ -1863,3 +1863,8 @@ eARUTILS_ERROR ARUTILS_WifiFtpAL_Delete(ARUTILS_Manager_t *manager, const char *
 {
     return ARUTILS_WifiFtp_Delete((ARUTILS_WifiFtp_Connection_t *)manager->connectionObject, namePath);
 }
+
+eARUTILS_ERROR ARUTILS_WifiFtpAL_Rename(ARUTILS_Manager_t *manager, const char *oldNamePath, const char *newNamePath)
+{
+    return ARUTILS_WifiFtp_Rename((ARUTILS_WifiFtp_Connection_t *)manager->connectionObject, oldNamePath, newNamePath);
+}

@@ -96,7 +96,7 @@ void ARUTILS_Manager_CloseBLEFtp(ARUTILS_Manager_t *manager);
 
 /**
  * @brief Cancel an Ftp Connection command in progress (get, put, list etc)
- * @param connection The address of the pointer on the Ftp Connection
+ * @param connection The address of the pointer on the Ftp Manager
  * @retval On success, returns ARUTILS_OK. Otherwise, it returns an error number of eARUTILS_ERROR.
  * @see ARUTILS_Manager_NewWifiFtp (), ARUTILS_Manager_NewBLEFtp
  */
@@ -104,7 +104,7 @@ eARUTILS_ERROR ARUTILS_Manager_Ftp_Connection_Cancel(ARUTILS_Manager_t *manager)
 
 /**
  * @brief Cancel an Ftp Connection command in progress (get, put, list etc)
- * @param connection The address of the pointer on the Ftp Connection
+ * @param connection The address of the pointer on the Ftp Manager
  * @retval On success, returns ARUTILS_OK. Otherwise, it returns an error number of eARUTILS_ERROR.
  * @see ARUTILS_Manager_NewWifiFtp (), ARUTILS_Manager_NewBLEFtp
  */
@@ -113,7 +113,7 @@ eARUTILS_ERROR ARUTILS_Manager_Ftp_Connection_IsCanceled(ARUTILS_Manager_t *mana
 /**
  * @brief Execute Ftp List command to retrieve directory content
  * @warning This function allocates memory
- * @param manager The address of the pointer on the Ftp Connection
+ * @param manager The address of the pointer on the Ftp Manager
  * @param namePath The string of the directory path on the remote Ftp server
  * @param resultList The pointer of the string of the directory content null terminated
  * @param resultListLen The pointer of the lenght of the resultList string including null terminated
@@ -125,7 +125,7 @@ eARUTILS_ERROR ARUTILS_Manager_Ftp_List(ARUTILS_Manager_t *manager, const char *
 /**
  * @brief Get an remote Ftp server file
  * @warning This function allocates memory
- * @param manager The address of the pointer on the Ftp Connection
+ * @param manager The address of the pointer on the Ftp Manager
  * @param namePath The string of the file name path on the remote Ftp server
  * @param data The pointer of the data buffer of the file data
  * @param dataLen The pointer of the length of the data buffer
@@ -138,7 +138,7 @@ eARUTILS_ERROR ARUTILS_Manager_Ftp_Get_WithBuffer(ARUTILS_Manager_t *manager, co
 
 /**
  * @brief Get an remote Ftp server file
- * @param manager The address of the pointer on the Ftp Connection
+ * @param manager The address of the pointer on the Ftp Manager
  * @param namePath The string of the file name path on the remote Ftp server
  * @param dstFile The string of the local file name path to be get
  * @param progressCallback The progress callback function
@@ -151,7 +151,7 @@ eARUTILS_ERROR ARUTILS_Manager_Ftp_Get(ARUTILS_Manager_t *manager, const char *n
 
 /**
  * @brief Put an remote Ftp server file
- * @param manager The address of the pointer on the Ftp Connection
+ * @param manager The address of the pointer on the Ftp Manager
  * @param namePath The string of the file name path on the remote Ftp server
  * @param srcFile The string of the local file name path to be put
  * @param progressCallback The progress callback function
@@ -164,18 +164,26 @@ eARUTILS_ERROR ARUTILS_Manager_Ftp_Put(ARUTILS_Manager_t *manager, const char *n
 
 /**
  * @brief Delete an remote Ftp server file
- * @param delete The address of the pointer on the Ftp Connection
+ * @param manager The address of the pointer on the Ftp Manager
  * @param namePath The string of the file name path on the remote Ftp server
  * @retval On success, returns ARUTILS_OK. Otherwise, it returns an error number of eARUTILS_ERROR.
  * @see ARUTILS_Manager_InitWifiFtp (), ARUTILS_Manager_InitBLEFtp ()
  */
 eARUTILS_ERROR ARUTILS_Manager_Ftp_Delete(ARUTILS_Manager_t *manager, const char *namePath);
 
-
+/**
+ * @brief Rename an remote Ftp server file
+ * @param manager The address of the pointer on the Ftp Manager
+ * @param oldNamePath The string of the old file name path on the remote Ftp server
+ * @param newNamePath The string of the new file name path on the remote Ftp server
+ * @retval On success, returns ARUTILS_OK. Otherwise, it returns an error number of eARUTILS_ERROR.
+ * @see ARUTILS_WifiFtp_NewConnection ()
+ */
+eARUTILS_ERROR ARUTILS_Manager_Ftp_Rename(ARUTILS_Manager_t *manager, const char *oldNamePath, const char *newNamePath);
 
 /**
  * @brief Cancel an Ftp Connection command in progress (get, put, list etc)
- * @param connection The address of the pointer on the Ftp Connection
+ * @param manager The address of the pointer on the Ftp Manager
  * @retval On success, returns ARUTILS_OK. Otherwise, it returns an error number of eARUTILS_ERROR.
  * @see ARUTILS_Manager_New ()
  */
@@ -183,7 +191,7 @@ typedef eARUTILS_ERROR (*ARUTILS_Manager_Ftp_Connection_Cancel_t) (ARUTILS_Manag
 
 /**
  * @brief Cancel an Ftp Connection command in progress (get, put, list etc)
- * @param connection The address of the pointer on the Ftp Connection
+ * @param manager The address of the pointer on the Ftp Manager
  * @retval On success, returns ARUTILS_OK. Otherwise, it returns an error number of eARUTILS_ERROR.
  * @see ARUTILS_Manager_New ()
  */
@@ -192,7 +200,7 @@ typedef eARUTILS_ERROR (*ARUTILS_Manager_Ftp_Connection_IsCanceled_t) (ARUTILS_M
 /**
  * @brief Execute Ftp List command to retrieve directory content
  * @warning This function allocates memory
- * @param manager The address of the pointer on the Ftp Connection
+ * @param manager The address of the pointer on the Ftp Manager
  * @param namePath The string of the directory path on the remote Ftp server
  * @param resultList The pointer of the string of the directory content null terminated
  * @param resultListLen The pointer of the lenght of the resultList string including null terminated
@@ -204,7 +212,7 @@ typedef eARUTILS_ERROR (*ARUTILS_Manager_Ftp_List_t) (ARUTILS_Manager_t *manager
 /**
  * @brief Get an remote Ftp server file
  * @warning This function allocates memory
- * @param manager The address of the pointer on the Ftp Connection
+ * @param manager The address of the pointer on the Ftp Manager
  * @param namePath The string of the file name path on the remote Ftp server
  * @param data The pointer of the data buffer of the file data
  * @param dataLen The pointer of the length of the data buffer
@@ -217,7 +225,7 @@ typedef eARUTILS_ERROR (*ARUTILS_Manager_Get_WithBuffer_t) (ARUTILS_Manager_t *m
 
 /**
  * @brief Get an remote Ftp server file
- * @param manager The address of the pointer on the Ftp Connection
+ * @param manager The address of the pointer on the Ftp Manager
  * @param namePath The string of the file name path on the remote Ftp server
  * @param dstFile The string of the local file name path to be get
  * @param progressCallback The progress callback function
@@ -230,7 +238,7 @@ typedef eARUTILS_ERROR (*ARUTILS_Manager_Ftp_Get_t) (ARUTILS_Manager_t *manager,
 
 /**
  * @brief Put an remote Ftp server file
- * @param manager The address of the pointer on the Ftp Connection
+ * @param manager The address of the pointer on the Ftp Manager
  * @param namePath The string of the file name path on the remote Ftp server
  * @param srcFile The string of the local file name path to be put
  * @param progressCallback The progress callback function
@@ -243,12 +251,22 @@ typedef eARUTILS_ERROR (*ARUTILS_Manager_Ftp_Put_t) (ARUTILS_Manager_t *manager,
 
 /**
  * @brief Delete an remote Ftp server file
- * @param delete The address of the pointer on the Ftp Connection
+ * @param manager The address of the pointer on the Ftp Manager
  * @param namePath The string of the file name path on the remote Ftp server
  * @retval On success, returns ARUTILS_OK. Otherwise, it returns an error number of eARUTILS_ERROR.
  * @see ARUTILS_Manager_New ()
  */
 typedef eARUTILS_ERROR (*ARUTILS_Manager_Ftp_Delete_t) (ARUTILS_Manager_t *manager, const char *namePath);
+
+/**
+ * @brief Rename an remote Ftp server file
+ * @param manager The address of the pointer on the Ftp Manager
+ * @param oldNamePath The string of the old file name path on the remote Ftp server
+ * @param newNamePath The string of the new file name path on the remote Ftp server
+ * @retval On success, returns ARUTILS_OK. Otherwise, it returns an error number of eARUTILS_ERROR.
+ * @see ARUTILS_WifiFtp_NewConnection ()
+ */
+typedef eARUTILS_ERROR (*ARUTILS_Manager_Ftp_Rename_t)(ARUTILS_Manager_t *manager, const char *oldNamePath, const char *newNamePath);
 
 /**
  * @brief Ftp Manager structure
@@ -269,6 +287,7 @@ struct ARUTILS_Manager_t
     ARUTILS_Manager_Ftp_Get_t ftpGet;
     ARUTILS_Manager_Ftp_Put_t ftpPut;
     ARUTILS_Manager_Ftp_Delete_t ftpDelete;
+    ARUTILS_Manager_Ftp_Rename_t ftpRename;
     
     ARSAL_Sem_t cancelSem;
     void *connectionObject;

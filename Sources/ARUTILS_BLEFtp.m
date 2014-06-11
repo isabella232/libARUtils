@@ -387,6 +387,16 @@ NSString* const kARUTILS_BLEFtp_Getting = @"kARUTILS_BLEFtp_Getting";
     return ret;
 }
 
+- (BOOL)renameFile:(NSString*)oldNamePath newNamePath:(NSString*)newNamePath
+{
+    BOOL ret = YES;
+    NSString *param = [NSString stringWithFormat:@"%@ %@", oldNamePath, newNamePath];
+    
+    ret = [self sendCommand:"REN" param:[param UTF8String] characteristic:_handling];
+    
+    return ret;
+}
+
 - (BOOL)sendCommand:(const char *)cmd param:(const char*)param characteristic:(CBCharacteristic *)characteristic
 {
     char command[BLE_PACKET_MAX_SIZE];
@@ -1316,6 +1326,29 @@ eARUTILS_ERROR ARUTILS_BLEFtp_Delete(ARUTILS_BLEFtp_Connection_t *connection, co
     return result;
 }
 
+eARUTILS_ERROR ARUTILS_BLEFtp_Rename(ARUTILS_BLEFtp_Connection_t *connection, const char *oldNamePath, const char *newNamePath)
+{
+    ARUtils_BLEFtp *bleFtpObject = nil;
+    eARUTILS_ERROR result = ARUTILS_OK;
+    BOOL ret = NO;
+    
+    if ((connection == NULL) || (connection->bleFtpObject == NULL))
+    {
+        result = ARUTILS_ERROR_BAD_PARAMETER;
+    }
+    
+    if (result == ARUTILS_OK)
+    {
+        bleFtpObject = (__bridge ARUtils_BLEFtp *)connection->bleFtpObject;
+        ret = [bleFtpObject renameFile:[NSString stringWithUTF8String:oldNamePath] newNamePath:[NSString stringWithUTF8String:newNamePath]];
+        if (ret == NO)
+        {
+            result = ARUTILS_ERROR_BLE_FAILED;
+        }
+    }
+    return result;
+}
+
 eARUTILS_ERROR ARUTILS_BLEFtp_Get_WithBuffer(ARUTILS_BLEFtp_Connection_t *connection, const char *remotePath, uint8_t **data, uint32_t *dataLen,  ARUTILS_Ftp_ProgressCallback_t progressCallback, void* progressArg)
 {
     ARUtils_BLEFtp *bleFtpObject = nil;
@@ -1477,5 +1510,10 @@ eARUTILS_ERROR ARUTILS_BLEFtpAL_Put(ARUTILS_Manager_t *manager, const char *name
 eARUTILS_ERROR ARUTILS_BLEFtpAL_Delete(ARUTILS_Manager_t *manager, const char *namePath)
 {
     return ARUTILS_BLEFtp_Delete((ARUTILS_BLEFtp_Connection_t *)manager->connectionObject, namePath);
+}
+
+eARUTILS_ERROR ARUTILS_BLEFtpAL_Rename(ARUTILS_Manager_t *manager, const char *oldNamePath, const char *newNamePath)
+{
+    return ARUTILS_BLEFtp_Rename((ARUTILS_BLEFtp_Connection_t *)manager->connectionObject, oldNamePath, newNamePath);
 }
 
