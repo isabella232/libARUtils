@@ -24,10 +24,7 @@ public class ARUtilsMD5
 		boolean ret = true;
 		try
 		{
-			digest = java.security.MessageDigest
-                .getInstance("MD5");
-			
-			//md5 = digest.digest();
+			digest = java.security.MessageDigest.getInstance("MD5");
 		}
 		catch (NoSuchAlgorithmException e)
 		{
@@ -43,17 +40,13 @@ public class ARUtilsMD5
 		digest.update(buffer, index, len);
 	}
 	
-	public static String getTextDigest(byte[] hash, int index, int len)
+	static public String getTextDigest(byte[] hash, int index, int len)
 	{
 		StringBuffer txt = new StringBuffer();
 		
 		for (int i=0; i<len; i++)
 		{
-			String val = Integer.toHexString(index + i);
-			if (val.length() == 1)
-			{
-				txt.append('0');
-			}
+			String val = String.format("%02x", hash[index + i] & 0x00FF);
 			txt.append(val);
 		}
 		return txt.toString();
