@@ -90,7 +90,9 @@
                 //NSString *NAME = @"Delos_DF";
                 //NSString *NAME = @"Mykonos_BLE";
                 //NSString *NAME = @"Mykonos_DF";
-                NSString *NAME = @"RS_W000207";
+                //NSString *NAME = @"RS_Rouge";
+                //NSString *NAME = @"RS_W000207";
+                NSString *NAME = @"RS_W000159";
                 if ([serviceIdx.peripheral.name isEqualToString:NAME])
                 {
                     NSLog(@"%@", serviceIdx.peripheral);
@@ -102,11 +104,13 @@
     }
     
     //[[ARDiscovery sharedInstance] stop];
-    
+    ARSAL_Sem_t cancelSem;
     eARSAL_ERROR result = ARSAL_OK;
     ARSAL_CentralManager *centralManager = foundService.centralManager;
     CBPeripheral *peripheral = foundService.peripheral;
     BOOL ret = NO;
+    
+    ARSAL_Sem_Init(&cancelSem, 0, 0);
     
     //ARUtils_BLEFtp *bleFtp = [[ARUtils_BLEFtp alloc] init];
     
@@ -161,7 +165,8 @@
     {
         //[bleFtp initWithManager:(__bridge ARNETWORKAL_BLEDeviceManager_t)centralManager device:(__bridge ARNETWORKAL_BLEDevice_t)peripheral];
         //[bleFtp initWithManager:SINGLETON_FOR_CLASS(ARSAL_BLEManager) centralManager:centralManager peripheral:peripheral delegate:nil obj:self];
-        ARUtils_BLEFtp *bleFtp = [[ARUtils_BLEFtp alloc] initWithPeripheral:peripheral cancelSem:NULL port:51];
+        //ARUtils_BLEFtp *bleFtp = [[ARUtils_BLEFtp alloc] initWithPeripheral:peripheral cancelSem:NULL port:51];
+        ARUtils_BLEFtp *bleFtp = [[ARUtils_BLEFtp alloc] initWithPeripheral:peripheral cancelSem:&cancelSem port:21];
         
         ret = [bleFtp registerCharacteristics];
         
@@ -173,14 +178,64 @@
             NSLog(@"LIST: %@", list);
         }*/
         
+        if (ret == YES)
+        {
+            //NSMutableString *list = [[NSMutableString alloc] init];
+            char *resultList = NULL;
+            uint32_t resultListLen = 0;
+            ret = [bleFtp listFiles:@"/internal_000/Rolling_Spider/media" resultList:&resultList resultListLen:&resultListLen];
+            //ret = [bleFtp listFiles:@"/internal_000/Rolling_Spider/thumb" resultList:&resultList resultListLen:&resultListLen];
+            //ret = [bleFtp listFiles:@"/internal_000/Rolling_Spider/" resultList:&resultList resultListLen:&resultListLen];
+            //ret = [bleFtp listFiles:@"/Rolling_Spider" resultList:&resultList resultListLen:&resultListLen];
+            //ret = [bleFtp listFiles:@"/" resultList:&resultList resultListLen:&resultListLen];
+            
+            NSLog(@"LIST: %s", resultList);
+        }
+        
         /*if (ret == YES)
+        {
+            //ret = [bleFtp renameFile:@"/internal_000/Rolling_Spider/media/Rolling_Spider_2014-01-21T160101+0100_3902B87F947BE865A9D137CFA63492B8.jpg" newNamePath:@"/internal_000/Rolling_Spider/media/Rolling_Spider_2014-01-21T160101+0100_3.jpg"];
+            ret = [bleFtp renameFile:@"/internal_000/Rolling_Spider/media/test12.jpg" newNamePath:@"/internal_000/Rolling_Spider/media/test13.jpg"];
+        }*/
+        
+        /*if (ret == YES)
+        {
+            //NSMutableString *list = [[NSMutableString alloc] init];
+            char *resultList = NULL;
+            uint32_t resultListLen = 0;
+            ret = [bleFtp listFiles:@"/internal_000/Rolling_Spider/media" resultList:&resultList resultListLen:&resultListLen];
+
+            NSLog(@"LIST: %s", resultList);
+        }*/
+        
+        if (ret == YES)
         {
             NSString *localFile = [NSString stringWithFormat:@"%@/test.jpg", doc];
             
             //ret = [bleFtp getFile:@"/update/test.jpg" localFile:localFile];
             //ret = [bleFtp getFile:@"/update/test.txt" localFile:localFile];
             //ret = [bleFtp getFile:@"/update/a.txt" localFile:localFile];
-            ret = [bleFtp getFile:@"/update/program.plf" localFile:localFile progressCallback:NULL progressArg:NULL];
+            //ret = [bleFtp getFile:@"/update/program.plf" localFile:localFile progressCallback:NULL progressArg:NULL];
+            
+            //ARSAL_Sem_Post(&cancelSem);
+            //ret = [bleFtp cancelFile];
+            
+            //ret = [bleFtp getFile:@"/internal_000/Rolling_Spider/media/Rolling_Spider_2014-01-21T160101+0100_3902B87F947BE865A9D137CFA63492B8.jpg" localFile:localFile progressCallback:NULL progressArg:NULL];
+            ret = [bleFtp getFile:@"/internal_000/Rolling_Spider/media/Rolling_Spider_2014-01-21T160101+0100_3.jpg" localFile:localFile progressCallback:NULL progressArg:NULL];
+            //ret = [bleFtp getFile:@"/internal_000/Rolling_Spider/media/test1.jpg" localFile:localFile progressCallback:NULL progressArg:NULL];
+        }
+        
+        /*if (ret == YES)
+        {
+            uint8_t *data = NULL;
+            uint32_t dataLen = 0;
+            
+            ret = [bleFtp getFileWithBuffer:@"/internal_000/Rolling_Spider/thumb/Rolling_Spider_2014-01-21T160101+0100_3902B87F947BE865A9D137CFA63492B8.jpg" data:&data dataLen:&dataLen progressCallback:NULL progressArg:NULL];
+        }*/
+        
+        /*if (ret == YES)
+        {
+            ret = [bleFtp renameFile:@"/a.txt" newNamePath:@"/b.txt"];
         }*/
         
         /*if (ret == YES)
@@ -192,7 +247,7 @@
             }
         }*/
         
-        if (ret == YES)
+        /*if (ret == YES)
         {
             NSString *localFile = [NSString stringWithFormat:@"%@/test2.txt", doc];
             
@@ -212,20 +267,21 @@
             fclose(src);
             
             ret = [bleFtp putFile:@"program.plf" localFile:localFile progressCallback:NULL progressArg:NULL resume:NO];
-        }
+        }*/
         
         /*if (ret == YES)
         {
             ret = [bleFtp deleteFile:@"/update/test2.txt"];
         }*/
+        
+        ret = [bleFtp unregisterCharacteristics];
     }
-    
-    
-    result = result;
     
     [SINGLETON_FOR_CLASS(ARSAL_BLEManager) disconnectPeripheral:peripheral withCentralManager:centralManager];
     
     [[ARDiscovery sharedInstance] stop];
+    
+    ARSAL_Sem_Destroy(&cancelSem);
 }
 
 @end
