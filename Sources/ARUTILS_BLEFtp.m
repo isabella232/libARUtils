@@ -38,6 +38,7 @@ NSString* const kARUTILS_BLEFtp_Getting = @"kARUTILS_BLEFtp_Getting";
 #define BLE_PACKET_WRITTEN         "FILE WRITTEN"
 #define BLE_PACKET_NOT_WRITTEN     "FILE NOT WRITTEN"
 #define BLE_PACKET_RENAME_SUCCESS   "Rename successful"
+#define BLE_PACKET_DELETE_SUCCESS   "Delete successful"
 #define BLE_PACKET_
 #define BLE_PACKET_BLOCK_GETTING_COUNT     100
 #define BLE_PACKET_BLOCK_PUTTING_COUNT     500
@@ -489,6 +490,10 @@ NSString* const kARUTILS_BLEFtp_Getting = @"kARUTILS_BLEFtp_Getting";
 #endif
     
     ret = [self sendCommand:"DEL" param:[remoteFile UTF8String] characteristic:_handling];
+    if (ret == YES)
+    {
+        ret = [self readDeleteRet];
+    }
     
     return ret;
 }
@@ -745,6 +750,43 @@ NSString* const kARUTILS_BLEFtp_Getting = @"kARUTILS_BLEFtp_Getting";
                 NSLog(@"%s", packet);
 #endif
                 if ((packetLen == (strlen(BLE_PACKET_RENAME_SUCCESS) + 1)) && (strncmp((char*)packet, BLE_PACKET_RENAME_SUCCESS, strlen(BLE_PACKET_RENAME_SUCCESS)) == 0))
+                {
+                    ret = YES;
+                }
+                else
+                {
+                    ret = NO;
+                }
+            }
+        }
+    }
+    return ret;
+}
+
+- (BOOL)readDeleteRet
+{
+    NSMutableArray *receivedNotifications = [NSMutableArray array];
+    BOOL ret = NO;
+    
+#if ARUTILS_BLEFTP_ENABLE_LOG
+    NSLog(@"%s", __FUNCTION__);
+#endif
+    
+    ret = [SINGLETON_FOR_CLASS(ARSAL_BLEManager) readNotificationData:receivedNotifications maxCount:1 toKey:kARUTILS_BLEFtp_Getting];
+    if (ret == YES)
+    {
+        if ([receivedNotifications count] > 0)
+        {
+            ARSALBLEManagerNotificationData *notificationData = receivedNotifications[0];
+            int packetLen = [[notificationData value] length];
+            uint8_t *packet = (uint8_t *)[[notificationData value] bytes];
+            
+            if (packetLen > 0)
+            {
+#if ARUTILS_BLEFTP_ENABLE_LOG
+                NSLog(@"%s", packet);
+#endif
+                if ((packetLen == (strlen(BLE_PACKET_DELETE_SUCCESS) + 1)) && (strncmp((char*)packet, BLE_PACKET_DELETE_SUCCESS, strlen(BLE_PACKET_DELETE_SUCCESS)) == 0))
                 {
                     ret = YES;
                 }
