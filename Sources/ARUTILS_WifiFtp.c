@@ -24,6 +24,9 @@
 
 #define ARUTILS_WIFIFTP_TAG              "WifiFtp"
 
+#define ARUTILS_WIFIFTP_LOW_SPEED_TIME   1
+#define ARUTILS_WIFIFTP_LOW_SPEED_LIMIT  1
+
 #ifdef DEBUG
 #define ARUTILS_FTP_CURL_VERBOSE         1
 #endif
@@ -1525,6 +1528,26 @@ eARUTILS_ERROR ARUTILS_WifiFtp_ResetOptions(ARUTILS_WifiFtp_Connection_t *connec
     if ((result == ARUTILS_OK) && (connection->password != NULL))
     {
         code = curl_easy_setopt(connection->curl, CURLOPT_PASSWORD, connection->password);
+        
+        if (code != CURLE_OK)
+        {
+            result = ARUTILS_ERROR_CURL_SETOPT;
+        }
+    }
+    
+    if (result == ARUTILS_OK)
+    {
+        code = curl_easy_setopt(connection->curl, CURLOPT_LOW_SPEED_LIMIT, ARUTILS_WIFIFTP_LOW_SPEED_LIMIT);
+        
+        if (code != CURLE_OK)
+        {
+            result = ARUTILS_ERROR_CURL_SETOPT;
+        }
+    }
+    
+    if (result == ARUTILS_OK)
+    {
+        code = curl_easy_setopt(connection->curl, CURLOPT_LOW_SPEED_TIME, ARUTILS_WIFIFTP_LOW_SPEED_TIME);
         
         if (code != CURLE_OK)
         {

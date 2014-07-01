@@ -22,6 +22,9 @@
 
 #define ARUTILS_HTTP_TAG              "Http"
 
+#define ARUTILS_HTTP_LOW_SPEED_TIME   5
+#define ARUTILS_HTTP_LOW_SPEED_LIMIT  1
+
 #ifdef DEBUG
 #define ARUTILS_HTTP_CURL_VERBOSE         1
 #endif
@@ -663,6 +666,15 @@ eARUTILS_ERROR ARUTILS_Http_ResetOptions(ARUTILS_Http_Connection_t *connection)
         }
 #endif
     }
+    if (result == ARUTILS_OK)
+    {
+        code = curl_easy_setopt(connection->curl, CURLOPT_VERBOSE, 1L);
+        
+        if (code != CURLE_OK)
+        {
+            result = ARUTILS_ERROR_CURL_SETOPT;
+        }
+    }
 
     if ((result == ARUTILS_OK) && (connection->serverUrl != NULL))
     {
@@ -688,6 +700,26 @@ eARUTILS_ERROR ARUTILS_Http_ResetOptions(ARUTILS_Http_Connection_t *connection)
     {
         code = curl_easy_setopt(connection->curl, CURLOPT_PASSWORD, connection->password);
 
+        if (code != CURLE_OK)
+        {
+            result = ARUTILS_ERROR_CURL_SETOPT;
+        }
+    }
+    
+    if (result == ARUTILS_OK)
+    {
+        code = curl_easy_setopt(connection->curl, CURLOPT_LOW_SPEED_LIMIT, ARUTILS_HTTP_LOW_SPEED_LIMIT);
+        
+        if (code != CURLE_OK)
+        {
+            result = ARUTILS_ERROR_CURL_SETOPT;
+        }
+    }
+    
+    if (result == ARUTILS_OK)
+    {
+        code = curl_easy_setopt(connection->curl, CURLOPT_LOW_SPEED_TIME, ARUTILS_HTTP_LOW_SPEED_TIME);
+        
         if (code != CURLE_OK)
         {
             result = ARUTILS_ERROR_CURL_SETOPT;
