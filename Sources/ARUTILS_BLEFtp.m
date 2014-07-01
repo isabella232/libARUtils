@@ -49,8 +49,8 @@ NSString* const kARUTILS_BLEFtp_Getting = @"kARUTILS_BLEFtp_Getting";
 
 #define ARUTILS_BLEFTP_TAG      "BLEFtp"
 
-#define ARUTILS_BLEFTP_ENABLE_LOG (1)
-//#define ARUTILS_BLEFTP_ENABLE_LOG (0)
+//#define ARUTILS_BLEFTP_ENABLE_LOG (1)
+#define ARUTILS_BLEFTP_ENABLE_LOG (0)
 
 @interface  ARUtils_BLEFtp ()
 {
