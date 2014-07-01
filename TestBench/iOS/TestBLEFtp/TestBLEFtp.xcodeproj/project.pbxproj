@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		631793181948933F00B8448C /* ARUTILS_Manager.c in Sources */ = {isa = PBXBuildFile; fileRef = 631793161948933F00B8448C /* ARUTILS_Manager.c */; };
+		63AFFB811961A1860049546B /* libARSAL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 63AFFB801961A1860049546B /* libARSAL.framework */; };
 		63B6F4BF1938FAC600C8EA98 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 63B6F4BE1938FAC600C8EA98 /* Foundation.framework */; };
 		63B6F4C11938FAC600C8EA98 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 63B6F4C01938FAC600C8EA98 /* CoreGraphics.framework */; };
 		63B6F4C31938FAC600C8EA98 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 63B6F4C21938FAC600C8EA98 /* UIKit.framework */; };
@@ -26,13 +27,14 @@
 		63B6F528193C63DE00C8EA98 /* ARUTILS_WifiFtp.c in Sources */ = {isa = PBXBuildFile; fileRef = 63B6F526193C63DE00C8EA98 /* ARUTILS_WifiFtp.c */; };
 		63B6F52A193C640900C8EA98 /* libARDiscovery.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 63B6F529193C640900C8EA98 /* libARDiscovery.framework */; };
 		63B6F52C193C643700C8EA98 /* libcurl.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 63B6F52B193C643700C8EA98 /* libcurl.framework */; };
-		63B6F566193DBC3200C8EA98 /* libARSAL_dbg.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 63B6F565193DBC3200C8EA98 /* libARSAL_dbg.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		631793161948933F00B8448C /* ARUTILS_Manager.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = ARUTILS_Manager.c; path = ../../../Sources/ARUTILS_Manager.c; sourceTree = "<group>"; };
 		631793171948933F00B8448C /* ARUTILS_Manager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ARUTILS_Manager.h; path = ../../../Sources/ARUTILS_Manager.h; sourceTree = "<group>"; };
 		631793191948935200B8448C /* ARUTILS_Manager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ARUTILS_Manager.h; path = ../../../Includes/libARUtils/ARUTILS_Manager.h; sourceTree = "<group>"; };
+		63AFFB6E19616E6C0049546B /* ARUTILS_Error.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ARUTILS_Error.h; path = ../../../Includes/libARUtils/ARUTILS_Error.h; sourceTree = "<group>"; };
+		63AFFB801961A1860049546B /* libARSAL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = libARSAL.framework; path = ../../../../ARBuildUtils/Targets/iOS/Install/Frameworks/libARSAL.framework; sourceTree = "<group>"; };
 		63B6F4BB1938FAC600C8EA98 /* TestBLEFtp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TestBLEFtp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		63B6F4BE1938FAC600C8EA98 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		63B6F4C01938FAC600C8EA98 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
@@ -63,7 +65,6 @@
 		63B6F527193C63DE00C8EA98 /* ARUTILS_WifiFtp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ARUTILS_WifiFtp.h; path = ../../../Sources/ARUTILS_WifiFtp.h; sourceTree = "<group>"; };
 		63B6F529193C640900C8EA98 /* libARDiscovery.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = libARDiscovery.framework; path = ../../../../ARBuildUtils/Targets/iOS/Install/Frameworks/libARDiscovery.framework; sourceTree = "<group>"; };
 		63B6F52B193C643700C8EA98 /* libcurl.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = libcurl.framework; path = ../../../../ARBuildUtils/Targets/iOS/Install/Frameworks/libcurl.framework; sourceTree = "<group>"; };
-		63B6F565193DBC3200C8EA98 /* libARSAL_dbg.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = libARSAL_dbg.framework; path = ../../../../ARBuildUtils/Targets/iOS/Install/Frameworks/libARSAL_dbg.framework; sourceTree = "<group>"; };
 		63B6F62719404DD900C8EA98 /* ARNETWORKAL_BLENetwork.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ARNETWORKAL_BLENetwork.h; path = ../../../../libARNetworkAL/Sources/BLE/ARNETWORKAL_BLENetwork.h; sourceTree = "<group>"; };
 		63B6F62819404DD900C8EA98 /* ARNETWORKAL_BLENetwork.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = ARNETWORKAL_BLENetwork.m; path = ../../../../libARNetworkAL/Sources/BLE/ARNETWORKAL_BLENetwork.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -73,7 +74,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				63B6F566193DBC3200C8EA98 /* libARSAL_dbg.framework in Frameworks */,
+				63AFFB811961A1860049546B /* libARSAL.framework in Frameworks */,
 				63B6F52C193C643700C8EA98 /* libcurl.framework in Frameworks */,
 				63B6F52A193C640900C8EA98 /* libARDiscovery.framework in Frameworks */,
 				63B6F4C11938FAC600C8EA98 /* CoreGraphics.framework in Frameworks */,
@@ -122,7 +123,7 @@
 		63B6F4BD1938FAC600C8EA98 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				63B6F565193DBC3200C8EA98 /* libARSAL_dbg.framework */,
+				63AFFB801961A1860049546B /* libARSAL.framework */,
 				63B6F52B193C643700C8EA98 /* libcurl.framework */,
 				63B6F529193C640900C8EA98 /* libARDiscovery.framework */,
 				63B6F4BE1938FAC600C8EA98 /* Foundation.framework */,
@@ -171,6 +172,7 @@
 		63B6F4FA193C58B100C8EA98 /* BLEFtp */ = {
 			isa = PBXGroup;
 			children = (
+				63AFFB6E19616E6C0049546B /* ARUTILS_Error.h */,
 				63B6F525193C63A600C8EA98 /* config.h */,
 				63B6F523193C630200C8EA98 /* ARUTILS_FileSystem.c */,
 				63B6F4FB193C58FA00C8EA98 /* ARUTILS_BLEFtp.h */,

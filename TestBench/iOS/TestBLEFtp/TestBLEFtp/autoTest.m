@@ -92,7 +92,10 @@
                 //NSString *NAME = @"Mykonos_DF";
                 //NSString *NAME = @"RS_Rouge";
                 //NSString *NAME = @"RS_W000207";
-                NSString *NAME = @"RS_W000159";
+                //NSString *NAME = @"RS_W000159";
+                //NSString *NAME = @"RS_R000387";
+                //NSString *NAME = @"RS_B000272";
+                NSString *NAME = @"RS_W000444";
                 if ([serviceIdx.peripheral.name isEqualToString:NAME])
                 {
                     NSLog(@"%@", serviceIdx.peripheral);
@@ -105,10 +108,10 @@
     
     //[[ARDiscovery sharedInstance] stop];
     ARSAL_Sem_t cancelSem;
-    eARSAL_ERROR result = ARSAL_OK;
+    eARSAL_ERROR resultSal= ARSAL_OK;
     ARSAL_CentralManager *centralManager = foundService.centralManager;
     CBPeripheral *peripheral = foundService.peripheral;
-    BOOL ret = NO;
+    //BOOL ret = NO;
     
     ARSAL_Sem_Init(&cancelSem, 0, 0);
     
@@ -116,11 +119,11 @@
     
     [NSThread sleepForTimeInterval:1];
     
-    result = [SINGLETON_FOR_CLASS(ARSAL_BLEManager) connectToPeripheral:foundService.peripheral withCentralManager:centralManager];
+    resultSal = [SINGLETON_FOR_CLASS(ARSAL_BLEManager) connectToPeripheral:foundService.peripheral withCentralManager:centralManager];
     
-    if  (result == ARSAL_OK)
+    if  (resultSal == ARSAL_OK)
     {
-        result = [SINGLETON_FOR_CLASS(ARSAL_BLEManager) discoverNetworkServices:nil];
+        resultSal = [SINGLETON_FOR_CLASS(ARSAL_BLEManager) discoverNetworkServices:nil];
     }
     
     //CBService *service = [[_peripheral services]
@@ -129,7 +132,7 @@
         NSLog(@"Service : %@, %04x", [service.UUID representativeString], (unsigned int)service.UUID);
         if([[service.UUID representativeString] hasPrefix:@"f"])
         {
-            result = [SINGLETON_FOR_CLASS(ARSAL_BLEManager) discoverNetworkCharacteristics:nil forService:service];
+            resultSal = [SINGLETON_FOR_CLASS(ARSAL_BLEManager) discoverNetworkCharacteristics:nil forService:service];
             
             for (CBCharacteristic *characteristic in [service characteristics])
             {
@@ -137,16 +140,16 @@
             }
         }
     }*/
-    for(int i = 0 ; (i < [[peripheral services] count]) && (result == ARSAL_OK) ; i++)
+    for(int i = 0 ; (i < [[peripheral services] count]) && (resultSal == ARSAL_OK) ; i++)
     {
         CBService *service = [[peripheral services] objectAtIndex:i];
         NSLog(@"Service : %@, %04x", [service.UUID representativeString], (unsigned int)service.UUID);
         
         if([[service.UUID representativeString] hasPrefix:@"f"])
         {
-            result = [SINGLETON_FOR_CLASS(ARSAL_BLEManager) discoverNetworkCharacteristics:nil forService:service];
+            resultSal = [SINGLETON_FOR_CLASS(ARSAL_BLEManager) discoverNetworkCharacteristics:nil forService:service];
             
-            for(int j = 0 ; (j < [[service characteristics] count]) && (result == ARSAL_OK) ; j++)
+            for(int j = 0 ; (j < [[service characteristics] count]) && (resultSal == ARSAL_OK) ; j++)
             {
                 CBCharacteristic *characteristic = [[service characteristics] objectAtIndex:j];
                 NSLog(@"Characteristic : %@, %04x", [characteristic.UUID representativeString], (unsigned int)characteristic.UUID);
@@ -154,100 +157,112 @@
                 if ([[characteristic.UUID representativeString] hasPrefix:@"fd23"]
                     || [[characteristic.UUID representativeString] hasPrefix:@"fd53"])
                 {
-                    result = [SINGLETON_FOR_CLASS(ARSAL_BLEManager) setNotificationCharacteristic:characteristic];
+                    resultSal = [SINGLETON_FOR_CLASS(ARSAL_BLEManager) setNotificationCharacteristic:characteristic];
                     NSLog(@"==REGISTERED Characteristic : %@, %04x", [characteristic.UUID representativeString], (unsigned int)characteristic.UUID);
                 }
             }
         }
     }
 
-    if  (result == ARSAL_OK)
+    if  (resultSal == ARSAL_OK)
     {
         //[bleFtp initWithManager:(__bridge ARNETWORKAL_BLEDeviceManager_t)centralManager device:(__bridge ARNETWORKAL_BLEDevice_t)peripheral];
         //[bleFtp initWithManager:SINGLETON_FOR_CLASS(ARSAL_BLEManager) centralManager:centralManager peripheral:peripheral delegate:nil obj:self];
         //ARUtils_BLEFtp *bleFtp = [[ARUtils_BLEFtp alloc] initWithPeripheral:peripheral cancelSem:NULL port:51];
         ARUtils_BLEFtp *bleFtp = [[ARUtils_BLEFtp alloc] initWithPeripheral:peripheral cancelSem:&cancelSem port:21];
+        eARUTILS_ERROR result = ARUTILS_OK;
         
-        ret = [bleFtp registerCharacteristics];
+        result = [bleFtp registerCharacteristics];
         
-        /*if (ret == YES)
+        /*if (result == ARUTILS_OK)
         {
             NSMutableString *list = [[NSMutableString alloc] init];
-            ret = [bleFtp listFiles:@"/update/" list:list];
+            result = [bleFtp listFiles:@"/update/" list:list];
             
             NSLog(@"LIST: %@", list);
         }*/
         
-        if (ret == YES)
+        if (result == ARUTILS_OK)
         {
             //NSMutableString *list = [[NSMutableString alloc] init];
             char *resultList = NULL;
             uint32_t resultListLen = 0;
-            ret = [bleFtp listFiles:@"/internal_000/Rolling_Spider/media" resultList:&resultList resultListLen:&resultListLen];
-            //ret = [bleFtp listFiles:@"/internal_000/Rolling_Spider/thumb" resultList:&resultList resultListLen:&resultListLen];
-            //ret = [bleFtp listFiles:@"/internal_000/Rolling_Spider/" resultList:&resultList resultListLen:&resultListLen];
-            //ret = [bleFtp listFiles:@"/Rolling_Spider" resultList:&resultList resultListLen:&resultListLen];
-            //ret = [bleFtp listFiles:@"/" resultList:&resultList resultListLen:&resultListLen];
+            //result = [bleFtp listFiles:@"/internal_000/Rolling_Spider/media" resultList:&resultList resultListLen:&resultListLen];
+            result = [bleFtp listFiles:@"/internal_000/Rolling_Spider/thumb" resultList:&resultList resultListLen:&resultListLen];
+            //result = [bleFtp listFiles:@"/internal_000/Rolling_Spider/" resultList:&resultList resultListLen:&resultListLen];
+            //result = [bleFtp listFiles:@"/Rolling_Spider" resultList:&resultList resultListLen:&resultListLen];
+            //result = [bleFtp listFiles:@"/" resultList:&resultList resultListLen:&resultListLen];
+            
+            NSLog(@"LIST: %s", resultList);
+            
+            result = [bleFtp listFiles:@"/internal_000/Rolling_Spider/thumb" resultList:&resultList resultListLen:&resultListLen];
             
             NSLog(@"LIST: %s", resultList);
         }
         
-        /*if (ret == YES)
+        if (result == ARUTILS_OK)
         {
-            //ret = [bleFtp renameFile:@"/internal_000/Rolling_Spider/media/Rolling_Spider_2014-01-21T160101+0100_3902B87F947BE865A9D137CFA63492B8.jpg" newNamePath:@"/internal_000/Rolling_Spider/media/Rolling_Spider_2014-01-21T160101+0100_3.jpg"];
-            ret = [bleFtp renameFile:@"/internal_000/Rolling_Spider/media/test12.jpg" newNamePath:@"/internal_000/Rolling_Spider/media/test13.jpg"];
+            NSString *localFile = [NSString stringWithFormat:@"%@/test.jpg", doc];
+            
+            result = [bleFtp getFile:@"/internal_000/Rolling_Spider/thumb/Rolling_Spider_2014-07-01T161734+0000_64C25D8F3447C7AADCEA9AB5E5D6462A.jpg"localFile:localFile progressCallback:NULL progressArg:NULL];
+        }
+        
+        /*if (result == ARUTILS_OK)
+        {
+            //result = [bleFtp renameFile:@"/internal_000/Rolling_Spider/media/Rolling_Spider_2014-01-21T160101+0100_3902B87F947BE865A9D137CFA63492B8.jpg" newNamePath:@"/internal_000/Rolling_Spider/media/Rolling_Spider_2014-01-21T160101+0100_3.jpg"];
+            result = [bleFtp renameFile:@"/internal_000/Rolling_Spider/media/test12.jpg" newNamePath:@"/internal_000/Rolling_Spider/media/test13.jpg"];
         }*/
         
-        /*if (ret == YES)
+        /*if (result == ARUTILS_OK)
         {
             //NSMutableString *list = [[NSMutableString alloc] init];
             char *resultList = NULL;
             uint32_t resultListLen = 0;
-            ret = [bleFtp listFiles:@"/internal_000/Rolling_Spider/media" resultList:&resultList resultListLen:&resultListLen];
+            result = [bleFtp listFiles:@"/internal_000/Rolling_Spider/media" resultList:&resultList resultListLen:&resultListLen];
 
             NSLog(@"LIST: %s", resultList);
         }*/
         
-        if (ret == YES)
+        /*if (result == ARUTILS_OK)
         {
             NSString *localFile = [NSString stringWithFormat:@"%@/test.jpg", doc];
             
-            //ret = [bleFtp getFile:@"/update/test.jpg" localFile:localFile];
-            //ret = [bleFtp getFile:@"/update/test.txt" localFile:localFile];
-            //ret = [bleFtp getFile:@"/update/a.txt" localFile:localFile];
-            //ret = [bleFtp getFile:@"/update/program.plf" localFile:localFile progressCallback:NULL progressArg:NULL];
+            //result = [bleFtp getFile:@"/update/test.jpg" localFile:localFile];
+            //result = [bleFtp getFile:@"/update/test.txt" localFile:localFile];
+            //result = [bleFtp getFile:@"/update/a.txt" localFile:localFile];
+            //result = [bleFtp getFile:@"/update/program.plf" localFile:localFile progressCallback:NULL progressArg:NULL];
             
             //ARSAL_Sem_Post(&cancelSem);
-            //ret = [bleFtp cancelFile];
+            //result = [bleFtp cancelFile];
             
-            //ret = [bleFtp getFile:@"/internal_000/Rolling_Spider/media/Rolling_Spider_2014-01-21T160101+0100_3902B87F947BE865A9D137CFA63492B8.jpg" localFile:localFile progressCallback:NULL progressArg:NULL];
-            ret = [bleFtp getFile:@"/internal_000/Rolling_Spider/media/Rolling_Spider_2014-01-21T160101+0100_3.jpg" localFile:localFile progressCallback:NULL progressArg:NULL];
-            //ret = [bleFtp getFile:@"/internal_000/Rolling_Spider/media/test1.jpg" localFile:localFile progressCallback:NULL progressArg:NULL];
-        }
+            //result = [bleFtp getFile:@"/internal_000/Rolling_Spider/media/Rolling_Spider_2014-01-21T160101+0100_3902B87F947BE865A9D137CFA63492B8.jpg" localFile:localFile progressCallback:NULL progressArg:NULL];
+            result = [bleFtp getFile:@"/internal_000/Rolling_Spider/media/Rolling_Spider_2014-06-30T164211+0000_8786A2D82757458FA26DC8127370E5E2.jpg" localFile:localFile progressCallback:NULL progressArg:NULL];
+            //result = [bleFtp getFile:@"/internal_000/Rolling_Spider/media/test1.jpg" localFile:localFile progressCallback:NULL progressArg:NULL];
+        }*/
         
-        /*if (ret == YES)
+        /*if (result == ARUTILS_OK)
         {
             uint8_t *data = NULL;
             uint32_t dataLen = 0;
             
-            ret = [bleFtp getFileWithBuffer:@"/internal_000/Rolling_Spider/thumb/Rolling_Spider_2014-01-21T160101+0100_3902B87F947BE865A9D137CFA63492B8.jpg" data:&data dataLen:&dataLen progressCallback:NULL progressArg:NULL];
+            result = [bleFtp getFileWithBuffer:@"/internal_000/Rolling_Spider/thumb/Rolling_Spider_2014-01-21T160101+0100_3902B87F947BE865A9D137CFA63492B8.jpg" data:&data dataLen:&dataLen progressCallback:NULL progressArg:NULL];
         }*/
         
-        /*if (ret == YES)
+        /*if (result == ARUTILS_OK)
         {
-            ret = [bleFtp renameFile:@"/a.txt" newNamePath:@"/b.txt"];
+            result = [bleFtp renameFile:@"/a.txt" newNamePath:@"/b.txt"];
         }*/
         
-        /*if (ret == YES)
+        /*if (result == ARUTILS_OK)
         {
-            ret = [bleFtp abortPutFile:@"/update/program.plf"];
+            result = [bleFtp abortPutFile:@"/update/program.plf"];
             if (ret == YES)
             {
-                ret = [bleFtp deleteFile:@"/update/program.plf"];
+                result = [bleFtp deleteFile:@"/update/program.plf"];
             }
         }*/
         
-        /*if (ret == YES)
+        if (result == ARUTILS_OK)
         {
             NSString *localFile = [NSString stringWithFormat:@"%@/test2.txt", doc];
             
@@ -257,7 +272,7 @@
             memset(block, '0', sizeof(block));
             //for (int i=0; i<((500 * 10) + 2); i++)
             //for (int i=0; i<((500 * 152)); i++)
-            for (int i=0; i<((500 * 6)); i++)
+            for (int i=0; i<((500 * 2)); i++)
             //for (int i=0; i<((500 * 1)); i++)
             {
                 fwrite(block, 1, sizeof(block), src);
@@ -266,15 +281,16 @@
             fflush(src);
             fclose(src);
             
-            ret = [bleFtp putFile:@"program.plf" localFile:localFile progressCallback:NULL progressArg:NULL resume:NO];
-        }*/
+            result = [bleFtp putFile:@"program.plf.tmp" localFile:localFile progressCallback:NULL progressArg:NULL resume:YES];
+        }
         
-        /*if (ret == YES)
+        if (result == ARUTILS_OK)
         {
-            ret = [bleFtp deleteFile:@"/update/test2.txt"];
-        }*/
+            //result = [bleFtp deleteFile:@"/update/test2.txt"];
+            result = [bleFtp deleteFile:@"program.plf.tmp"];
+        }
         
-        ret = [bleFtp unregisterCharacteristics];
+        result = [bleFtp unregisterCharacteristics];
     }
     
     [SINGLETON_FOR_CLASS(ARSAL_BLEManager) disconnectPeripheral:peripheral withCentralManager:centralManager];
