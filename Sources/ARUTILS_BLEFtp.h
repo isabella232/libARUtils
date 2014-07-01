@@ -14,18 +14,18 @@
 
 
 - (id)initWithPeripheral:(CBPeripheral *)peripheral cancelSem:(ARSAL_Sem_t*)cancelSem port:(int)port;
-- (BOOL)registerCharacteristics;
-- (BOOL)unregisterCharacteristics;
-- (BOOL)cancelFile;
+- (eARUTILS_ERROR)registerCharacteristics;
+- (eARUTILS_ERROR)unregisterCharacteristics;
 
-- (BOOL)listFiles:(NSString*)remotePath resultList:(char **)resultList resultListLen:(uint32_t *)resultListLen;
-- (BOOL)sizeFile:(NSString*)remoteFile fileSize:(double*)fileSize;
-- (BOOL)getFile:(NSString*)remoteFile localFile:(NSString*)localFile progressCallback:(ARUTILS_Ftp_ProgressCallback_t)progressCallback progressArg:(void *)progressArg;
-- (BOOL)getFileWithBuffer:(NSString*)remoteFile data:(uint8_t**)data dataLen:(uint32_t*)dataLen progressCallback:(ARUTILS_Ftp_ProgressCallback_t)progressCallback progressArg:(void *)progressArg;
-- (BOOL)putFile:(NSString*)remoteFile localFile:(NSString*)localFile progressCallback:(ARUTILS_Ftp_ProgressCallback_t)progressCallback progressArg:(void *)progressArg resume:(BOOL)resume;
-- (BOOL)abortPutFile:(NSString*)remoteFile;
-- (BOOL)deleteFile:(NSString*)remoteFile;
-- (BOOL)renameFile:(NSString*)oldNamePath newNamePath:(NSString*)newNamePath;
+- (eARUTILS_ERROR)cancelFile;
+- (eARUTILS_ERROR)listFiles:(NSString*)remotePath resultList:(char **)resultList resultListLen:(uint32_t *)resultListLen;
+- (eARUTILS_ERROR)sizeFile:(NSString*)remoteFile fileSize:(double*)fileSize;
+- (eARUTILS_ERROR)getFile:(NSString*)remoteFile localFile:(NSString*)localFile progressCallback:(ARUTILS_Ftp_ProgressCallback_t)progressCallback progressArg:(void *)progressArg;
+- (eARUTILS_ERROR)getFileWithBuffer:(NSString*)remoteFile data:(uint8_t**)data dataLen:(uint32_t*)dataLen progressCallback:(ARUTILS_Ftp_ProgressCallback_t)progressCallback progressArg:(void *)progressArg;
+- (eARUTILS_ERROR)putFile:(NSString*)remoteFile localFile:(NSString*)localFile progressCallback:(ARUTILS_Ftp_ProgressCallback_t)progressCallback progressArg:(void *)progressArg resume:(BOOL)resume;
+- (eARUTILS_ERROR)abortPutFile:(NSString*)remoteFile;
+- (eARUTILS_ERROR)deleteFile:(NSString*)remoteFile;
+- (eARUTILS_ERROR)renameFile:(NSString*)oldNamePath newNamePath:(NSString*)newNamePath;
 
 @end
 

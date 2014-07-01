@@ -32,6 +32,8 @@ typedef enum
     ARUTILS_ERROR_FTP_SIZE, /**< ftp file size error */
     ARUTILS_ERROR_FTP_RESUME, /**< ftp resume error */
     ARUTILS_ERROR_FTP_CANCELED, /**< ftp user canceled error */
+    ARUTILS_ERROR_FTP_FILE, /**< ftp file error */
+    ARUTILS_ERROR_FTP_MD5, /**< ftp md5 error */
 
     ARUTILS_ERROR_HTTP_CONNECT = -5000, /**< http connect error */
     ARUTILS_ERROR_HTTP_CODE, /**< http code error */
@@ -40,8 +42,6 @@ typedef enum
     ARUTILS_ERROR_HTTP_SIZE, /**< http file size error */
     ARUTILS_ERROR_HTTP_RESUME, /**< http resume error */
     ARUTILS_ERROR_HTTP_CANCELED, /**< http user canceled error */
-
-    ARUTILS_ERROR_BLE_FAILED = -6000, /**< BLE ftp failed error */
 
     ARUTILS_ERROR_NETWORK_TYPE = -7000, /**< Network type, not available for the platform error */
 
