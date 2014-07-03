@@ -97,10 +97,10 @@ NSString* const kARUTILS_BLEFtp_Getting = @"kARUTILS_BLEFtp_Getting";
     {
         CBService *service = [[_peripheral services] objectAtIndex:i];
 #if ARUTILS_BLEFTP_ENABLE_LOG
-        NSLog(@"Service : %@, %04x", [service.UUID representativeString], (unsigned int)service.UUID);
+        NSLog(@"Service : %@, %04x", [service.UUID shortUUID], (unsigned int)service.UUID);
 #endif
         
-        if([[service.UUID representativeString] hasPrefix:[NSString stringWithFormat:@"fd%02d", _port]])
+        if([[service.UUID shortUUID] hasPrefix:[NSString stringWithFormat:@"fd%02d", _port]])
         {
             //discoverCharacteristicsResult = [SINGLETON_FOR_CLASS(ARSAL_BLEManager) discoverNetworkCharacteristics:nil forService:service];
             
@@ -112,16 +112,16 @@ NSString* const kARUTILS_BLEFtp_Getting = @"kARUTILS_BLEFtp_Getting";
                 for (CBCharacteristic *characteristic in [service characteristics])
                 {
 #if ARUTILS_BLEFTP_ENABLE_LOG
-                    NSLog(@"CBCharacteristic: %@", characteristic.UUID.representativeString);
+                    NSLog(@"CBCharacteristic: %@", characteristic.UUID.shortUUID);
 #endif
-                    if ([characteristic.UUID.representativeString isEqualToString:[NSString stringWithFormat:@"fd%02d", _port + 1]])
+                    if ([characteristic.UUID.shortUUID hasPrefix:[NSString stringWithFormat:@"fd%02d", _port + 1]])
                     {
                         if ((characteristic.properties & CBCharacteristicPropertyWriteWithoutResponse) == CBCharacteristicPropertyWriteWithoutResponse)
                         {
                             _transferring = characteristic;
                         }
                     }
-                    else if ([characteristic.UUID.representativeString isEqualToString:[NSString stringWithFormat:@"fd%02d", _port + 2]])
+                    else if ([characteristic.UUID.shortUUID hasPrefix:[NSString stringWithFormat:@"fd%02d", _port + 2]])
                     {
                         if (((characteristic.properties & CBCharacteristicPropertyRead) == CBCharacteristicPropertyRead)
                             && ((characteristic.properties & CBCharacteristicPropertyWriteWithoutResponse) == CBCharacteristicPropertyWriteWithoutResponse))
@@ -133,7 +133,7 @@ NSString* const kARUTILS_BLEFtp_Getting = @"kARUTILS_BLEFtp_Getting";
                             _arrayGetting = [NSArray arrayWithObject:characteristic];
                         }
                     }
-                    else if ([characteristic.UUID.representativeString isEqualToString:[NSString stringWithFormat:@"fd%02d", _port + 3]])
+                    else if ([characteristic.UUID.shortUUID hasPrefix:[NSString stringWithFormat:@"fd%02d", _port + 3]])
                     {
                         if ((characteristic.properties & CBCharacteristicPropertyWriteWithoutResponse) == CBCharacteristicPropertyWriteWithoutResponse)
                         {

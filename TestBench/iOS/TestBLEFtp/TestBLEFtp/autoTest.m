@@ -95,7 +95,10 @@
                 //NSString *NAME = @"RS_W000159";
                 //NSString *NAME = @"RS_R000387";
                 //NSString *NAME = @"RS_B000272";
-                NSString *NAME = @"RS_W000444";
+                //NSString *NAME = @"RS_W000444";
+                //NSString *NAME = @"RS_B000497";
+                //NSString *NAME = @"RS_B000443";
+                NSString *NAME = @"RS_R000387";
                 if ([serviceIdx.peripheral.name isEqualToString:NAME])
                 {
                     NSLog(@"%@", serviceIdx.peripheral);
@@ -129,36 +132,36 @@
     //CBService *service = [[_peripheral services]
     /*for (CBService *service in [peripheral services])
     {
-        NSLog(@"Service : %@, %04x", [service.UUID representativeString], (unsigned int)service.UUID);
-        if([[service.UUID representativeString] hasPrefix:@"f"])
+        NSLog(@"Service : %@, %@, %04x", [service.UUID representativeString], [service.UUID shortUUID], (unsigned int)service.UUID);
+        if([[service.UUID shortUUID] hasPrefix:@"f"])
         {
             resultSal = [SINGLETON_FOR_CLASS(ARSAL_BLEManager) discoverNetworkCharacteristics:nil forService:service];
             
             for (CBCharacteristic *characteristic in [service characteristics])
             {
-                NSLog(@"Service : %@, %04x", [characteristic.UUID representativeString], (unsigned int)characteristic.UUID);
+                NSLog(@"Characteristic : %@, %@, %04x", [characteristic.UUID representativeString], [characteristic.UUID shortUUID], (unsigned int)characteristic.UUID);
             }
         }
     }*/
     for(int i = 0 ; (i < [[peripheral services] count]) && (resultSal == ARSAL_OK) ; i++)
     {
         CBService *service = [[peripheral services] objectAtIndex:i];
-        NSLog(@"Service : %@, %04x", [service.UUID representativeString], (unsigned int)service.UUID);
+        NSLog(@"Service : %@, %@, %04x", [service.UUID representativeString], [service.UUID shortUUID], (unsigned int)service.UUID);
         
-        if([[service.UUID representativeString] hasPrefix:@"f"])
+        if([[service.UUID shortUUID] hasPrefix:@"f"])
         {
             resultSal = [SINGLETON_FOR_CLASS(ARSAL_BLEManager) discoverNetworkCharacteristics:nil forService:service];
             
             for(int j = 0 ; (j < [[service characteristics] count]) && (resultSal == ARSAL_OK) ; j++)
             {
                 CBCharacteristic *characteristic = [[service characteristics] objectAtIndex:j];
-                NSLog(@"Characteristic : %@, %04x", [characteristic.UUID representativeString], (unsigned int)characteristic.UUID);
+                NSLog(@"Characteristic : %@, %@, %04x", [characteristic.UUID representativeString], [characteristic.UUID shortUUID], (unsigned int)characteristic.UUID);
                 
-                if ([[characteristic.UUID representativeString] hasPrefix:@"fd23"]
-                    || [[characteristic.UUID representativeString] hasPrefix:@"fd53"])
+                if ([[characteristic.UUID shortUUID] hasPrefix:@"fd23"]
+                    || [[characteristic.UUID shortUUID] hasPrefix:@"fd53"])
                 {
                     resultSal = [SINGLETON_FOR_CLASS(ARSAL_BLEManager) setNotificationCharacteristic:characteristic];
-                    NSLog(@"==REGISTERED Characteristic : %@, %04x", [characteristic.UUID representativeString], (unsigned int)characteristic.UUID);
+                    NSLog(@"==REGISTERED Characteristic : %@, %@, %04x", [characteristic.UUID representativeString], [characteristic.UUID shortUUID], (unsigned int)characteristic.UUID);
                 }
             }
         }
@@ -187,8 +190,8 @@
             //NSMutableString *list = [[NSMutableString alloc] init];
             char *resultList = NULL;
             uint32_t resultListLen = 0;
-            //result = [bleFtp listFiles:@"/internal_000/Rolling_Spider/media" resultList:&resultList resultListLen:&resultListLen];
-            result = [bleFtp listFiles:@"/internal_000/Rolling_Spider/thumb" resultList:&resultList resultListLen:&resultListLen];
+            result = [bleFtp listFiles:@"/internal_000/Rolling_Spider/media" resultList:&resultList resultListLen:&resultListLen];
+            //result = [bleFtp listFiles:@"/internal_000/Rolling_Spider/thumb" resultList:&resultList resultListLen:&resultListLen];
             //result = [bleFtp listFiles:@"/internal_000/Rolling_Spider/" resultList:&resultList resultListLen:&resultListLen];
             //result = [bleFtp listFiles:@"/Rolling_Spider" resultList:&resultList resultListLen:&resultListLen];
             //result = [bleFtp listFiles:@"/" resultList:&resultList resultListLen:&resultListLen];
