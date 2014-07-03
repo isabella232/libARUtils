@@ -78,6 +78,10 @@ public class ARUtilsBLEFtp
         nativeJNIInit();
     }*/
 	
+	public ARUtilsBLEFtp()
+	{
+	}
+	
 	public void initWithDevice(ARSALBLEManager bleManager, BluetoothGatt gattDevice, int port)
 	{
 		this.bleManager = bleManager;

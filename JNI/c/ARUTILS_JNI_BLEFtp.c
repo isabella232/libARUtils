@@ -4,12 +4,17 @@
  * @date 
  * @author 
  */
+ 
+#define DEBUG
 
-/*****************************************
- * 
- *             include file :
- *
- *****************************************/
+#ifdef NDEBUG
+/* Android ndk-build NDK_DEBUG=0*/
+#else
+/* Android ndk-build NDK_DEBUG=1*/
+#ifndef DEBUG
+#define DEBUG
+#endif
+#endif
 
 #include <jni.h>
 #include <stdlib.h>
@@ -108,7 +113,7 @@ ARUTILS_BLEFtp_Connection_t * ARUTILS_BLEFtp_Connection_New(ARSAL_Sem_t *cancelS
     }
 
     
-    if((port == 0) || (((port - 1) % 10) != 1))
+    if((port == 0) || ((port % 10) != 1))
     {
         *error = ARUTILS_ERROR_BAD_PARAMETER;
     }
@@ -142,7 +147,7 @@ ARUTILS_BLEFtp_Connection_t * ARUTILS_BLEFtp_Connection_New(ARSAL_Sem_t *cancelS
             jmethodID bleFtpInitMethod = (*env)->GetMethodID(env, bleFtpObjectCls, "initWithDevice", "(Lcom/parrot/arsdk/arnetworkal/ARNetworkALBLEManager;Landroid/bluetooth/BluetoothGatt;I)V");
             (*env)->CallVoidMethod(env, bleFtpObject, bleFtpInitMethod, bleManager, device, port);
 
-            jmethodID bleFtpRegisterMethod = (*env)->GetMethodID(env, bleFtpObjectCls, "registerCharacteristics", "()V");
+            jmethodID bleFtpRegisterMethod = (*env)->GetMethodID(env, bleFtpObjectCls, "registerCharacteristics", "()Z");
             (*env)->CallVoidMethod(env, bleFtpObject, bleFtpRegisterMethod);
         }
     }
