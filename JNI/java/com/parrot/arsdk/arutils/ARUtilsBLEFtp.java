@@ -165,14 +165,21 @@ public class ARUtilsBLEFtp
 		
 		ARSALPrint.w("DBG", APP_TAG + "unregisterCharacteristics");
 		
+		ret = bleManager.unregisterNotificationCharacteristics(BLE_GETTING_KEY);
+		
 		return ret;
 	}
 	
-	/*private String getShortUuid(UUID uuid)
+	public boolean cancelFile()
 	{
-		String shortUuid = uuid.toString().substring(4, 8);		
-		return shortUuid;
-	}*/
+		boolean ret = true;
+		
+		cancelSem.release();
+		
+		bleManager.cancelReadNotification(BLE_GETTING_KEY);
+		
+		return ret;
+	}
 	
 	private String normalizeName(String name)
 	{
@@ -185,12 +192,7 @@ public class ARUtilsBLEFtp
 		return newName;
 	}
 	
-	public void canceledConnection()
-	{
-		cancelSem.release();
-	}
-	
-	public boolean isConnectionCanceled()
+	private boolean isConnectionCanceled()
 	{
 		boolean ret = false;
 		
