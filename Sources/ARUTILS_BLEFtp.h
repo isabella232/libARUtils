@@ -11,19 +11,21 @@
 #include "libARUtils/ARUTILS_Manager.h"
 
 @interface ARUtils_BLEFtp : NSObject
+DECLARE_SINGLETON_FOR_CLASS(ARUtils_BLEFtp)
 
-
-- (id)initWithPeripheral:(CBPeripheral *)peripheral cancelSem:(ARSAL_Sem_t*)cancelSem port:(int)port;
+- (id)initBLEFtp;
+- (eARUTILS_ERROR)resisterPeripheral:(CBPeripheral *)peripheral cancelSem:(ARSAL_Sem_t*)cancelSem port:(int)port;
+- (eARUTILS_ERROR)unresisterPeripheral;
 - (eARUTILS_ERROR)registerCharacteristics;
 - (eARUTILS_ERROR)unregisterCharacteristics;
 
-- (eARUTILS_ERROR)cancelFile;
-- (eARUTILS_ERROR)listFiles:(NSString*)remotePath resultList:(char **)resultList resultListLen:(uint32_t *)resultListLen;
-- (eARUTILS_ERROR)sizeFile:(NSString*)remoteFile fileSize:(double*)fileSize;
-- (eARUTILS_ERROR)getFile:(NSString*)remoteFile localFile:(NSString*)localFile progressCallback:(ARUTILS_Ftp_ProgressCallback_t)progressCallback progressArg:(void *)progressArg;
-- (eARUTILS_ERROR)getFileWithBuffer:(NSString*)remoteFile data:(uint8_t**)data dataLen:(uint32_t*)dataLen progressCallback:(ARUTILS_Ftp_ProgressCallback_t)progressCallback progressArg:(void *)progressArg;
-- (eARUTILS_ERROR)putFile:(NSString*)remoteFile localFile:(NSString*)localFile progressCallback:(ARUTILS_Ftp_ProgressCallback_t)progressCallback progressArg:(void *)progressArg resume:(BOOL)resume;
-- (eARUTILS_ERROR)abortPutFile:(NSString*)remoteFile;
+- (eARUTILS_ERROR)cancelFile:(ARSAL_Sem_t*)cancelSem;
+- (eARUTILS_ERROR)listFiles:(NSString*)remotePath resultList:(char **)resultList resultListLen:(uint32_t *)resultListLen cancelSem:(ARSAL_Sem_t*)cancelSem;
+- (eARUTILS_ERROR)sizeFile:(NSString*)remoteFile fileSize:(double*)fileSize cancelSem:(ARSAL_Sem_t*)cancelSem;
+- (eARUTILS_ERROR)getFile:(NSString*)remoteFile localFile:(NSString*)localFile progressCallback:(ARUTILS_Ftp_ProgressCallback_t)progressCallback progressArg:(void *)progressArg cancelSem:(ARSAL_Sem_t*)cancelSem;
+- (eARUTILS_ERROR)getFileWithBuffer:(NSString*)remoteFile data:(uint8_t**)data dataLen:(uint32_t*)dataLen progressCallback:(ARUTILS_Ftp_ProgressCallback_t)progressCallback progressArg:(void *)progressArg cancelSem:(ARSAL_Sem_t*)cancelSem;
+- (eARUTILS_ERROR)putFile:(NSString*)remoteFile localFile:(NSString*)localFile progressCallback:(ARUTILS_Ftp_ProgressCallback_t)progressCallback progressArg:(void *)progressArg resume:(BOOL)resume cancelSem:(ARSAL_Sem_t*)cancelSem;
+- (eARUTILS_ERROR)abortPutFile:(NSString*)remoteFile cancelSem:(ARSAL_Sem_t*)cancelSem;
 - (eARUTILS_ERROR)deleteFile:(NSString*)remoteFile;
 - (eARUTILS_ERROR)renameFile:(NSString*)oldNamePath newNamePath:(NSString*)newNamePath;
 
@@ -39,6 +41,7 @@
 typedef struct _ARUTILS_BLEFtp_Connection_t_
 {
     void *bleFtpObject;
+    ARSAL_Sem_t *cancelSem;
     
 } ARUTILS_BLEFtp_Connection_t;
 
