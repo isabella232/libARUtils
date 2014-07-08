@@ -94,11 +94,11 @@
                 //NSString *NAME = @"RS_W000207";
                 //NSString *NAME = @"RS_W000159";
                 //NSString *NAME = @"RS_R000387";
-                //NSString *NAME = @"RS_B000272";
+                NSString *NAME = @"RS_B000272";
                 //NSString *NAME = @"RS_W000444";
                 //NSString *NAME = @"RS_B000497";
                 //NSString *NAME = @"RS_B000443";
-                NSString *NAME = @"RS_R000387";
+                //NSString *NAME = @"RS_R000387";
                 if ([serviceIdx.peripheral.name isEqualToString:NAME])
                 {
                     NSLog(@"%@", serviceIdx.peripheral);
@@ -172,9 +172,11 @@
         //[bleFtp initWithManager:(__bridge ARNETWORKAL_BLEDeviceManager_t)centralManager device:(__bridge ARNETWORKAL_BLEDevice_t)peripheral];
         //[bleFtp initWithManager:SINGLETON_FOR_CLASS(ARSAL_BLEManager) centralManager:centralManager peripheral:peripheral delegate:nil obj:self];
         //ARUtils_BLEFtp *bleFtp = [[ARUtils_BLEFtp alloc] initWithPeripheral:peripheral cancelSem:NULL port:51];
-        ARUtils_BLEFtp *bleFtp = [[ARUtils_BLEFtp alloc] initWithPeripheral:peripheral cancelSem:&cancelSem port:21];
+        //ARUtils_BLEFtp *bleFtp = [[ARUtils_BLEFtp alloc] initWithPeripheral:peripheral cancelSem:&cancelSem port:21];
+        ARUtils_BLEFtp *bleFtp = SINGLETON_FOR_CLASS(ARUtils_BLEFtp);
         eARUTILS_ERROR result = ARUTILS_OK;
         
+        result = [bleFtp resisterPeripheral:peripheral cancelSem:&cancelSem port:21];
         result = [bleFtp registerCharacteristics];
         
         /*if (result == ARUTILS_OK)
@@ -198,7 +200,7 @@
             
             NSLog(@"LIST: %s", resultList);
             
-            result = [bleFtp listFiles:@"/internal_000/Rolling_Spider/thumb" resultList:&resultList resultListLen:&resultListLen];
+            //result = [bleFtp listFiles:@"/internal_000/Rolling_Spider/thumb" resultList:&resultList resultListLen:&resultListLen cancelSem:&cancelSem];
             
             NSLog(@"LIST: %s", resultList);
         }
@@ -207,7 +209,13 @@
         {
             NSString *localFile = [NSString stringWithFormat:@"%@/test.jpg", doc];
             
-            result = [bleFtp getFile:@"/internal_000/Rolling_Spider/thumb/Rolling_Spider_2014-07-01T161734+0000_64C25D8F3447C7AADCEA9AB5E5D6462A.jpg"localFile:localFile progressCallback:NULL progressArg:NULL];
+            ARSAL_Sem_Post(&cancelSem);
+            
+            result = [bleFtp getFile:@"/internal_000/Rolling_Spider/media/Rolling_Spider_2014-07-08T175119+0000_7D677C6862E81204DF5568597FCC38C3.jpg" localFile:localFile progressCallback:NULL progressArg:NULL cancelSem:&cancelSem];
+            
+            ARSAL_Sem_Trywait(&cancelSem);
+            
+            result = [bleFtp getFile:@"/internal_000/Rolling_Spider/media/Rolling_Spider_2014-07-08T175119+0000_7D677C6862E81204DF5568597FCC38C3.jpg" localFile:localFile progressCallback:NULL progressArg:NULL cancelSem:&cancelSem];
         }
         
         /*if (result == ARUTILS_OK)
@@ -284,7 +292,7 @@
             fflush(src);
             fclose(src);
             
-            result = [bleFtp putFile:@"program.plf.tmp" localFile:localFile progressCallback:NULL progressArg:NULL resume:YES];
+            //result = [bleFtp putFile:@"program.plf.tmp" localFile:localFile progressCallback:NULL progressArg:NULL resume:YES cancelSem:&cancelSem];
         }
         
         if (result == ARUTILS_OK)
