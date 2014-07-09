@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.Semaphore;
 
 import android.app.Activity;
 import android.bluetooth.BluetoothDevice;
@@ -50,7 +51,7 @@ import com.parrot.arsdk.arutils.ARUtilsManager;
 
 public class MainActivity extends Activity implements ARDiscoveryServicesDevicesListUpdatedReceiverDelegate 
 {
-	public static String APP_TAG = "Fredo ";
+	public static String APP_TAG = "BLEFtp ";
 	    
 	private ARDiscoveryService ardiscoveryService;
     private boolean ardiscoveryServiceBound = false;
@@ -58,18 +59,19 @@ public class MainActivity extends Activity implements ARDiscoveryServicesDevices
     private ServiceConnection ardiscoveryServiceConnection;
     public IBinder discoveryServiceBinder;
     
-    BluetoothDevice device;
-    BluetoothGatt deviceGatt;
+    private BluetoothDevice mDevice;
+    private BluetoothGatt mDeviceGatt;
+    private ARUtilsManager mUtilsManager;
 
-    Button testBleButton;
+    Button testBleALButton;
     Button testMd5Button;
     Button testListButton;
     Button testGetButton;
     Button testGetWithBufferButton;
     Button testPutButton;
     Button testDeleteButton;
-
-    private ARUtilsManager mUtilsManager;
+    Button testRenameButton;
+    Button currentButton = null;
 
     private Handler mHandler = new Handler();
 	
@@ -79,7 +81,6 @@ public class MainActivity extends Activity implements ARDiscoveryServicesDevices
 		super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 		setContentView(R.layout.activity_main);
-
 	    
 		Log.d("DBG", APP_TAG + "onCreate");
 	    
@@ -94,25 +95,20 @@ public class MainActivity extends Activity implements ARDiscoveryServicesDevices
 		
         System.loadLibrary("arutils");
         System.loadLibrary("arutils_android");
-
 	    
 	    //startService(new Intent(this, ARDiscoveryService.class));
         //initServiceConnection();
         //initServices();
 	        
-	    testBleButton = (Button)this.findViewById(R.id.testBle);
-	    
-	    testBleButton.setOnClickListener(new OnClickListener() {
+	    testBleALButton = (Button)this.findViewById(R.id.testBle);
+	    testBleALButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                TestBle();
+                TestBleAL();
             }
         });
-
-        testBleButton.setEnabled(false);
 	    
 	    testMd5Button = (Button)this.findViewById(R.id.testMd5);
-	    
 	    testMd5Button.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -161,10 +157,20 @@ public class MainActivity extends Activity implements ARDiscoveryServicesDevices
                 //testBleDeleteFileWJNI();
             }
         });
+        
+        testRenameButton = (Button)this.findViewById(R.id.testRename);
+        testRenameButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                testBleRenameFile();
+                //testBleDeleteFileWJNI();
+            }
+        });
 	    
-	    //TestFile();
-	    TestBle();
-	    //TestMd5();
+        StartDiscoveryService();
+        //TestFile();
+        //TestBle();
+        //TestMd5();        
 	}
 	
 	@Override
@@ -188,12 +194,14 @@ public class MainActivity extends Activity implements ARDiscoveryServicesDevices
 
     public void enableButtons(boolean enable)
     {
+        testBleALButton.setEnabled(enable);
         testMd5Button.setEnabled(enable);
         testListButton.setEnabled(enable);
         testGetButton.setEnabled(enable);
         testGetWithBufferButton.setEnabled(enable);
         testPutButton.setEnabled(enable);
         testDeleteButton.setEnabled(enable);
+        testRenameButton.setEnabled(enable);
     }
 	
 	private void initServices()
@@ -276,17 +284,13 @@ public class MainActivity extends Activity implements ARDiscoveryServicesDevices
 			Log.d("DBG", APP_TAG + " " + productID + ", " + value);
 			//if ( == )
 			{
-				//String name = "MDMaxBlanc";
 				//String name = "RS_R000387";
-				//String name = "RS_B000272";
+				String name = "RS_B000272";
 			//String name = "RS_W000444";
 			//String name = "RS_B000497";
 			//String name = "RS_B000443";
-				String name = "Maurice";
-				//07-02 17:42:38.803: D/DBG(7572): TestBLEFtp  Flower power 2F71
+				//String name = "Maurice";
 				//07-02 17:49:58.933: D/DBG(8280): TestBLEFtp  Flower power 3337
-
-
 				//String name = "Flower power 2FB7";
 
 				if (serviceIndex.getName().contentEquals(name))
@@ -295,19 +299,15 @@ public class MainActivity extends Activity implements ARDiscoveryServicesDevices
 					
 					ARDiscoveryDeviceBLEService serviceBle = (ARDiscoveryDeviceBLEService)serviceIndex.getDevice();
 					
-					if (device == null)
+					if (mDevice == null)
 					{
-						device = serviceBle.getBluetoothDevice();
-                        deviceGatt = connectToBle(device);
-                        try
-                        {
-                            mUtilsManager = new ARUtilsManager();
-                            mUtilsManager.initBLEFtp(MainActivity.this, device, 51);
-                        }
-                        catch (ARUtilsException e) {
-                            e.printStackTrace();
-                            Log.e(APP_TAG, "Failed to init utilsManager");
-                        }
+						mDevice = serviceBle.getBluetoothDevice();
+                        mDeviceGatt = connectToBleDevice(mDevice);
+                        
+                        //getARUtilsManager();
+                        
+                        TestBleAL();
+                        
                         enableButtons(true);
                         setProgressBarIndeterminateVisibility(false);
 					}
@@ -318,7 +318,7 @@ public class MainActivity extends Activity implements ARDiscoveryServicesDevices
 		Log.d("DBG", APP_TAG + "onServicesDevicesListUpdated exiting");
 	}
 	
-	public void TestBle()
+	public void StartDiscoveryService()
 	{
 		Log.d("DBG", APP_TAG + "TestBle");
         setProgressBarIndeterminateVisibility(true);
@@ -329,7 +329,7 @@ public class MainActivity extends Activity implements ARDiscoveryServicesDevices
         registerReceivers();
 	}
 	
-	private BluetoothGatt connectToBle(BluetoothDevice device)
+	private BluetoothGatt connectToBleDevice(BluetoothDevice device)
 	{
 		//ARSALBLEManager bleManager = new ARSALBLEManager(getApplicationContext());
 	    ARSALBLEManager bleManager = ARSALBLEManager.getInstance(getApplicationContext());
@@ -390,27 +390,60 @@ public class MainActivity extends Activity implements ARDiscoveryServicesDevices
         return gattDevice;
 	}
 	
-	private void startTestBle(BluetoothDevice device)
+	/*private void startTestBleAL(BluetoothDevice device)
 	{
 		Log.d("DBG", APP_TAG + "startTestBle");
         ARSALBLEManager bleManager = ARSALBLEManager.getInstance(getApplicationContext());
-		BluetoothGatt gattDevice = connectToBle(device);
+		BluetoothGatt gattDevice = connectToBleDevice(device);
+		boolean ret = true;
 
         if (gattDevice != null)
         {
             ARUtilsBLEFtp bleFtp = new ARUtilsBLEFtp();
-            boolean ret = true;
-            String[] list = new String[1];
-            double[] totalSize = new double[1];
 
             //bleFtp.initWithDevice(bleManager, gattDevice, 21);
             bleFtp.initWithDevice(bleManager, gattDevice, 51);
 
             ret = bleFtp.registerCharacteristics();
+         }
 
-            //ret = bleFtp.listFiles("/", list);
-            //ret = bleFtp.listFiles("/internal_000/Rolling_Spider/media", list);
-            //ret = bleFtp.listFiles("/internal_000/Rolling_Spider/thumb", list);
+		bleManager.disconnect();
+	}
+	
+	/*private String getShortUuid(UUID uuid)
+	{
+		String shortUuid = uuid.toString().substring(4, 8);		
+		return shortUuid;
+	}*/
+	
+	public void TestBleAL()
+	{
+	    if (mDeviceGatt != null)
+	    {
+            boolean ret = true;
+            String[] list = new String[1];
+            double[] totalSize = new double[1];
+            Semaphore cancelSem = new Semaphore(0);
+            ARSALBLEManager bleManager = ARSALBLEManager.getInstance(getApplicationContext());
+            //ARUtilsBLEFtp bleFtp = new ARUtilsBLEFtp();
+            ARUtilsBLEFtp bleFtp = ARUtilsBLEFtp.getInstance(getApplicationContext());
+            
+            File sysHome = this.getFilesDir();// /data/data/com.example.tstdata/files
+            String tmp = sysHome.getAbsolutePath();
+            String filePath = null;
+            
+            
+            //bleFtp.initWithDevice(bleManager, mDeviceGatt, 21);
+            //bleFtp.initWithDevice(bleManager, mDeviceGatt, 51);
+            bleFtp.initWithBLEManager(bleManager);
+
+            ret = bleFtp.registerDevice( mDeviceGatt, 51);
+            ret = bleFtp.registerCharacteristics();
+
+
+	        ret = bleFtp.listFilesAL("/", list);
+            //ret = bleFtp.listFilesAL("/internal_000/Rolling_Spider/media", list);
+            //ret = bleFtp.listFilesAL("/internal_000/Rolling_Spider/thumb", list);
 
             Log.d("DBG", APP_TAG + "LIST: " + list[0]);
 
@@ -419,30 +452,36 @@ public class MainActivity extends Activity implements ARDiscoveryServicesDevices
             //Rolling_Spider_2014-07-02T085718+0000_0A73A4E2A21B56DBDDFB3CEB1BA0FDAF.jpg
 
 
-            //ret = bleFtp.sizeFile("/internal_000/Rolling_Spider/media/Rolling_Spider_2014-07-03T112436+0000_8858E359787B671FE7408A955294F048.jpg", totalSize);
-            //ret = bleFtp.sizeFile("/internal_000/Rolling_Spider/thumb/Rolling_Spider_2014-07-01T161736+0000_33539649FC464D41FAD7FB4F0F5508F6.jpg", totalSize);
-            //ret = bleFtp.sizeFile("/internal_000/Rolling_Spider/thumb/Rolling_Spider_2014-07-02T085718+0000_0A73A4E2A21B56DBDDFB3CEB1BA0FDAF.jpg", totalSize);
-            //ret = bleFtp.sizeFile("/U_nbpckt.txt", totalSize);
+            //ret = bleFtp.sizeFileAL("/internal_000/Rolling_Spider/media/Rolling_Spider_2014-07-03T112436+0000_8858E359787B671FE7408A955294F048.jpg", totalSize);
+            //ret = bleFtp.sizeFileAL("/internal_000/Rolling_Spider/thumb/Rolling_Spider_2014-07-01T161736+0000_33539649FC464D41FAD7FB4F0F5508F6.jpg", totalSize);
+            //ret = bleFtp.sizeFileAL("/internal_000/Rolling_Spider/thumb/Rolling_Spider_2014-07-02T085718+0000_0A73A4E2A21B56DBDDFB3CEB1BA0FDAF.jpg", totalSize);
+            //ret = bleFtp.sizeFileAL("/U_nbpckt.txt", totalSize);
 
             Log.d("DBG", APP_TAG + "SIZE: " + totalSize[0]);
 
             byte[][] data = new byte[1][];
             data[0] = null;
 
-            //ret = bleFtp.getFileWithBuffer("/internal_000/Rolling_Spider/thumb/Rolling_Spider_2014-07-01T161736+0000_33539649FC464D41FAD7FB4F0F5508F6.jpg", data, null, null);
-            //ret = bleFtp.getFileWithBuffer("/internal_000/Rolling_Spider/thumb/Rolling_Spider_2014-07-02T085718+0000_0A73A4E2A21B56DBDDFB3CEB1BA0FDAF.jpg", data, null, null);
-            //ret = bleFtp.getFileWithBuffer("/U_nbpckt.txt", data, null, null);
-            //ret = bleFtp.getFileWithBuffer("/rollingspider_update.plf.tmp", data, null, null);
-            //ret = bleFtp.getFileWithBuffer("/update.plf.tmp", data, null, null);
-            //ret = bleFtp.getFileWithBuffer("/u.plf.tmp", data, null, null);
+            //ret = bleFtp.getFileWithBufferAL("/internal_000/Rolling_Spider/thumb/Rolling_Spider_2014-07-01T161736+0000_33539649FC464D41FAD7FB4F0F5508F6.jpg", data, 0, null);
+            //ret = bleFtp.getFileWithBufferAL("/internal_000/Rolling_Spider/thumb/Rolling_Spider_2014-07-02T085718+0000_0A73A4E2A21B56DBDDFB3CEB1BA0FDAF.jpg", data, 0, null);
+            //ret = bleFtp.getFileWithBufferAL("/U_nbpckt.txt", data, null, null);
+            //ret = bleFtp.getFileWithBufferAL("/rollingspider_update.plf.tmp", data, 0, null);
+            //ret = bleFtp.getFileWithBufferAL("/update.plf.tmp", data, 0, null);
+            //ret = bleFtp.getFileWithBufferAL("/u.plf.tmp", data, 0, null);
 
-            //Log.d("DBG", APP_TAG + "GET with buffer : " + data[0].length);
-
+            Log.d("DBG", APP_TAG + "GET with buffer : " + ((data[0] != null) ? data[0].length : "null"));
+            
+            
+            filePath = tmp + "/txt.tmp";
+            
+            //ret = bleFtp.getFileAL("/a.txt", filePath, 0, null);
+            //ret = bleFtp.getFileAL("/u.plf.tmp", filePath, 0, null);
+            
+            Log.d("DBG", APP_TAG + "GET " + ret);
+                            
             try
             {
-                File sysHome = this.getFilesDir();// /data/data/com.example.tstdata/files
-                String tmp = sysHome.getAbsolutePath();
-                String filePath = tmp + "/txt.plf.tmp";
+                filePath = tmp + "/txt.plf.tmp";
 
                 FileOutputStream dst = new FileOutputStream(filePath);
 
@@ -456,7 +495,7 @@ public class MainActivity extends Activity implements ARDiscoveryServicesDevices
                 dst.flush();
                 dst.close();
 
-                ret = bleFtp.putFile("/a.plf.tmp", filePath, 0, false);
+                ret = bleFtp.putFileAL("/a.plf.tmp", filePath, 0, false, cancelSem);
 
                 Log.d("DBG", APP_TAG + "PUT : " + ret);
             }
@@ -468,24 +507,24 @@ public class MainActivity extends Activity implements ARDiscoveryServicesDevices
             {
                 Log.d("DBG", APP_TAG + e.toString());
             }
-        }
-
-
-		bleManager.disconnect();
-		
+            
+            
+            ret = bleFtp.renameFileAL("/a.txt", "/b.txt");
+            Log.d("DBG", APP_TAG + "rename " + ret);
+            
+            ret = bleFtp.deleteFileAL("/b.txt");
+            Log.d("DBG", APP_TAG + "delete " + ret);
+            
+            bleManager.disconnect();
+	    }
 	}
-	
-	/*private String getShortUuid(UUID uuid)
-	{
-		String shortUuid = uuid.toString().substring(4, 8);		
-		return shortUuid;
-	}*/
 	
 	public void TestFile()
 	{
 		//-rw-r--r--    1 root     root       1210512 Jan  1 02:46 ckcm.bin
 		String line = "-rw-r--r--    1 root     root       1210512 Jan  1 02:46 ckcm.bin";
-		ARUtilsBLEFtp ftp = new ARUtilsBLEFtp();
+		//ARUtilsBLEFtp ftp = new ARUtilsBLEFtp();
+		ARUtilsBLEFtp ftp = ARUtilsBLEFtp.getInstance(getApplicationContext());
 		double[] size = new double[1];
 		boolean ret = true;
 		
@@ -508,7 +547,7 @@ public class MainActivity extends Activity implements ARDiscoveryServicesDevices
 		//Log.d("DBG", APP_TAG + " " + file);
 		double[] totalSize = new double[1];
 		
-		ret = ftp.sizeFile("/file.txt", totalSize);
+		ret = ftp.sizeFileAL("/file.txt", totalSize);
 	}
 	
 	public void TestMd5()
@@ -586,25 +625,6 @@ public class MainActivity extends Activity implements ARDiscoveryServicesDevices
 		Log.d("DBG", APP_TAG + "End");
 	}
 
-    private ARUtilsBLEFtp connectToFtp()
-    {
-        Log.d(APP_TAG, "connect");
-        ARUtilsBLEFtp bleFtp = null;
-        ARSALBLEManager bleManager = ARSALBLEManager.getInstance(getApplicationContext());
-        boolean connected = bleManager.isDeviceConnected();
-        if (!connected)
-        {
-            BluetoothGatt gattDevice = connectToBle(device);
-            if (gattDevice != null)
-            {
-                bleFtp = new ARUtilsBLEFtp();
-                bleFtp.initWithDevice(bleManager, gattDevice, 51);
-                bleFtp.registerCharacteristics();
-            }
-        }
-        return bleFtp;
-    }
-
     private String createTestFile(String filename)
     {
         String filePath = null;
@@ -637,6 +657,27 @@ public class MainActivity extends Activity implements ARDiscoveryServicesDevices
         return filePath;
     }
 
+    private ARUtilsBLEFtp connectToFtp()
+    {
+        Log.d(APP_TAG, "connect");
+        ARUtilsBLEFtp bleFtp = null;
+        ARSALBLEManager bleManager = ARSALBLEManager.getInstance(getApplicationContext());
+        boolean connected = bleManager.isDeviceConnected();
+        if (!connected)
+        {
+            BluetoothGatt gattDevice = connectToBleDevice(mDevice);
+            if (gattDevice != null)
+            {
+                //bleFtp = new ARUtilsBLEFtp();
+                bleFtp = ARUtilsBLEFtp.getInstance(getApplicationContext());
+                //bleFtp.initWithDevice(bleManager, gattDevice, 51);
+                bleFtp.initWithBLEManager(bleManager);
+                bleFtp.registerDevice(gattDevice, 51);
+                bleFtp.registerCharacteristics();
+            }
+        }
+        return bleFtp;
+    }
 
     private void disconnectFromFtp()
     {
@@ -647,12 +688,29 @@ public class MainActivity extends Activity implements ARDiscoveryServicesDevices
             bleManager.disconnect();
         }
     }
-
+    
+    private boolean getARUtilsManager()
+    {
+        if (mUtilsManager == null)
+        {
+            try
+            {
+                mUtilsManager = new ARUtilsManager();
+                mUtilsManager.initBLEFtp(MainActivity.this, mDevice, 51);
+            }
+            catch (ARUtilsException e) {
+                e.printStackTrace();
+                Log.e(APP_TAG, "Failed to init utilsManager");
+            }
+        }
+        
+        return true;
+    }
 
     public void testBleListFile()
     {
         Log.d(APP_TAG, "testBleListFile");
-
+        
         if (mUtilsManager != null)
         {
             Log.d(APP_TAG, "send LIST command:");
@@ -664,7 +722,6 @@ public class MainActivity extends Activity implements ARDiscoveryServicesDevices
         {
             Log.e(APP_TAG, "testBleListFile failed because mUtilsManager is null");
         }
-
     }
 
     public void testBleGetFile()
@@ -686,7 +743,6 @@ public class MainActivity extends Activity implements ARDiscoveryServicesDevices
         {
             Log.e(APP_TAG, "testBleGetFile failed because mUtilsManager is null");
         }
-
     }
 
     public void testBleGetFileWithBuffer()
@@ -750,7 +806,22 @@ public class MainActivity extends Activity implements ARDiscoveryServicesDevices
         {
             Log.e(APP_TAG, "testBleDeleteFile failed because mUtilsManager is null");
         }
+    }
+    
+    public void testBleRenameFile()
+    {
+        Log.d(APP_TAG, "testBleRenameFile");
 
+        if (mUtilsManager != null)
+        {
+            Log.d(APP_TAG, "send RENAME command:");
+
+            //mUtilsManager.BLEFtpRename("/toto.tmp", "/toto1.tmp");
+        }
+        else
+        {
+            Log.e(APP_TAG, "testBleDeleteFile failed because mUtilsManager is null");
+        }
     }
 
 }

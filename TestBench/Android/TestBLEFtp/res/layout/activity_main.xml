@@ -19,7 +19,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@+id/textView1"
-        android:text="Test BLE"
+        android:text="Test BLE AL"
         android:enabled="false"/>
 <!--
     <Button
@@ -55,7 +55,7 @@
         android:layout_height="wrap_content"
         android:layout_alignLeft="@+id/testBle"
         android:layout_below="@+id/testMd5"
-        android:text="Test List"
+        android:text="Test Manager List"
         android:enabled="false"/>
 
     <Button
@@ -64,7 +64,7 @@
         android:layout_height="wrap_content"
         android:layout_alignLeft="@+id/testBle"
         android:layout_below="@+id/testList"
-        android:text="Test Get"
+        android:text="Test Manager Get"
         android:enabled="false"/>
 
     <Button
@@ -73,7 +73,7 @@
         android:layout_height="wrap_content"
         android:layout_alignLeft="@+id/testBle"
         android:layout_below="@+id/testGet"
-        android:text="Test Get With Buffer"
+        android:text="Test Manager Get With Buffer"
         android:enabled="false"/>
 
     <Button
@@ -82,7 +82,7 @@
         android:layout_height="wrap_content"
         android:layout_alignLeft="@+id/testBle"
         android:layout_below="@+id/testGetWithBuffer"
-        android:text="Test Put"
+        android:text="Test Manager Put"
         android:enabled="false"/>
 
     <Button
@@ -91,7 +91,16 @@
         android:layout_height="wrap_content"
         android:layout_alignLeft="@+id/testBle"
         android:layout_below="@+id/testPut"
-        android:text="Test Delete"
+        android:text="Test Manager Delete"
         android:enabled="false"/>
+
+    <Button
+        android:id="@+id/testRename"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/testDelete"
+        android:layout_below="@+id/testDelete"
+        android:enabled="false"
+        android:text="Test Manager Rename" />
 
 </RelativeLayout>
