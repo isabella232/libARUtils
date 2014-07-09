@@ -285,11 +285,11 @@ public class MainActivity extends Activity implements ARDiscoveryServicesDevices
 			//if ( == )
 			{
 				//String name = "RS_R000387";
-				String name = "RS_B000272";
+				//String name = "RS_B000272";
 			//String name = "RS_W000444";
 			//String name = "RS_B000497";
 			//String name = "RS_B000443";
-				//String name = "Maurice";
+				String name = "Maurice";
 				//07-02 17:49:58.933: D/DBG(8280): TestBLEFtp  Flower power 3337
 				//String name = "Flower power 2FB7";
 
@@ -304,9 +304,9 @@ public class MainActivity extends Activity implements ARDiscoveryServicesDevices
 						mDevice = serviceBle.getBluetoothDevice();
                         mDeviceGatt = connectToBleDevice(mDevice);
                         
-                        //getARUtilsManager();
+                        getARUtilsManager();
                         
-                        TestBleAL();
+                        //TestBleAL();
                         
                         enableButtons(true);
                         setProgressBarIndeterminateVisibility(false);
@@ -435,7 +435,7 @@ public class MainActivity extends Activity implements ARDiscoveryServicesDevices
             
             //bleFtp.initWithDevice(bleManager, mDeviceGatt, 21);
             //bleFtp.initWithDevice(bleManager, mDeviceGatt, 51);
-            bleFtp.initWithBLEManager(bleManager);
+            //bleFtp.initWithBLEManager(bleManager);
 
             ret = bleFtp.registerDevice( mDeviceGatt, 51);
             ret = bleFtp.registerCharacteristics();
@@ -671,7 +671,8 @@ public class MainActivity extends Activity implements ARDiscoveryServicesDevices
                 //bleFtp = new ARUtilsBLEFtp();
                 bleFtp = ARUtilsBLEFtp.getInstance(getApplicationContext());
                 //bleFtp.initWithDevice(bleManager, gattDevice, 51);
-                bleFtp.initWithBLEManager(bleManager);
+
+                //bleFtp.initWithBLEManager(bleManager);
                 bleFtp.registerDevice(gattDevice, 51);
                 bleFtp.registerCharacteristics();
             }
@@ -696,7 +697,7 @@ public class MainActivity extends Activity implements ARDiscoveryServicesDevices
             try
             {
                 mUtilsManager = new ARUtilsManager();
-                mUtilsManager.initBLEFtp(MainActivity.this, mDevice, 51);
+                mUtilsManager.initBLEFtp(MainActivity.this, mDeviceGatt, 51);
             }
             catch (ARUtilsException e) {
                 e.printStackTrace();

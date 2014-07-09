@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import com.parrot.arsdk.arsal.ARSALBLEManager;
 import com.parrot.arsdk.arsal.ARSAL_ERROR_ENUM;
+import java.util.concurrent.Semaphore;
 
 /**
  * ARUtils Manager module
@@ -19,7 +20,7 @@ public class ARUtilsManager
     private native int nativeDelete(long jManager);
     private native int nativeInitWifiFtp(long jManager, String jserver, int port, String jusername, String jpassword);
     private native int nativeCloseWifiFtp(long jManager);
-    private native int nativeInitBLEFtp(long jManager, ARSALBLEManager bleManager, BluetoothGatt device, int port);
+    private native int nativeInitBLEFtp(long jManager, ARUtilsBLEFtp bleFtp, Semaphore cancelSem);
     private native void nativeCloseBLEFtp(long jManager);
 
     /*Test Methods*/
@@ -130,7 +131,7 @@ public class ARUtilsManager
     /**
      * Initialize BLE network to send and receive data
      */
-    public ARUTILS_ERROR_ENUM initBLEFtp(Context context, BluetoothDevice device, int port)
+    public ARUTILS_ERROR_ENUM initBLEFtp(Context context, BluetoothGatt deviceGatt, int port)
     {
         ARUTILS_ERROR_ENUM error = ARUTILS_ERROR_ENUM.ARUTILS_OK;
         
@@ -153,7 +154,6 @@ public class ARUtilsManager
                 error = ARUTILS_ERROR_ENUM.ARUTILS_ERROR_NETWORK_TYPE;
             }
         }
-        ARSALBLEManager bleManager = ARSALBLEManager.getInstance(context.getApplicationContext());
         if (error == ARUTILS_ERROR_ENUM.ARUTILS_OK)
         {
             // No need to connect because we will always be connected before reaching this step (in FreeFlight!)
@@ -161,10 +161,13 @@ public class ARUtilsManager
             //    error = ARUTILS_ERROR_ENUM.ARUTILS_ERROR_BLE_FAILED;
             //}
         }
-
         if (error == ARUTILS_ERROR_ENUM.ARUTILS_OK)
         {
-            nativeInitBLEFtp(m_managerPtr, bleManager, bleManager.getGatt(), port);
+            ARUtilsBLEFtp bleFtp = ARUtilsBLEFtp.getInstance(context);
+            bleFtp.registerDevice(deviceGatt, port);
+            bleFtp.registerCharacteristics();
+            Semaphore cancelSem = new Semaphore(0);
+            nativeInitBLEFtp(m_managerPtr, bleFtp, cancelSem);
         }
         
         return error;

@@ -177,26 +177,14 @@ Java_com_parrot_arsdk_arutils_ARUtilsManager_nativeCloseWifiFtp
  */
 JNIEXPORT jint JNICALL 
 Java_com_parrot_arsdk_arutils_ARUtilsManager_nativeInitBLEFtp
-  (JNIEnv *env, jobject obj, jlong jManager, jobject jBleManager, jobject jdevice, jint port)
+  (JNIEnv *env, jobject obj, jlong jManager, jobject jBleFtp, jobject jCancelSem)
 {
     ARUTILS_Manager_t *manager = (ARUTILS_Manager_t*) (intptr_t) jManager;
     eARUTILS_ERROR error = ARUTILS_OK;
-    int resultSys = 0;
-    ARUTILS_BLEDevice_t device = (ARUTILS_BLEDevice_t) jdevice;
-    ARUTILS_BLEManager_t bleManager = (ARUTILS_BLEManager_t) jBleManager;
 
     if (error == ARUTILS_OK)
     {
-        resultSys = ARSAL_Sem_Init(&manager->cancelSem, 0, 0);
-        if (resultSys != 0)
-        {
-            error = ARUTILS_ERROR_SYSTEM;
-        }
-    }
-
-    if (error == ARUTILS_OK)
-    {
-        manager->connectionObject = ARUTILS_BLEFtp_Connection_New(&manager->cancelSem, (ARUTILS_BLEManager_t)jBleManager, (ARUTILS_BLEDevice_t)device, port, &error);
+        manager->connectionObject = ARUTILS_BLEFtp_Connection_New(jBleFtp, jCancelSem, &error);
     }  
 
     if (manager)

@@ -19,8 +19,8 @@ import java.util.concurrent.locks.ReentrantLock;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattService;
-import android.content.Context;
 import android.util.Log;
+import android.content.Context;
 
 import com.parrot.arsdk.arsal.ARSALBLEManager;
 import com.parrot.arsdk.arsal.ARSALBLEManager.ARSALManagerNotificationData;
@@ -56,7 +56,6 @@ public class ARUtilsBLEFtp
 	private int port;
 	private int connectionCount = 0;
 	private Lock connectionLock = new ReentrantLock();
-	private Context context;
 	
 	private BluetoothGattCharacteristic transferring = null;
 	private BluetoothGattCharacteristic getting = null;
@@ -68,10 +67,10 @@ public class ARUtilsBLEFtp
 	
 	private native static void nativeJNIInit();
 
-	/*static
+	static
     {
         nativeJNIInit();
-    }*/
+    }
 	
 	private ARUtilsBLEFtp()
 	{
@@ -85,26 +84,26 @@ public class ARUtilsBLEFtp
     public static ARUtilsBLEFtp getInstance(Context context) 
     {
         ARUtilsBLEFtp instance = ARUtilsBLEFtpHolder.instance;
-        instance.setContext(context);
+        if (context == null)
+        {
+            throw new IllegalArgumentException("Context must not be null");
+        }
+        instance.setBLEManager(context);
         return instance;
     }	
     
-    private synchronized void setContext(Context context)
+    private synchronized void setBLEManager(Context context)
     {
-        if (this.context == null) 
+        if (this.bleManager == null) 
         {
             if (context == null)
             {
                 throw new IllegalArgumentException("Context must not be null");
             }
-            this.context = context;    
+            this.bleManager = ARSALBLEManager.getInstance(context);    
         }
     }
-	
-	public void initWithBLEManager(ARSALBLEManager bleManager)
-	{
-		this.bleManager = bleManager;
-	}
+
 	
 	public boolean registerDevice(BluetoothGatt gattDevice, int port)
 	{
@@ -235,6 +234,11 @@ public class ARUtilsBLEFtp
 	public boolean cancelFileAL(Semaphore cancelSem)
 	{
 	    return cancelFile(cancelSem);
+	}
+
+	public boolean isConnectionCanceledAL(Semaphore cancelSem)
+	{
+	    return isConnectionCanceled(cancelSem);
 	}
 	
 	public boolean listFilesAL(String remotePath, String[] resultList)

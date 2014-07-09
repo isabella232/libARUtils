@@ -19,8 +19,8 @@
  */
 typedef struct _ARUTILS_BLEFtp_Connection_t_
 {
-    void *bleFtpObject;
-    void *bleManager;
+    jobject bleFtpObject;
+    jobject cancelSemObject;
     
 } ARUTILS_BLEFtp_Connection_t;
 
@@ -40,7 +40,7 @@ typedef struct _ARUTILS_BLEFtp_Command_t_
  * @retval On success, returns an ARUTILS_FtpAL_Connection_t. Otherwise, it returns null.
  * @see ARUTILS_FtpAL_DeleteConnection ()
  */
-ARUTILS_BLEFtp_Connection_t * ARUTILS_BLEFtp_Connection_New(ARSAL_Sem_t *cancelSem, ARUTILS_BLEManager_t bleManager, ARUTILS_BLEDevice_t device, int port, eARUTILS_ERROR *error);
+ARUTILS_BLEFtp_Connection_t * ARUTILS_BLEFtp_Connection_New(jobject bleFtp, jobject cancelSem, eARUTILS_ERROR *error);
 
 /**
  * @brief Delete an Ftp Connection

@@ -60,14 +60,14 @@ Java_com_parrot_arsdk_arutils_ARUtilsBLEFtp_nativeJNIInit(JNIEnv *env, jobject o
     
     jclass jBLEFtpCls = (*env)->FindClass(env, "com/parrot/arsdk/arutils/ARUtilsBLEFtp");
     
-    ARUTILS_JNI_BLEFTP_METHOD_CONNECTION_CANCEL = (*env)->GetMethodID(env, jBLEFtpCls, "cancelFile", "()Z");
-    ARUTILS_JNI_BLEFTP_METHOD_IS_CANCELED = (*env)->GetMethodID(env, jBLEFtpCls, "isConnectionCanceled", "()Z"); 
-    ARUTILS_JNI_BLEFTP_METHOD_FTP_LIST = (*env)->GetMethodID(env, jBLEFtpCls, "listFiles", "(Ljava/lang/String;[Ljava/lang/String;)Z");
-    ARUTILS_JNI_BLEFTP_METHOD_GET_WITH_BUFFER = (*env)->GetMethodID(env, jBLEFtpCls, "getFileWithBuffer", "(Ljava/lang/String;[[BJ)Z");
-    ARUTILS_JNI_BLEFTP_METHOD_GET = (*env)->GetMethodID(env, jBLEFtpCls, "getFile", "(Ljava/lang/String;Ljava/lang/String;J)Z");
-    ARUTILS_JNI_BLEFTP_METHOD_PUT = (*env)->GetMethodID(env, jBLEFtpCls, "putFile", "(Ljava/lang/String;Ljava/lang/String;JZ)Z");
-    ARUTILS_JNI_BLEFTP_METHOD_DELETE = (*env)->GetMethodID(env, jBLEFtpCls, "deleteFile", "(Ljava/lang/String;)Z");
-    ARUTILS_JNI_BLEFTP_METHOD_RENAME = (*env)->GetMethodID(env, jBLEFtpCls, "renameFile", "(Ljava/lang/String;Ljava/lang/String;)Z");
+    ARUTILS_JNI_BLEFTP_METHOD_CONNECTION_CANCEL = (*env)->GetMethodID(env, jBLEFtpCls, "cancelFileAL", "(Ljava/util/concurrent/Semaphore;)Z");
+    ARUTILS_JNI_BLEFTP_METHOD_IS_CANCELED = (*env)->GetMethodID(env, jBLEFtpCls, "isConnectionCanceledAL", "(Ljava/util/concurrent/Semaphore;)Z"); 
+    ARUTILS_JNI_BLEFTP_METHOD_FTP_LIST = (*env)->GetMethodID(env, jBLEFtpCls, "listFilesAL", "(Ljava/lang/String;[Ljava/lang/String;)Z");
+    ARUTILS_JNI_BLEFTP_METHOD_GET_WITH_BUFFER = (*env)->GetMethodID(env, jBLEFtpCls, "getFileWithBufferAL", "(Ljava/lang/String;[[BJLjava/util/concurrent/Semaphore;)Z");
+    ARUTILS_JNI_BLEFTP_METHOD_GET = (*env)->GetMethodID(env, jBLEFtpCls, "getFileAL", "(Ljava/lang/String;Ljava/lang/String;JLjava/util/concurrent/Semaphore;)Z");
+    ARUTILS_JNI_BLEFTP_METHOD_PUT = (*env)->GetMethodID(env, jBLEFtpCls, "putFileAL", "(Ljava/lang/String;Ljava/lang/String;JZLjava/util/concurrent/Semaphore;)Z");
+    ARUTILS_JNI_BLEFTP_METHOD_DELETE = (*env)->GetMethodID(env, jBLEFtpCls, "deleteFileAL", "(Ljava/lang/String;)Z");
+    ARUTILS_JNI_BLEFTP_METHOD_RENAME = (*env)->GetMethodID(env, jBLEFtpCls, "renameFileAL", "(Ljava/lang/String;Ljava/lang/String;)Z");
     
     /* cleanup */
     (*env)->DeleteLocalRef (env, jBLEFtpCls);
@@ -93,23 +93,17 @@ Java_com_parrot_arsdk_arutils_ARUtilsBLEFtp_nativeProgressCallback(JNIEnv *env, 
  * @retval On success, returns an ARUTILS_FtpAL_Connection_t. Otherwise, it returns null.
  * @see ARUTILS_FtpAL_DeleteConnection ()
  */
-ARUTILS_BLEFtp_Connection_t * ARUTILS_BLEFtp_Connection_New(ARSAL_Sem_t *cancelSem, ARUTILS_BLEManager_t bleManager, ARUTILS_BLEDevice_t device, int port, eARUTILS_ERROR *error)
+ARUTILS_BLEFtp_Connection_t * ARUTILS_BLEFtp_Connection_New(jobject bleFtp, jobject cancelSem, eARUTILS_ERROR *error)
 {
 
-    jclass bleFtpObjectCls = NULL;
     jobject bleFtpObject = NULL;
-
-    /* Create the jniBLEFtp */
+    jobject cancelSemObject = NULL;
 
     ARUTILS_BLEFtp_Connection_t *newConnection = NULL;
 
     /* local declarations */
     JNIEnv *env = NULL;
     jint getEnvResult = JNI_OK;
-
-    /* Check parameters */
-    /**/
-    
 
     /* get the environment */
     if (ARUTILS_JNI_Manager_VM != NULL)
@@ -128,12 +122,6 @@ ARUTILS_BLEFtp_Connection_t * ARUTILS_BLEFtp_Connection_New(ARSAL_Sem_t *cancelS
         *error = ARUTILS_ERROR;
     }
 
-    
-    if((port == 0) || ((port % 10) != 1))
-    {
-        *error = ARUTILS_ERROR_BAD_PARAMETER;
-    }
-
     if (*error == ARUTILS_OK)
     {
         newConnection = calloc(1, sizeof(ARUTILS_BLEFtp_Connection_t));
@@ -144,27 +132,17 @@ ARUTILS_BLEFtp_Connection_t * ARUTILS_BLEFtp_Connection_New(ARSAL_Sem_t *cancelS
         }
         else 
         {
-            // Init BLEFtp java and store in newConnection ?
-            bleFtpObjectCls = (*env)->FindClass(env, "com/parrot/arsdk/arutils/ARUtilsBLEFtp");
-            jmethodID bleFtpObjectMethodConstructor = (*env)->GetMethodID(env, bleFtpObjectCls, "<init>", "()V");
-            bleFtpObject = (*env)->NewObject(env, bleFtpObjectCls, bleFtpObjectMethodConstructor);
-
-            
+            bleFtpObject = (*env)->NewGlobalRef(env, bleFtp);
+            cancelSemObject = (*env)->NewGlobalRef(env, cancelSem);
         }
-        if (bleFtpObject == NULL)
+        if (bleFtpObject == NULL || cancelSemObject == NULL)
         {
             *error = ARUTILS_ERROR_ALLOC;
         }
         else
         {
-            newConnection->bleFtpObject = (jobject) (*env)->NewGlobalRef(env, bleFtpObject);
-            newConnection->bleManager = (jobject) (*env)->NewGlobalRef(env, bleManager);
-
-            jmethodID bleFtpInitMethod = (*env)->GetMethodID(env, bleFtpObjectCls, "initWithDevice", "(Lcom/parrot/arsdk/arsal/ARSALBLEManager;Landroid/bluetooth/BluetoothGatt;I)V");
-            (*env)->CallVoidMethod(env, bleFtpObject, bleFtpInitMethod, bleManager, device, port);
-
-            jmethodID bleFtpRegisterMethod = (*env)->GetMethodID(env, bleFtpObjectCls, "registerCharacteristics", "()Z");
-            (*env)->CallBooleanMethod(env, bleFtpObject, bleFtpRegisterMethod);
+            newConnection->bleFtpObject = bleFtpObject;
+            newConnection->cancelSemObject = cancelSemObject;
         }
     }
 
@@ -172,19 +150,6 @@ ARUTILS_BLEFtp_Connection_t * ARUTILS_BLEFtp_Connection_New(ARSAL_Sem_t *cancelS
     if ((getEnvResult == JNI_EDETACHED) && (env != NULL))
     {
         (*ARUTILS_JNI_Manager_VM)->DetachCurrentThread(ARUTILS_JNI_Manager_VM);
-    }
-
-    /* cleanup */
-
-    if (bleFtpObjectCls != NULL)
-    {
-        (*env)->DeleteLocalRef (env, bleFtpObjectCls );
-    }
-
-    
-    if (bleFtpObject != NULL)
-    {
-        (*env)->DeleteLocalRef (env, bleFtpObject);    
     }
     
     
@@ -234,10 +199,10 @@ void ARUTILS_BLEFtp_Connection_Delete(ARUTILS_BLEFtp_Connection_t **connectionAd
         {
             // bleFTP java unregisterCharacteristics
             (*env)->DeleteGlobalRef (env, connection->bleFtpObject);
-            (*env)->DeleteGlobalRef (env, connection->bleManager);
+            (*env)->DeleteGlobalRef (env, connection->cancelSemObject);
 
             connection->bleFtpObject = NULL;
-            connection->bleManager = NULL;
+            connection->cancelSemObject = NULL;
             
             free(connection);
         }
@@ -293,7 +258,8 @@ eARUTILS_ERROR ARUTILS_BLEFtp_Connection_Cancel(ARUTILS_BLEFtp_Connection_t *con
     if (result == ARUTILS_OK)
     {
         jobject bleFtpObject = connection->bleFtpObject;
-        ret = (*env)->CallBooleanMethod(env, bleFtpObject, ARUTILS_JNI_BLEFTP_METHOD_CONNECTION_CANCEL);
+        jobject cancelSemObject = connection->cancelSemObject;
+        ret = (*env)->CallBooleanMethod(env, bleFtpObject, ARUTILS_JNI_BLEFTP_METHOD_CONNECTION_CANCEL, cancelSemObject);
         
         if (ret == 0)
         {
@@ -348,7 +314,8 @@ eARUTILS_ERROR ARUTILS_BLEFtp_IsCanceled(ARUTILS_BLEFtp_Connection_t *connection
     if (result == ARUTILS_OK)
     {
         jobject bleFtpObject = connection->bleFtpObject;
-        ret = (*env)->CallBooleanMethod(env, bleFtpObject, ARUTILS_JNI_BLEFTP_METHOD_IS_CANCELED);
+        jobject cancelSemObject = connection->cancelSemObject;
+        ret = (*env)->CallBooleanMethod(env, bleFtpObject, ARUTILS_JNI_BLEFTP_METHOD_IS_CANCELED, cancelSemObject);
         
         if (ret == 0)
         {
@@ -606,12 +573,13 @@ eARUTILS_ERROR ARUTILS_BLEFtp_Get_WithBuffer(ARUTILS_BLEFtp_Connection_t *connec
     {
         
         jobject bleFtpObject = connection->bleFtpObject;
+        jobject cancelSemObject = connection->cancelSemObject;
         jstring jRemotePath = (*env)->NewStringUTF(env, remotePath);
         jclass objectClass = (*env)->FindClass(env, "[B");
 
         jobjectArray dataArray = (*env)->NewObjectArray(env, 1, objectClass, NULL);
 
-        ret = (*env)->CallBooleanMethod(env, bleFtpObject, ARUTILS_JNI_BLEFTP_METHOD_GET_WITH_BUFFER, jRemotePath, dataArray, (jlong)callback);
+        ret = (*env)->CallBooleanMethod(env, bleFtpObject, ARUTILS_JNI_BLEFTP_METHOD_GET_WITH_BUFFER, jRemotePath, dataArray, (jlong)callback, cancelSemObject);
         if (ret == 0)
         {
             error = ARUTILS_ERROR_BLE_FAILED;
@@ -727,11 +695,12 @@ eARUTILS_ERROR ARUTILS_BLEFtp_Get(ARUTILS_BLEFtp_Connection_t *connection, const
     if (error == ARUTILS_OK)
     {   
         jobject bleFtpObject = connection->bleFtpObject;
+        jobject cancelSemObject = connection->cancelSemObject;
         jstring jRemotePath = (*env)->NewStringUTF(env, remotePath);
         jstring jDstFile = (*env)->NewStringUTF(env, dstFile);
 
         ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_JNI_BLEFTP_TAG, " %x %x", callback, callback->bleFtpProgressCallback);
-        ret = (*env)->CallBooleanMethod(env, bleFtpObject, ARUTILS_JNI_BLEFTP_METHOD_GET, jRemotePath, jDstFile, (jlong)callback);
+        ret = (*env)->CallBooleanMethod(env, bleFtpObject, ARUTILS_JNI_BLEFTP_METHOD_GET, jRemotePath, jDstFile, (jlong)callback, cancelSemObject);
         if (ret == 0)
         {
             error = ARUTILS_ERROR_BLE_FAILED;
@@ -830,10 +799,11 @@ eARUTILS_ERROR ARUTILS_BLEFtp_Put(ARUTILS_BLEFtp_Connection_t *connection, const
     if (error == ARUTILS_OK)
     {   
         jobject bleFtpObject = connection->bleFtpObject;
+        jobject cancelSemObject = connection->cancelSemObject;
         jstring jRemotePath = (*env)->NewStringUTF(env, remotePath);
         jstring jSrcFile = (*env)->NewStringUTF(env, srcFile);
 
-        ret = (*env)->CallBooleanMethod(env, bleFtpObject, ARUTILS_JNI_BLEFTP_METHOD_PUT, jRemotePath, jSrcFile, (jlong)callback, resume);
+        ret = (*env)->CallBooleanMethod(env, bleFtpObject, ARUTILS_JNI_BLEFTP_METHOD_PUT, jRemotePath, jSrcFile, (jlong)callback, resume, cancelSemObject);
         if (ret == 0)
         {
             error = ARUTILS_ERROR_BLE_FAILED;
