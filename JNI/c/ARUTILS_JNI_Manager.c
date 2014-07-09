@@ -36,6 +36,15 @@ JavaVM* ARUTILS_JNI_Manager_VM = NULL;
 jclass classException = NULL;
 jmethodID methodId_Exception_Init = NULL;
 
+jmethodID ftpListener_didFtpProgress_methodId = NULL;
+
+typedef struct _ARUTILS_JNI_FtpCommandCallbacks_t_
+{
+    jobject jProgressListener;
+    jobject jProgressArg;
+
+} ARUTILS_JNI_FtpCommandCallbacks_t;
+
 /*****************************************
  *
  *             JNI implementation :
@@ -72,7 +81,8 @@ JNIEXPORT jboolean JNICALL
 Java_com_parrot_arsdk_arutils_ARUtilsManager_nativeStaticInit
   (JNIEnv *env, jclass class)
 {
-    return 0;
+    
+    return ARUTILS_JNI_InitFtpListenersJNI(env);
 }
 
 /*
@@ -221,6 +231,302 @@ Java_com_parrot_arsdk_arutils_ARUtilsManager_nativeCloseBLEFtp
     }
 }
 
+void ARUTILS_JNI_Ftp_ProgressCallback(void* arg, float percent)
+{
+    ARUTILS_JNI_FtpCommandCallbacks_t *callback = (ARUTILS_JNI_FtpCommandCallbacks_t*)arg;
+    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_JNI_MANAGER_TAG, "");
+
+    if (callback != NULL)
+    {
+        if ((ARUTILS_JNI_Manager_VM != NULL) && (callback->jProgressListener != NULL) && (ftpListener_didFtpProgress_methodId != NULL))
+        {
+            JNIEnv *env = NULL;
+            jfloat jPercent = 0;
+            jint jResultEnv = 0;
+            int error = JNI_OK;
+
+            jResultEnv = (*ARUTILS_JNI_Manager_VM)->GetEnv(ARUTILS_JNI_Manager_VM, (void **) &env, JNI_VERSION_1_6);
+
+            if (jResultEnv == JNI_EDETACHED)
+            {
+                 (*ARUTILS_JNI_Manager_VM)->AttachCurrentThread(ARUTILS_JNI_Manager_VM, &env, NULL);
+            }
+
+            if (env == NULL)
+            {
+                error = JNI_FAILED;
+            }
+
+            if ((error == JNI_OK) && (ftpListener_didFtpProgress_methodId != NULL))
+            {
+                jPercent = percent;
+
+                (*env)->CallVoidMethod(env, callback->jProgressListener, ftpListener_didFtpProgress_methodId, callback->jProgressArg, jPercent);
+            }
+
+            if ((jResultEnv == JNI_EDETACHED) && (env != NULL))
+            {
+                 (*ARUTILS_JNI_Manager_VM)->DetachCurrentThread(ARUTILS_JNI_Manager_VM);
+            }
+        }
+    }
+    
+}
+
+JNIEXPORT jstring JNICALL 
+Java_com_parrot_arsdk_arutils_ARUtilsManager_nativeBLEFtpList
+  (JNIEnv *env, jobject obj, jlong jManager, jstring jRemotePath)
+{
+    ARUTILS_Manager_t *manager = (ARUTILS_Manager_t*) (intptr_t) jManager;
+    eARUTILS_ERROR error = ARUTILS_OK;
+    jstring result = NULL;
+
+    if (manager == NULL || jRemotePath == NULL)
+    {
+        ARSAL_PRINT(ARSAL_PRINT_ERROR, ARUTILS_JNI_MANAGER_TAG, "Wrong parameter: %d %d", manager, jRemotePath);
+        error = ARUTILS_ERROR_BAD_PARAMETER;
+    }
+
+    if (error == ARUTILS_OK)
+    {
+        const char *namePath = (*env)->GetStringUTFChars(env, jRemotePath, 0);
+
+        char **resultList = malloc(sizeof(char*));
+
+        uint32_t resultListLen;
+
+        error = ARUTILS_BLEFtpAL_List(manager, namePath, resultList, &resultListLen);
+
+        if (error == ARUTILS_OK)
+        {
+            result = (*env)->NewStringUTF(env, *resultList);
+        }
+        else
+        {
+            ARSAL_PRINT(ARSAL_PRINT_ERROR, ARUTILS_JNI_MANAGER_TAG, "ARUTILS_BLEFtpAL_List failed: %d", error);
+        }
+
+        (*env)->ReleaseStringUTFChars( env, jRemotePath, namePath);
+    }
+    return result;
+}
+
+
+JNIEXPORT jint JNICALL 
+Java_com_parrot_arsdk_arutils_ARUtilsManager_nativeBLEFtpDelete
+  (JNIEnv *env, jobject obj, jlong jManager, jstring jRemotePath)
+{
+    ARUTILS_Manager_t *manager = (ARUTILS_Manager_t*) (intptr_t) jManager;
+    eARUTILS_ERROR error = ARUTILS_OK;
+
+    if (manager == NULL || jRemotePath == NULL)
+    {
+        ARSAL_PRINT(ARSAL_PRINT_ERROR, ARUTILS_JNI_MANAGER_TAG, "Wrong parameter: %d %d", manager, jRemotePath);
+        error = ARUTILS_ERROR_BAD_PARAMETER;
+    }
+
+    if (error == ARUTILS_OK)
+    {
+        const char *namePath = (*env)->GetStringUTFChars(env, jRemotePath, 0);
+
+        error = ARUTILS_BLEFtpAL_Delete(manager, namePath);
+
+        (*env)->ReleaseStringUTFChars( env, jRemotePath, namePath);
+    }
+    return error;
+}
+
+
+JNIEXPORT jint JNICALL 
+Java_com_parrot_arsdk_arutils_ARUtilsManager_nativeBLEFtpPut
+  (JNIEnv *env, jobject obj, jlong jManager, jstring jRemotePath, jstring jSrcFile, jobject jProgressListener, jobject jProgressArg, jboolean resume)
+{
+    ARUTILS_JNI_FtpCommandCallbacks_t *callback = NULL;
+    ARUTILS_Manager_t *manager = (ARUTILS_Manager_t*) (intptr_t) jManager;
+    eARUTILS_ERROR error = ARUTILS_OK;
+
+    if (manager == NULL || jRemotePath == NULL || jSrcFile == NULL)
+    {
+        ARSAL_PRINT(ARSAL_PRINT_ERROR, ARUTILS_JNI_MANAGER_TAG, "Wrong parameter: %d %d %d", manager, jRemotePath, jSrcFile);
+        error = ARUTILS_ERROR_BAD_PARAMETER;
+    }
+
+    if (error == ARUTILS_OK)
+    {
+        callback = calloc(1, sizeof(ARUTILS_JNI_FtpCommandCallbacks_t));
+        if (callback == NULL)
+        {
+            error = ARUTILS_ERROR;
+        }
+    }
+
+    if (error == ARUTILS_OK)
+    {
+        if (jProgressListener != NULL)
+        {
+            callback->jProgressListener = (*env)->NewGlobalRef(env, jProgressListener);
+        }
+        if (jProgressArg != NULL)
+        {
+            callback->jProgressArg = (*env)->NewGlobalRef(env, jProgressArg);
+        }
+
+        const char *namePath = (*env)->GetStringUTFChars(env, jRemotePath, 0);
+        const char *srcFile = (*env)->GetStringUTFChars(env, jSrcFile, 0);
+
+        error = ARUTILS_BLEFtpAL_Put(manager, namePath, srcFile, ARUTILS_JNI_Ftp_ProgressCallback, callback, resume);
+
+        (*env)->ReleaseStringUTFChars( env, jRemotePath, namePath);
+        (*env)->ReleaseStringUTFChars( env, jSrcFile, srcFile);
+    }
+
+    if (callback != NULL)
+    {
+        if (callback->jProgressListener != NULL)
+        {
+            (*env)->DeleteGlobalRef(env, callback->jProgressListener);
+        }
+        if (callback->jProgressArg != NULL)
+        {
+            (*env)->DeleteGlobalRef(env, callback->jProgressArg);
+        }
+        free(callback);
+        callback = NULL;
+    }
+
+    return error;
+}
+
+
+JNIEXPORT jint JNICALL 
+Java_com_parrot_arsdk_arutils_ARUtilsManager_nativeBLEFtpGet
+  (JNIEnv *env, jobject obj, jlong jManager, jstring jRemotePath, jstring jDestFile, jobject jProgressListener, jobject jProgressArg, jboolean resume)
+{
+    ARUTILS_JNI_FtpCommandCallbacks_t *callback = NULL;
+    ARUTILS_Manager_t *manager = (ARUTILS_Manager_t*) (intptr_t) jManager;
+    eARUTILS_ERROR error = ARUTILS_OK;
+
+    if (manager == NULL || jRemotePath == NULL || jDestFile == NULL)
+    {
+        ARSAL_PRINT(ARSAL_PRINT_ERROR, ARUTILS_JNI_MANAGER_TAG, "Wrong parameter: %d %d %d", manager, jRemotePath, jDestFile);
+        error = ARUTILS_ERROR_BAD_PARAMETER;
+    }
+
+    if (error == ARUTILS_OK)
+    {
+        callback = calloc(1, sizeof(ARUTILS_JNI_FtpCommandCallbacks_t));
+        if (callback == NULL)
+        {
+            error = ARUTILS_ERROR;
+        }
+    }
+
+    if (error == ARUTILS_OK)
+    {
+        if (jProgressListener != NULL)
+        {
+            callback->jProgressListener = (*env)->NewGlobalRef(env, jProgressListener);
+        }
+        if (jProgressArg != NULL)
+        {
+            callback->jProgressArg = (*env)->NewGlobalRef(env, jProgressArg);
+        }
+
+        const char *namePath = (*env)->GetStringUTFChars(env, jRemotePath, 0);
+        const char *destFile = (*env)->GetStringUTFChars(env, jDestFile, 0);
+
+        error = ARUTILS_BLEFtpAL_Get(manager, namePath, destFile, ARUTILS_JNI_Ftp_ProgressCallback, callback, resume);
+
+        (*env)->ReleaseStringUTFChars( env, jRemotePath, namePath);
+        (*env)->ReleaseStringUTFChars( env, jDestFile, destFile);
+    }
+
+    if (callback != NULL)
+    {
+        if (callback->jProgressListener != NULL)
+        {
+            (*env)->DeleteGlobalRef(env, callback->jProgressListener);
+        }
+        if (callback->jProgressArg != NULL)
+        {
+            (*env)->DeleteGlobalRef(env, callback->jProgressArg);
+        }
+        free(callback);
+        callback = NULL;
+    }
+
+    return error;
+}
+
+
+JNIEXPORT jbyteArray JNICALL 
+Java_com_parrot_arsdk_arutils_ARUtilsManager_nativeBLEFtpGetWithBuffer
+  (JNIEnv *env, jobject obj, jlong jManager, jstring jRemotePath, jobject jProgressListener, jobject jProgressArg)
+{
+    ARUTILS_JNI_FtpCommandCallbacks_t *callback = NULL;
+    ARUTILS_Manager_t *manager = (ARUTILS_Manager_t*) (intptr_t) jManager;
+    eARUTILS_ERROR error = ARUTILS_OK;
+    jbyteArray result = NULL;
+
+    if (manager == NULL || jRemotePath == NULL)
+    {
+        ARSAL_PRINT(ARSAL_PRINT_ERROR, ARUTILS_JNI_MANAGER_TAG, "Wrong parameter: %d %d", manager, jRemotePath);
+        error = ARUTILS_ERROR_BAD_PARAMETER;
+    }
+
+    if (error == ARUTILS_OK)
+    {
+        callback = calloc(1, sizeof(ARUTILS_JNI_FtpCommandCallbacks_t));
+        if (callback == NULL)
+        {
+            error = ARUTILS_ERROR;
+        }
+    }
+
+    if (error == ARUTILS_OK)
+    {
+        if (jProgressListener != NULL)
+        {
+            callback->jProgressListener = (*env)->NewGlobalRef(env, jProgressListener);
+        }
+        if (jProgressArg != NULL)
+        {
+            callback->jProgressArg = (*env)->NewGlobalRef(env, jProgressArg);
+        }
+
+        const char *namePath = (*env)->GetStringUTFChars(env, jRemotePath, 0);
+
+        int dataLen;
+        uint8_t *data;
+
+        error = ARUTILS_BLEFtpAL_Get_WithBuffer(manager, namePath, &data, &dataLen, ARUTILS_JNI_Ftp_ProgressCallback, callback);
+
+        (*env)->ReleaseStringUTFChars( env, jRemotePath, namePath);
+
+        if (error == ARUTILS_OK)
+        {
+            result = (*env)->NewByteArray(env, dataLen);
+            (*env)->SetByteArrayRegion(env, result, 0, dataLen, data);
+        }
+    }
+
+    if (callback != NULL)
+    {
+        if (callback->jProgressListener != NULL)
+        {
+            (*env)->DeleteGlobalRef(env, callback->jProgressListener);
+        }
+        if (callback->jProgressArg != NULL)
+        {
+            (*env)->DeleteGlobalRef(env, callback->jProgressArg);
+        }
+        free(callback);
+        callback = NULL;
+    }
+
+    return result;
+}
+
 /*****************************************
  *
  *             Private implementation:
@@ -347,4 +653,44 @@ void ARUTILS_JNI_ThrowARUtilsException(JNIEnv *env, eARUTILS_ERROR nativeError)
     {
         (*env)->Throw(env, jThrowable);
     }
+}
+
+
+int ARUTILS_JNI_InitFtpListenersJNI(JNIEnv *env)
+{
+    jclass classFtpProgressListener = NULL;
+    int error = JNI_OK;
+
+    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_JNI_MANAGER_TAG, "");
+
+    if (env == NULL)
+    {
+        error = JNI_FAILED;
+    }
+
+    if (ftpListener_didFtpProgress_methodId == NULL)
+    {
+        if (error == JNI_OK)
+        {
+            classFtpProgressListener = (*env)->FindClass(env, "com/parrot/arsdk/arutils/ARUtilsFtpProgressListener");
+
+            if (classFtpProgressListener == NULL)
+            {
+                ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_JNI_MANAGER_TAG, "ARUtilsFtpProgressListener class not found");
+                error = JNI_FAILED;
+            }
+        }
+
+        if (error == JNI_OK)
+        {
+            ftpListener_didFtpProgress_methodId = (*env)->GetMethodID(env, classFtpProgressListener, "didFtpProgress", "(Ljava/lang/Object;F)V");
+
+            if (ftpListener_didFtpProgress_methodId == NULL)
+            {
+                ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_JNI_MANAGER_TAG, "Listener didFtpProgress method not found");
+            }
+        }
+    }
+
+    return error;
 }

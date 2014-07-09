@@ -22,6 +22,13 @@ public class ARUtilsManager
     private native int nativeInitBLEFtp(long jManager, ARSALBLEManager bleManager, BluetoothGatt device, int port);
     private native void nativeCloseBLEFtp(long jManager);
 
+    /*Test Methods*/
+    private native String nativeBLEFtpList(long jManager, String remotePath);
+    private native int nativeBLEFtpDelete(long jManager, String remotePath);
+    private native byte[] nativeBLEFtpGetWithBuffer(long jManager, String remotePath, ARUtilsFtpProgressListener progressListener, Object progressArg);
+    private native int nativeBLEFtpGet(long jManager, String remotePath, String destFile, ARUtilsFtpProgressListener progressListener, Object progressArg, boolean resume);
+    private native int nativeBLEFtpPut(long jManager, String remotePath, String srcFile, ARUtilsFtpProgressListener progressListener, Object progressArg, boolean resume);
+
     private long m_managerPtr;
     private boolean m_initOk;
 
@@ -214,6 +221,31 @@ public class ARUtilsManager
             bleManager.disconnect();
         }
         return error;
+    }
+
+    public String BLEFtpListFile(String remotePath)
+    {
+        return nativeBLEFtpList(m_managerPtr, remotePath);
+    }
+
+    public ARUTILS_ERROR_ENUM BLEFtpDelete(String remotePath)
+    {
+        return ARUTILS_ERROR_ENUM.getFromValue(nativeBLEFtpDelete(m_managerPtr, remotePath));
+    }
+
+    public ARUTILS_ERROR_ENUM BLEFtpPut(String remotePath, String srcFile, ARUtilsFtpProgressListener progressListener, Object progressArg, boolean resume)
+    {
+        return ARUTILS_ERROR_ENUM.getFromValue(nativeBLEFtpPut(m_managerPtr, remotePath, srcFile, progressListener, progressArg, resume));
+    }
+
+    public ARUTILS_ERROR_ENUM BLEFtpGet(String remotePath, String destFile, ARUtilsFtpProgressListener progressListener, Object progressArg, boolean resume)
+    {
+        return ARUTILS_ERROR_ENUM.getFromValue(nativeBLEFtpGet(m_managerPtr, remotePath, destFile, progressListener, progressArg, resume));
+    }
+
+    public byte[] BLEFtpGetWithBuffer(String remotePath, ARUtilsFtpProgressListener progressListener, Object progressArg)
+    {
+        return nativeBLEFtpGetWithBuffer(m_managerPtr, remotePath, progressListener, progressArg);
     }
     
 }

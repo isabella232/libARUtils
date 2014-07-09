@@ -1,0 +1,97 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    tools:context=".MainActivity" >
+
+    <TextView
+        android:id="@+id/textView1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/hello_world" />
+
+    <Button
+        android:id="@+id/testBle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/textView1"
+        android:text="Test BLE"
+        android:enabled="false"/>
+<!--
+    <Button
+        android:id="@+id/testRunningSignal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/testRunning"
+        android:layout_below="@+id/testRunning"
+        android:layout_marginTop="50dp"
+        android:text="Test Running Signal" />
+
+    <Button
+        android:id="@+id/testAvailable"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/testRunningSignal"
+        android:layout_below="@+id/testRunning"
+        android:text="Test Media Available" />
+ -->
+
+    <Button
+        android:id="@+id/testMd5"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/testBle"
+        android:layout_below="@+id/testBle"
+        android:text="Test Md5"
+        android:enabled="false"/>
+
+    <Button
+        android:id="@+id/testList"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/testBle"
+        android:layout_below="@+id/testMd5"
+        android:text="Test List"
+        android:enabled="false"/>
+
+    <Button
+        android:id="@+id/testGet"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/testBle"
+        android:layout_below="@+id/testList"
+        android:text="Test Get"
+        android:enabled="false"/>
+
+    <Button
+        android:id="@+id/testGetWithBuffer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/testBle"
+        android:layout_below="@+id/testGet"
+        android:text="Test Get With Buffer"
+        android:enabled="false"/>
+
+    <Button
+        android:id="@+id/testPut"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/testBle"
+        android:layout_below="@+id/testGetWithBuffer"
+        android:text="Test Put"
+        android:enabled="false"/>
+
+    <Button
+        android:id="@+id/testDelete"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/testBle"
+        android:layout_below="@+id/testPut"
+        android:text="Test Delete"
+        android:enabled="false"/>
+
+</RelativeLayout>

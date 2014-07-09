@@ -69,14 +69,14 @@ public class ARUtilsBLEFtp
 	private ArrayList<BluetoothGattCharacteristic> arrayGetting = null;
 	private Semaphore cancelSem = null;
 	
+	private native void nativeProgressCallback(long nativeCallback, float percent);
 	
-	
-	//private native static void nativeJNIInit();
+	private native static void nativeJNIInit();
 
-	/*static
+	static
     {
         nativeJNIInit();
-    }*/
+    }
 	
 	public ARUtilsBLEFtp()
 	{
@@ -279,7 +279,7 @@ public class ARUtilsBLEFtp
 		{
 			byte[][] data = new byte[1][];
 			
-			ret = readGetData(0, null, data, null, null);
+			ret = readGetData(0, null, data, 0);
 			
 			if (data[0] != null)
 			{
@@ -295,25 +295,24 @@ public class ARUtilsBLEFtp
 		return ret;
 	}
 	
-	public boolean getFile(String remotePath, String localFile, ARUtilsFtpProgressListener progressListener, Object progressArg)
+	public boolean getFile(String remotePath, String localFile, long nativeCallback)
 	{
 		boolean ret = false;
-		
-		ret = getFileInternal(remotePath, localFile, null, progressListener, progressArg);
+		ret = getFileInternal(remotePath, localFile, null, nativeCallback);
 		
 		return ret;
 	}
 	
-	public boolean getFileWithBuffer(String remotePath, byte[][] data, ARUtilsFtpProgressListener progressListener, Object progressArg)
+	public boolean getFileWithBuffer(String remotePath, byte[][] data, long nativeCallback)
 	{
 		boolean ret = false;
 		
-		ret = getFileInternal(remotePath, null, data, progressListener, progressArg);
+		ret = getFileInternal(remotePath, null, data, nativeCallback);
 		
 		return ret;
 	}
 	
-	public boolean getFileInternal(String remoteFile, String localFile, byte[][] data, ARUtilsFtpProgressListener progressListener, Object progressArg)
+	public boolean getFileInternal(String remoteFile, String localFile, byte[][] data, long nativeCallback)
 	{
 		FileOutputStream dst = null;
 		boolean ret = true;
@@ -346,7 +345,7 @@ public class ARUtilsBLEFtp
 		
 		if (ret == true)
 		{
-			ret = readGetData((int)totalSize[0], dst, data, progressListener, progressArg);
+			ret = readGetData((int)totalSize[0], dst, data, nativeCallback);
 		}
 		
 		if (dst != null)
@@ -380,14 +379,14 @@ public class ARUtilsBLEFtp
 		
 			if (ret == true)
 			{
-				ret = sendPutData(0, null, resumeIndex[0], false, true, null, null);
+				ret = sendPutData(0, null, resumeIndex[0], false, true, 0);
 			}
 		}
 		
 		return ret;
 	}
 	
-	public boolean putFile(String remotePath, String localFile, ARUtilsFtpProgressListener progressListener, Object progressArg, boolean resume)
+	public boolean putFile(String remotePath, String localFile, long nativeCallback, boolean resume)
 	{
 		FileInputStream src = null;
 		int[] resumeIndex = new int[1];
@@ -451,7 +450,7 @@ public class ARUtilsBLEFtp
 		
 		if (ret == true)
 		{
-			ret = sendPutData(totalSize, src, resumeIndex[0], resume, false, progressListener, progressArg);
+			ret = sendPutData(totalSize, src, resumeIndex[0], resume, false, nativeCallback);
 		}
 		
 		if (src != null)
@@ -763,7 +762,7 @@ public class ARUtilsBLEFtp
 		return ret;
 	}
 	
-	private boolean sendPutData(int fileSize, FileInputStream src, int resumeIndex, boolean resume, boolean abort, ARUtilsFtpProgressListener progressListener, Object progressArg)
+	private boolean sendPutData(int fileSize, FileInputStream src, int resumeIndex, boolean resume, boolean abort, long nativeCallback)
 	{
 		BufferedInputStream in = new BufferedInputStream(src);
 		byte[] buffer = new byte [BLE_PACKET_MAX_SIZE];
@@ -818,11 +817,16 @@ public class ARUtilsBLEFtp
 					{
 						ARSALPrint.w("DBG", APP_TAG + "resume " + packetCount);
 					}
-					
-					if (progressListener != null)
+
+					if (nativeCallback != 0)
 					{
-						progressListener.didFtpProgress(progressListener, ((float)totalSize / (float)fileSize) * 100.f);
+						nativeProgressCallback(nativeCallback, ((float)totalSize / (float)fileSize) * 100.f);
 					}
+					
+					/*if (progressListener != null)
+					{
+						progressListener.didFtpProgress(progressArg, ((float)totalSize / (float)fileSize) * 100.f);
+					}*/
 					
 					/*if (isConnectionCanceled())
 					{
@@ -958,7 +962,7 @@ public class ARUtilsBLEFtp
 		return ret;
 	}
 	
-	private boolean readGetData(int fileSize, FileOutputStream dst, byte[][] data, ARUtilsFtpProgressListener progressListener, Object progressArg)
+	private boolean readGetData(int fileSize, FileOutputStream dst, byte[][] data, long nativeCallback)
 	{
 		//ArrayList<ARSALManagerNotificationData> receivedNotifications = new ArrayList<ARSALManagerNotificationData>();
 		//ArrayList<ARSALManagerNotificationData> removeNotifications = new ArrayList<ARSALManagerNotificationData>();
@@ -1085,10 +1089,9 @@ public class ARUtilsBLEFtp
 									System.arraycopy(packet, 0, newData, totalSize - packetLen, packetLen);
 									data[0] = newData;
 								}
-								
-								if (progressListener != null)
+								if (nativeCallback != 0)
 								{
-									progressListener.didFtpProgress(progressArg, ((float)totalSize / (float)fileSize) * 100.f);
+									nativeProgressCallback(nativeCallback, ((float)totalSize / (float)fileSize) * 100.f);
 								}
 								
 								/*if (isConnectionCanceled())
