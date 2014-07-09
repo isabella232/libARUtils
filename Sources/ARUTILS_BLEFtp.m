@@ -1243,18 +1243,6 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(ARUtils_BLEFtp, initBLEFtp)
             }
             
             [receivedNotifications removeAllObjects];
-            
-            //firmware protocol dosen't implement cancel today durring 100 packets dowload
-            /*if (cancelSem != NULL)
-            {
-                result = ARUTILS_BLEFtp_IsCanceledSem(cancelSem);
-                if (result != ARUTILS_OK)
-                {
-#if ARUTILS_BLEFTP_ENABLE_LOG
-                    NSLog(@"canceled received");
-#endif
-                }
-            }*/
         }
         while ((result == ARUTILS_OK) && (blockMD5 == NO) && (endMD5 == NO));
         
@@ -1288,7 +1276,8 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(ARUtils_BLEFtp, initBLEFtp)
 #endif
             }
             
-            if (cancelSem != NULL)
+            //firmware 1.0.45 protocol dosen't implement cancel today at the and of 100 packets dowload
+            /*if (cancelSem != NULL)
             {
                 result = ARUTILS_BLEFtp_IsCanceledSem(cancelSem);
                 if (result != ARUTILS_OK)
@@ -1304,9 +1293,9 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(ARUtils_BLEFtp, initBLEFtp)
                 result = [self sendCommand:"CANCEL" param:NULL characteristic:_getting];
             }
             else
-            {
+            {*/
                 result = [self sendCommand:"MD5 OK" param:NULL characteristic:_getting];
-            }
+            /*}*/
         }
     }
     
