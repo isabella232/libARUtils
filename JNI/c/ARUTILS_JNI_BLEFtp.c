@@ -317,9 +317,9 @@ eARUTILS_ERROR ARUTILS_BLEFtp_IsCanceled(ARUTILS_BLEFtp_Connection_t *connection
         jobject cancelSemObject = connection->cancelSemObject;
         ret = (*env)->CallBooleanMethod(env, bleFtpObject, ARUTILS_JNI_BLEFTP_METHOD_IS_CANCELED, cancelSemObject);
         
-        if (ret == 0)
+        if (ret != 0)
         {
-            result = ARUTILS_ERROR_SYSTEM;
+            result = ARUTILS_ERROR_FTP_CANCELED;
         }
     }
 
@@ -396,7 +396,11 @@ eARUTILS_ERROR ARUTILS_BLEFtp_List(ARUTILS_BLEFtp_Connection_t *connection, cons
 
             const char *dataList = (*env)->GetStringUTFChars(env, jList, 0);
 
-            int dataLen = strlen(dataList);
+            int dataLen = 0;
+            if (dataList != NULL)
+            {
+                dataLen = strlen(dataList);
+            }
 
             char *stringList = malloc(dataLen + 1);
             if (stringList == NULL)
@@ -406,7 +410,10 @@ eARUTILS_ERROR ARUTILS_BLEFtp_List(ARUTILS_BLEFtp_Connection_t *connection, cons
         
             if (error == ARUTILS_OK)
             {
-                memcpy(stringList, dataList, dataLen);
+                if (dataLen != 0)
+                {
+                    memcpy(stringList, dataList, dataLen);
+                }
                 stringList[dataLen] = '\0';
                 
                 *resultList = stringList;
