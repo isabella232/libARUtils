@@ -515,6 +515,74 @@ Java_com_parrot_arsdk_arutils_ARUtilsManager_nativeBLEFtpGetWithBuffer
     return result;
 }
 
+JNIEXPORT jint JNICALL 
+Java_com_parrot_arsdk_arutils_ARUtilsManager_nativeBLEFtpCancel
+  (JNIEnv *env, jobject obj, jlong jManager)
+{
+    ARSAL_PRINT(ARSAL_PRINT_ERROR, ARUTILS_JNI_MANAGER_TAG, "%x", jManager);
+    ARUTILS_Manager_t *manager = (ARUTILS_Manager_t*) (intptr_t) jManager;
+    eARUTILS_ERROR error = ARUTILS_OK;
+
+    if (manager == NULL)
+    {
+        ARSAL_PRINT(ARSAL_PRINT_ERROR, ARUTILS_JNI_MANAGER_TAG, "Wrong parameter: %x", manager);
+        error = ARUTILS_ERROR_BAD_PARAMETER;
+    }
+
+    if (error == ARUTILS_OK)
+    {
+        error = ARUTILS_BLEFtpAL_Connection_Cancel(manager);
+    }
+    return error;
+}
+
+JNIEXPORT jint JNICALL 
+Java_com_parrot_arsdk_arutils_ARUtilsManager_nativeBLEFtpIsConnectionCanceled
+  (JNIEnv *env, jobject obj, jlong jManager)
+{
+    ARSAL_PRINT(ARSAL_PRINT_ERROR, ARUTILS_JNI_MANAGER_TAG, "%x", jManager);
+    ARUTILS_Manager_t *manager = (ARUTILS_Manager_t*) (intptr_t) jManager;
+    eARUTILS_ERROR error = ARUTILS_OK;
+
+    if (manager == NULL)
+    {
+        ARSAL_PRINT(ARSAL_PRINT_ERROR, ARUTILS_JNI_MANAGER_TAG, "Wrong parameter: %x", manager);
+        error = ARUTILS_ERROR_BAD_PARAMETER;
+    }
+
+    if (error == ARUTILS_OK)
+    {
+        error = ARUTILS_BLEFtpAL_Connection_IsCanceled(manager);
+    }
+    return error;
+}
+
+JNIEXPORT jint JNICALL 
+Java_com_parrot_arsdk_arutils_ARUtilsManager_nativeBLEFtpRename
+  (JNIEnv *env, jobject obj, jlong jManager, jstring jOldNamePath, jstring jNewNamePath)
+{
+    ARUTILS_Manager_t *manager = (ARUTILS_Manager_t*) (intptr_t) jManager;
+    eARUTILS_ERROR error = ARUTILS_OK;
+
+    if (manager == NULL || jOldNamePath == NULL || jNewNamePath == NULL)
+    {
+        ARSAL_PRINT(ARSAL_PRINT_ERROR, ARUTILS_JNI_MANAGER_TAG, "Wrong parameter: %x %x %x", manager, jOldNamePath, jNewNamePath);
+        error = ARUTILS_ERROR_BAD_PARAMETER;
+    }
+
+    if (error == ARUTILS_OK)
+    {
+        const char *oldNamePath = (*env)->GetStringUTFChars(env, jOldNamePath, 0);
+        const char *newNamePath = (*env)->GetStringUTFChars(env, jNewNamePath, 0);
+
+        error = ARUTILS_BLEFtpAL_Rename(manager, oldNamePath, newNamePath);
+
+        (*env)->ReleaseStringUTFChars( env, jOldNamePath, oldNamePath);
+        (*env)->ReleaseStringUTFChars( env, jNewNamePath, newNamePath);
+    }
+    return error;
+}
+
 /*****************************************
  *
  *             Private implementation:

@@ -71,6 +71,8 @@ public class MainActivity extends Activity implements ARDiscoveryServicesDevices
     Button testPutButton;
     Button testDeleteButton;
     Button testRenameButton;
+    Button testCancelButton;
+    Button testIsCanceledButton;
     Button currentButton = null;
 
     private Handler mHandler = new Handler();
@@ -166,6 +168,22 @@ public class MainActivity extends Activity implements ARDiscoveryServicesDevices
                 //testBleDeleteFileWJNI();
             }
         });
+
+        testCancelButton = (Button)this.findViewById(R.id.testCancel);
+        testCancelButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                testBleCancelFile();
+            }
+        });
+
+        testIsCanceledButton = (Button)this.findViewById(R.id.testIsCanceled);
+        testIsCanceledButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                testBleIsCanceled();
+            }
+        });
 	    
         StartDiscoveryService();
         //TestFile();
@@ -202,6 +220,8 @@ public class MainActivity extends Activity implements ARDiscoveryServicesDevices
         testPutButton.setEnabled(enable);
         testDeleteButton.setEnabled(enable);
         testRenameButton.setEnabled(enable);
+        testCancelButton.setEnabled(enable);
+        testIsCanceledButton.setEnabled(enable);
     }
 	
 	private void initServices()
@@ -817,11 +837,43 @@ public class MainActivity extends Activity implements ARDiscoveryServicesDevices
         {
             Log.d(APP_TAG, "send RENAME command:");
 
-            //mUtilsManager.BLEFtpRename("/toto.tmp", "/toto1.tmp");
+            mUtilsManager.BLEFtpRename("/toto.tmp", "/toto1.tmp");
         }
         else
         {
             Log.e(APP_TAG, "testBleDeleteFile failed because mUtilsManager is null");
+        }
+    }
+
+    public void testBleCancelFile()
+    {
+        Log.d(APP_TAG, "testBleCancelFile");
+
+        if (mUtilsManager != null)
+        {
+            Log.d(APP_TAG, "send CANCEL command:");
+
+            mUtilsManager.BLEFtpCancel();
+        }
+        else
+        {
+            Log.e(APP_TAG, "testBleCancelFile failed because mUtilsManager is null");
+        }
+    }
+
+    public void testBleIsCanceled()
+    {
+        Log.d(APP_TAG, "testBleIsCanceled");
+
+        if (mUtilsManager != null)
+        {
+            Log.d(APP_TAG, "send IS_CANCELED command:");
+
+            mUtilsManager.BLEFtpIsConnectionCanceled();
+        }
+        else
+        {
+            Log.e(APP_TAG, "testBleIsCanceled failed because mUtilsManager is null");
         }
     }
 

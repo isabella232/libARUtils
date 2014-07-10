@@ -29,6 +29,9 @@ public class ARUtilsManager
     private native byte[] nativeBLEFtpGetWithBuffer(long jManager, String remotePath, ARUtilsFtpProgressListener progressListener, Object progressArg);
     private native int nativeBLEFtpGet(long jManager, String remotePath, String destFile, ARUtilsFtpProgressListener progressListener, Object progressArg, boolean resume);
     private native int nativeBLEFtpPut(long jManager, String remotePath, String srcFile, ARUtilsFtpProgressListener progressListener, Object progressArg, boolean resume);
+    private native int nativeBLEFtpCancel(long jManager);
+    private native int nativeBLEFtpIsConnectionCanceled(long jManager);
+    private native int nativeBLEFtpRename(long jManager, String oldNamePath, String newNamePath);
 
     private long m_managerPtr;
     private boolean m_initOk;
@@ -249,6 +252,21 @@ public class ARUtilsManager
     public byte[] BLEFtpGetWithBuffer(String remotePath, ARUtilsFtpProgressListener progressListener, Object progressArg)
     {
         return nativeBLEFtpGetWithBuffer(m_managerPtr, remotePath, progressListener, progressArg);
+    }
+
+    public ARUTILS_ERROR_ENUM BLEFtpCancel()
+    {
+        return ARUTILS_ERROR_ENUM.getFromValue(nativeBLEFtpCancel(m_managerPtr));
+    }
+
+    public ARUTILS_ERROR_ENUM BLEFtpIsConnectionCanceled()
+    {
+        return ARUTILS_ERROR_ENUM.getFromValue(nativeBLEFtpIsConnectionCanceled(m_managerPtr));
+    }
+
+    public ARUTILS_ERROR_ENUM BLEFtpRename(String oldNamePath, String newNamePath)
+    {
+        return ARUTILS_ERROR_ENUM.getFromValue(nativeBLEFtpRename(m_managerPtr, oldNamePath, newNamePath));
     }
     
 }
