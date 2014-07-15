@@ -222,9 +222,10 @@ public class ARUtilsManager
         
         if (error == ARUTILS_ERROR_ENUM.ARUTILS_OK)
         {
+            ARUtilsBLEFtp bleFtp = ARUtilsBLEFtp.getInstance(context);
+            bleFtp.unregisterCharacteristics();
+            bleFtp.unregisterDevice();
             nativeCloseBLEFtp(m_managerPtr);
-            ARSALBLEManager bleManager = ARSALBLEManager.getInstance(context.getApplicationContext());
-            bleManager.disconnect();
         }
         return error;
     }
