@@ -1,8 +1,8 @@
 /**
  * @file  ARUTILS_JNIBLENetwork.h
  * @brief private headers of BLE network manager allow to send over ble network.
- * @date 
- * @author 
+ * @date
+ * @author
  */
 
 #ifndef _ARUTILS_JNI_BLENETWORK_PRIVATE_H_
@@ -21,14 +21,14 @@ typedef struct _ARUTILS_BLEFtp_Connection_t_
 {
     jobject bleFtpObject;
     jobject cancelSemObject;
-    
+
 } ARUTILS_BLEFtp_Connection_t;
 
 typedef struct _ARUTILS_BLEFtp_Command_t_
 {
     ARUTILS_Ftp_ProgressCallback_t bleFtpProgressCallback;
     void *bleProgressArg;
-    
+
 } ARUTILS_BLEFtp_Command_t;
 
 /**
@@ -65,6 +65,14 @@ eARUTILS_ERROR ARUTILS_BLEFtp_Connection_Cancel(ARUTILS_BLEFtp_Connection_t *con
  * @see cURL
  */
 eARUTILS_ERROR ARUTILS_BLEFtp_IsCanceled(ARUTILS_BLEFtp_Connection_t *connection);
+
+/**
+ * @brief Reset an Ftp Connection command in progress (get, put, list etc)
+ * @param connection The address of the pointer on the Ftp Connection
+ * @retval On success, returns ARUTILS_OK. Otherwise, it returns an error number of eARUTILS_ERROR.
+ * @see ARUTILS_Ftp_NewConnection ()
+ */
+eARUTILS_ERROR ARUTILS_BLEFtp_Connection_Reset(ARUTILS_BLEFtp_Connection_t *connection);
 
 /**
  * @brief Execute Ftp List command to retrieve directory content
@@ -127,8 +135,15 @@ eARUTILS_ERROR ARUTILS_BLEFtp_Get(ARUTILS_BLEFtp_Connection_t *connection, const
  */
 eARUTILS_ERROR ARUTILS_BLEFtp_Put(ARUTILS_BLEFtp_Connection_t *connection, const char *remotePath, const char *srcFile, ARUTILS_Ftp_ProgressCallback_t progressCallback, void* progressArg, eARUTILS_FTP_RESUME resume);
 
+/**
+ * @brief Rename an remote Ftp server file
+ * @param connection The address of the pointer on the Ftp Connection
+ * @param oldNamePath The string of the old file name path on the remote Ftp server
+ * @param newNamePath The string of the new file name path on the remote Ftp server
+ * @retval On success, returns ARUTILS_OK. Otherwise, it returns an error number of eARUTILS_ERROR.
+ * @see ARUTILS_Manager_NewWifiFtp ()
+ */
 eARUTILS_ERROR ARUTILS_BLEFtp_Rename(ARUTILS_BLEFtp_Connection_t *connection, const char *oldNamePath, const char *newNamePath);
-
 
 /**
  * @brief Cancel an Ftp Connection command in progress (get, put, list etc)
@@ -137,7 +152,22 @@ eARUTILS_ERROR ARUTILS_BLEFtp_Rename(ARUTILS_BLEFtp_Connection_t *connection, co
  * @see ARUTILS_Manager_NewBLEFtp ()
  */
 eARUTILS_ERROR ARUTILS_BLEFtpAL_Connection_Cancel(ARUTILS_Manager_t *manager);
-eARUTILS_ERROR ARUTILS_BLEFtpAL_Connection_IsCanceled(ARUTILS_Manager_t *manager);
+
+ /**
+ * @brief Check if the Ftp Connection has received a cancel to it's semaphore
+ * @param connection The address of the pointer on the Ftp Connection
+ * @retval On success, returns ARUTILS_OK. Otherwise, it returns an error number of eARUTILS_ERROR.
+ * @see cURL
+ */
+ eARUTILS_ERROR ARUTILS_BLEFtpAL_Connection_IsCanceled(ARUTILS_Manager_t *manager);
+
+/**
+ * @brief Reset an Ftp Connection command in progress (get, put, list etc)
+ * @param connection The address of the pointer on the Ftp Connection
+ * @retval On success, returns ARUTILS_OK. Otherwise, it returns an error number of eARUTILS_ERROR.
+ * @see ARUTILS_Manager_NewBLEFtp ()
+ */
+eARUTILS_ERROR ARUTILS_BLEFtpAL_Connection_Reset(ARUTILS_Manager_t *manager);
 
 /**
  * @brief Execute Ftp List command to retrieve directory content

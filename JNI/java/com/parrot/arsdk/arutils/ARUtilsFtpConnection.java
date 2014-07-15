@@ -14,6 +14,7 @@ public class ARUtilsFtpConnection
     private native void nativeDeleteFtpConnection(long fptConnection);
     private native int nativeCancel(long fptConnection);
     private native int nativeIsCanceled(long fptConnection);
+    private native int nativeReset(long fptConnection);
     private native String nativeList(long fptConnection, String namePath) throws ARUtilsException;
     private native int nativeRename(long fptConnection, String oldNamePath, String newNamePath);
     private native double nativeSize(long fptConnection, String namePath);
@@ -91,6 +92,18 @@ public class ARUtilsFtpConnection
     public ARUTILS_ERROR_ENUM isCanceled()
     {
         int result = nativeIsCanceled(nativeFtpConnection);
+        ARUTILS_ERROR_ENUM error = ARUTILS_ERROR_ENUM.getFromValue(result);
+        return error;        
+    }
+    
+    /**
+     * Resets the ARUtils Ftp Connection
+     * @return ARUTILS_OK if success, else an {@link ARUTILS_ERROR_ENUM} error code
+     */
+    public ARUTILS_ERROR_ENUM reset()
+    {
+        int result = nativeReset(nativeFtpConnection);
+        
         ARUTILS_ERROR_ENUM error = ARUTILS_ERROR_ENUM.getFromValue(result);
         return error;        
     }

@@ -198,6 +198,14 @@ typedef eARUTILS_ERROR (*ARUTILS_Manager_Ftp_Connection_Cancel_t) (ARUTILS_Manag
 typedef eARUTILS_ERROR (*ARUTILS_Manager_Ftp_Connection_IsCanceled_t) (ARUTILS_Manager_t *manager);
 
 /**
+ * @brief Reset an Ftp Connection command in progress (get, put, list etc)
+ * @param manager The address of the pointer on the Ftp Manager
+ * @retval On success, returns ARUTILS_OK. Otherwise, it returns an error number of eARUTILS_ERROR.
+ * @see ARUTILS_Manager_New ()
+ */
+typedef eARUTILS_ERROR (*ARUTILS_Manager_Ftp_Connection_Reset_t) (ARUTILS_Manager_t *manager);
+
+/**
  * @brief Execute Ftp List command to retrieve directory content
  * @warning This function allocates memory
  * @param manager The address of the pointer on the Ftp Manager
@@ -282,13 +290,14 @@ struct ARUTILS_Manager_t
 {
     ARUTILS_Manager_Ftp_Connection_Cancel_t ftpConnectionCancel;
     ARUTILS_Manager_Ftp_Connection_IsCanceled_t ftpConnectionIsCanceled;
+    ARUTILS_Manager_Ftp_Connection_Reset_t ftpConnectionReset;
     ARUTILS_Manager_Ftp_List_t ftpList;
     ARUTILS_Manager_Get_WithBuffer_t ftpGetWithBuffer;
     ARUTILS_Manager_Ftp_Get_t ftpGet;
     ARUTILS_Manager_Ftp_Put_t ftpPut;
     ARUTILS_Manager_Ftp_Delete_t ftpDelete;
     ARUTILS_Manager_Ftp_Rename_t ftpRename;
-    
+
     ARSAL_Sem_t cancelSem;
     void *connectionObject;
 };

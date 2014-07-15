@@ -14,9 +14,7 @@
 
         <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-
+            android:layout_height="616dp" >
 
             <TextView
                 android:id="@+id/textView1"
@@ -131,6 +129,15 @@
                 android:enabled="false"
                 android:text="Test Manager isCanceled" />
 
+            <Button
+                android:id="@+id/testReset"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
+                android:layout_below="@+id/testIsCanceled"
+                android:enabled="false"
+                android:text="Test Manager Reset" />
+            
         </RelativeLayout>
 
     </ScrollView>

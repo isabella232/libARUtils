@@ -4,14 +4,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import com.parrot.arsdk.ardiscovery.ARDiscoveryDeviceBLEService;
-import com.parrot.arsdk.ardiscovery.ARDiscoveryDeviceService;
-import com.parrot.arsdk.ardiscovery.ARDiscoveryService;
-import com.parrot.arsdk.ardiscovery.receivers.ARDiscoveryServicesDevicesListUpdatedReceiver;
-import com.parrot.arsdk.ardiscovery.receivers.ARDiscoveryServicesDevicesListUpdatedReceiverDelegate;
-import com.parrot.arsdk.arsal.ARSAL_ERROR_ENUM;
-import com.parrot.arsdk.arsal.ARUUID;
-
 import android.app.Activity;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
@@ -29,6 +21,15 @@ import android.os.IBinder;
 import android.os.Looper;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
+
+import com.parrot.arsdk.ardiscovery.ARDiscoveryDeviceBLEService;
+import com.parrot.arsdk.ardiscovery.ARDiscoveryDeviceService;
+import com.parrot.arsdk.ardiscovery.ARDiscoveryService;
+import com.parrot.arsdk.ardiscovery.receivers.ARDiscoveryServicesDevicesListUpdatedReceiver;
+import com.parrot.arsdk.ardiscovery.receivers.ARDiscoveryServicesDevicesListUpdatedReceiverDelegate;
+import com.parrot.arsdk.arsal.ARSALBLEManager;
+import com.parrot.arsdk.arsal.ARSAL_ERROR_ENUM;
+import com.parrot.arsdk.arsal.ARUUID;
 
 public class LoopConnectActivity extends Activity implements ARDiscoveryServicesDevicesListUpdatedReceiverDelegate
 {

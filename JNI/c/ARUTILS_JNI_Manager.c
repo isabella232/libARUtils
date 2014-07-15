@@ -65,7 +65,7 @@ JNI_OnLoad(JavaVM *VM, void *reserved)
 
     /** Saving the reference to the java virtual machine */
     ARUTILS_JNI_Manager_VM = VM;
-    
+
     ARSAL_PRINT(ARSAL_PRINT_WARNING, ARUTILS_JNI_MANAGER_TAG, "JNI_OnLoad ARUTILS_JNI_Manager_VM: %d ", ARUTILS_JNI_Manager_VM);
 
     /** Return the JNI version */
@@ -77,11 +77,11 @@ JNI_OnLoad(JavaVM *VM, void *reserved)
  * Method:    nativeStaticInit
  * Signature: ()Z
  */
-JNIEXPORT jboolean JNICALL 
+JNIEXPORT jboolean JNICALL
 Java_com_parrot_arsdk_arutils_ARUtilsManager_nativeStaticInit
   (JNIEnv *env, jclass class)
 {
-    
+
     return ARUTILS_JNI_InitFtpListenersJNI(env);
 }
 
@@ -90,7 +90,7 @@ Java_com_parrot_arsdk_arutils_ARUtilsManager_nativeStaticInit
  * Method:    nativeNew
  * Signature: ()J
  */
-JNIEXPORT jlong JNICALL 
+JNIEXPORT jlong JNICALL
 Java_com_parrot_arsdk_arutils_ARUtilsManager_nativeNew
   (JNIEnv *env, jobject obj)
 {
@@ -113,7 +113,7 @@ Java_com_parrot_arsdk_arutils_ARUtilsManager_nativeNew
  * Method:    nativeDelete
  * Signature: (J)I
  */
-JNIEXPORT jint JNICALL 
+JNIEXPORT jint JNICALL
 Java_com_parrot_arsdk_arutils_ARUtilsManager_nativeDelete
   (JNIEnv *env, jobject obj, jlong jManager)
 {
@@ -128,7 +128,7 @@ Java_com_parrot_arsdk_arutils_ARUtilsManager_nativeDelete
  * Method:    nativeInitWifiFtp
  * Signature: (JLjava/lang/String;ILjava/lang/String;Ljava/lang/String;)I
  */
-JNIEXPORT jint JNICALL 
+JNIEXPORT jint JNICALL
 Java_com_parrot_arsdk_arutils_ARUtilsManager_nativeInitWifiFtp
   (JNIEnv *env, jobject obj, jlong jManager, jstring jserver, jint port, jstring jusername, jstring jpassword)
 {
@@ -154,15 +154,15 @@ Java_com_parrot_arsdk_arutils_ARUtilsManager_nativeInitWifiFtp
  * Method:    nativeCloseWifiFtp
  * Signature: (J)I
  */
-JNIEXPORT jint JNICALL 
+JNIEXPORT jint JNICALL
 Java_com_parrot_arsdk_arutils_ARUtilsManager_nativeCloseWifiFtp
   (JNIEnv *env, jobject obj, jlong jManager)
 {
     ARUTILS_Manager_t *manager = (ARUTILS_Manager_t*) (intptr_t) jManager;
     eARUTILS_ERROR error = ARUTILS_OK;
-    
+
     ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_JNI_MANAGER_TAG, " nativeCloseWifiFtp");
-    
+
     if(manager)
     {
         ARUTILS_Manager_CloseWifiFtp(manager);
@@ -175,7 +175,7 @@ Java_com_parrot_arsdk_arutils_ARUtilsManager_nativeCloseWifiFtp
  * Class:     com_parrot_arsdk_arutils_ARUtilsManager
  * Method:    nativeInitBLEFtp
  */
-JNIEXPORT jint JNICALL 
+JNIEXPORT jint JNICALL
 Java_com_parrot_arsdk_arutils_ARUtilsManager_nativeInitBLEFtp
   (JNIEnv *env, jobject obj, jlong jManager, jobject jBleFtp, jobject jCancelSem)
 {
@@ -185,12 +185,13 @@ Java_com_parrot_arsdk_arutils_ARUtilsManager_nativeInitBLEFtp
     if (error == ARUTILS_OK)
     {
         manager->connectionObject = ARUTILS_BLEFtp_Connection_New(jBleFtp, jCancelSem, &error);
-    }  
+    }
 
     if (manager)
     {
         manager->ftpConnectionCancel = ARUTILS_BLEFtpAL_Connection_Cancel;
         manager->ftpConnectionIsCanceled = ARUTILS_BLEFtpAL_Connection_IsCanceled;
+        manager->ftpConnectionReset = ARUTILS_BLEFtpAL_Connection_Reset;
         manager->ftpList = ARUTILS_BLEFtpAL_List;
         manager->ftpGetWithBuffer = ARUTILS_BLEFtpAL_Get_WithBuffer;
         manager->ftpGet = ARUTILS_BLEFtpAL_Get;
@@ -205,7 +206,7 @@ Java_com_parrot_arsdk_arutils_ARUtilsManager_nativeInitBLEFtp
  * Class:     com_parrot_arsdk_arutils_ARUtilsManager
  * Method:    nativeInitBLEFtp
  */
-JNIEXPORT jint JNICALL 
+JNIEXPORT jint JNICALL
 Java_com_parrot_arsdk_arutils_ARUtilsManager_nativeCloseBLEFtp
   (JNIEnv *env, jobject obj, jlong jManager)
 {
@@ -258,10 +259,10 @@ void ARUTILS_JNI_Ftp_ProgressCallback(void* arg, float percent)
             }
         }
     }
-    
+
 }
 
-JNIEXPORT jstring JNICALL 
+JNIEXPORT jstring JNICALL
 Java_com_parrot_arsdk_arutils_ARUtilsManager_nativeBLEFtpList
   (JNIEnv *env, jobject obj, jlong jManager, jstring jRemotePath)
 {
@@ -300,7 +301,7 @@ Java_com_parrot_arsdk_arutils_ARUtilsManager_nativeBLEFtpList
 }
 
 
-JNIEXPORT jint JNICALL 
+JNIEXPORT jint JNICALL
 Java_com_parrot_arsdk_arutils_ARUtilsManager_nativeBLEFtpDelete
   (JNIEnv *env, jobject obj, jlong jManager, jstring jRemotePath)
 {
@@ -325,7 +326,7 @@ Java_com_parrot_arsdk_arutils_ARUtilsManager_nativeBLEFtpDelete
 }
 
 
-JNIEXPORT jint JNICALL 
+JNIEXPORT jint JNICALL
 Java_com_parrot_arsdk_arutils_ARUtilsManager_nativeBLEFtpPut
   (JNIEnv *env, jobject obj, jlong jManager, jstring jRemotePath, jstring jSrcFile, jobject jProgressListener, jobject jProgressArg, jboolean resume)
 {
@@ -386,7 +387,7 @@ Java_com_parrot_arsdk_arutils_ARUtilsManager_nativeBLEFtpPut
 }
 
 
-JNIEXPORT jint JNICALL 
+JNIEXPORT jint JNICALL
 Java_com_parrot_arsdk_arutils_ARUtilsManager_nativeBLEFtpGet
   (JNIEnv *env, jobject obj, jlong jManager, jstring jRemotePath, jstring jDestFile, jobject jProgressListener, jobject jProgressArg, jboolean resume)
 {
@@ -447,7 +448,7 @@ Java_com_parrot_arsdk_arutils_ARUtilsManager_nativeBLEFtpGet
 }
 
 
-JNIEXPORT jbyteArray JNICALL 
+JNIEXPORT jbyteArray JNICALL
 Java_com_parrot_arsdk_arutils_ARUtilsManager_nativeBLEFtpGetWithBuffer
   (JNIEnv *env, jobject obj, jlong jManager, jstring jRemotePath, jobject jProgressListener, jobject jProgressArg)
 {
@@ -515,8 +516,8 @@ Java_com_parrot_arsdk_arutils_ARUtilsManager_nativeBLEFtpGetWithBuffer
     return result;
 }
 
-JNIEXPORT jint JNICALL 
-Java_com_parrot_arsdk_arutils_ARUtilsManager_nativeBLEFtpCancel
+JNIEXPORT jint JNICALL
+Java_com_parrot_arsdk_arutils_ARUtilsManager_nativeBLEFtpConnectionCancel
   (JNIEnv *env, jobject obj, jlong jManager)
 {
     ARSAL_PRINT(ARSAL_PRINT_ERROR, ARUTILS_JNI_MANAGER_TAG, "%x", jManager);
@@ -536,7 +537,7 @@ Java_com_parrot_arsdk_arutils_ARUtilsManager_nativeBLEFtpCancel
     return error;
 }
 
-JNIEXPORT jint JNICALL 
+JNIEXPORT jint JNICALL
 Java_com_parrot_arsdk_arutils_ARUtilsManager_nativeBLEFtpIsConnectionCanceled
   (JNIEnv *env, jobject obj, jlong jManager)
 {
@@ -557,7 +558,28 @@ Java_com_parrot_arsdk_arutils_ARUtilsManager_nativeBLEFtpIsConnectionCanceled
     return error;
 }
 
-JNIEXPORT jint JNICALL 
+JNIEXPORT jint JNICALL
+Java_com_parrot_arsdk_arutils_ARUtilsManager_nativeBLEFtpConnectionReset
+  (JNIEnv *env, jobject obj, jlong jManager)
+{
+    ARSAL_PRINT(ARSAL_PRINT_ERROR, ARUTILS_JNI_MANAGER_TAG, "%x", jManager);
+    ARUTILS_Manager_t *manager = (ARUTILS_Manager_t*) (intptr_t) jManager;
+    eARUTILS_ERROR error = ARUTILS_OK;
+
+    if (manager == NULL)
+    {
+        ARSAL_PRINT(ARSAL_PRINT_ERROR, ARUTILS_JNI_MANAGER_TAG, "Wrong parameter: %x", manager);
+        error = ARUTILS_ERROR_BAD_PARAMETER;
+    }
+
+    if (error == ARUTILS_OK)
+    {
+        error = ARUTILS_BLEFtpAL_Connection_Reset(manager);
+    }
+    return error;
+}
+
+JNIEXPORT jint JNICALL
 Java_com_parrot_arsdk_arutils_ARUtilsManager_nativeBLEFtpRename
   (JNIEnv *env, jobject obj, jlong jManager, jstring jOldNamePath, jstring jNewNamePath)
 {

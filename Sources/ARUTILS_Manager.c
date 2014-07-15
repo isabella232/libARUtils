@@ -28,15 +28,15 @@ ARUTILS_Manager_t* ARUTILS_Manager_New(eARUTILS_ERROR *error)
 {
     ARUTILS_Manager_t *newManager = NULL;
     eARUTILS_ERROR result = ARUTILS_OK;
-    
+
     ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_MANAGER_TAG, "");
-    
+
     newManager = calloc(1, sizeof(ARUTILS_Manager_t));
     if (newManager == NULL)
     {
         result = ARUTILS_ERROR_ALLOC;
     }
-    
+
     *error = result;
     return newManager;
 }
@@ -44,7 +44,7 @@ ARUTILS_Manager_t* ARUTILS_Manager_New(eARUTILS_ERROR *error)
 void ARUTILS_Manager_Delete(ARUTILS_Manager_t **managerAddr)
 {
     ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_MANAGER_TAG, "");
-    
+
     if (managerAddr != NULL)
     {
         ARUTILS_Manager_t *manager = *managerAddr;
@@ -73,15 +73,29 @@ eARUTILS_ERROR ARUTILS_Manager_Ftp_Connection_Cancel(ARUTILS_Manager_t *manager)
 eARUTILS_ERROR ARUTILS_Manager_Ftp_Connection_IsCanceled(ARUTILS_Manager_t *manager)
 {
     eARUTILS_ERROR result = ARUTILS_OK;
-    
+
     if ((manager == NULL) || (manager->ftpConnectionIsCanceled == NULL))
     {
-        printf("===============> %p, %p", manager, manager->ftpConnectionIsCanceled);
+        ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_MANAGER_TAG, "%p, %p", manager, manager->ftpConnectionIsCanceled);
         result = ARUTILS_ERROR_BAD_PARAMETER;
     }
     else
     {
         result = manager->ftpConnectionIsCanceled(manager);
+    }
+    return result;
+}
+
+eARUTILS_ERROR ARUTILS_Manager_Ftp_Connection_Reset(ARUTILS_Manager_t *manager)
+{
+    eARUTILS_ERROR result = ARUTILS_OK;
+    if ((manager == NULL) || (manager->ftpConnectionReset == NULL))
+    {
+        result = ARUTILS_ERROR_BAD_PARAMETER;
+    }
+    else
+    {
+        result = manager->ftpConnectionReset(manager);
     }
     return result;
 }

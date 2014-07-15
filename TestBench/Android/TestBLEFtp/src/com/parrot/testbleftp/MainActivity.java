@@ -73,6 +73,7 @@ public class MainActivity extends Activity implements ARDiscoveryServicesDevices
     Button testRenameButton;
     Button testCancelButton;
     Button testIsCanceledButton;
+    Button testResetButton;
     Button currentButton = null;
 
     private Handler mHandler = new Handler();
@@ -184,6 +185,14 @@ public class MainActivity extends Activity implements ARDiscoveryServicesDevices
                 testBleIsCanceled();
             }
         });
+        
+        testResetButton = (Button)this.findViewById(R.id.testReset);
+        testResetButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                testBleResetFile();
+            }
+        });
 	    
         StartDiscoveryService();
         //TestFile();
@@ -222,6 +231,7 @@ public class MainActivity extends Activity implements ARDiscoveryServicesDevices
         testRenameButton.setEnabled(enable);
         testCancelButton.setEnabled(enable);
         testIsCanceledButton.setEnabled(enable);
+        testResetButton.setEnabled(enable);
     }
 	
 	private void initServices()
@@ -309,7 +319,8 @@ public class MainActivity extends Activity implements ARDiscoveryServicesDevices
 			//String name = "RS_W000444";
 			//String name = "RS_B000497";
 			//String name = "RS_B000443";
-				String name = "Maurice";
+			    String name = "RS_B000262";
+				//String name = "Maurice";
 				//07-02 17:49:58.933: D/DBG(8280): TestBLEFtp  Flower power 3337
 				//String name = "Flower power 2FB7";
 
@@ -515,7 +526,7 @@ public class MainActivity extends Activity implements ARDiscoveryServicesDevices
                 dst.flush();
                 dst.close();
 
-                ret = bleFtp.putFileAL("/a.plf.tmp", filePath, 0, false, cancelSem);
+                //ret = bleFtp.putFileAL("/a.plf.tmp", filePath, 0, false, cancelSem);
 
                 Log.d("DBG", APP_TAG + "PUT : " + ret);
             }
@@ -529,10 +540,10 @@ public class MainActivity extends Activity implements ARDiscoveryServicesDevices
             }
             
             
-            ret = bleFtp.renameFileAL("/a.txt", "/b.txt");
+            //ret = bleFtp.renameFileAL("/a.txt", "/b.txt");
             Log.d("DBG", APP_TAG + "rename " + ret);
             
-            ret = bleFtp.deleteFileAL("/b.txt");
+            //ret = bleFtp.deleteFileAL("/b.txt");
             Log.d("DBG", APP_TAG + "delete " + ret);
             
             bleManager.disconnect();
@@ -853,7 +864,7 @@ public class MainActivity extends Activity implements ARDiscoveryServicesDevices
         {
             Log.d(APP_TAG, "send CANCEL command:");
 
-            mUtilsManager.BLEFtpCancel();
+            mUtilsManager.BLEFtpConnectionCancel();
         }
         else
         {
@@ -867,13 +878,29 @@ public class MainActivity extends Activity implements ARDiscoveryServicesDevices
 
         if (mUtilsManager != null)
         {
-            Log.d(APP_TAG, "send IS_CANCELED command:");
+            Log.d(APP_TAG, "check IS_CANCELED signal:");
 
             mUtilsManager.BLEFtpIsConnectionCanceled();
         }
         else
         {
             Log.e(APP_TAG, "testBleIsCanceled failed because mUtilsManager is null");
+        }
+    }
+    
+    public void testBleResetFile()
+    {
+        Log.d(APP_TAG, "testBleResetFile");
+
+        if (mUtilsManager != null)
+        {
+            Log.d(APP_TAG, "send RESET signal:");
+
+            mUtilsManager.BLEFtpConnectionReset();
+        }
+        else
+        {
+            Log.e(APP_TAG, "testBleResetFile failed because mUtilsManager is null");
         }
     }
 
