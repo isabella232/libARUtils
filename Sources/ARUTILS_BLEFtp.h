@@ -14,8 +14,8 @@
 DECLARE_SINGLETON_FOR_CLASS(ARUtils_BLEFtp)
 
 - (id)initBLEFtp;
-- (eARUTILS_ERROR)resisterPeripheral:(CBPeripheral *)peripheral cancelSem:(ARSAL_Sem_t*)cancelSem port:(int)port;
-- (eARUTILS_ERROR)unresisterPeripheral;
+- (eARUTILS_ERROR)registerPeripheral:(CBPeripheral *)peripheral cancelSem:(ARSAL_Sem_t*)cancelSem port:(int)port;
+- (eARUTILS_ERROR)unregisterPeripheral;
 - (eARUTILS_ERROR)registerCharacteristics;
 - (eARUTILS_ERROR)unregisterCharacteristics;
 
@@ -78,7 +78,15 @@ eARUTILS_ERROR ARUTILS_BLEFtp_Connection_Cancel(ARUTILS_BLEFtp_Connection_t *con
  * @retval On success, returns ARUTILS_OK. Otherwise, it returns an error number of eARUTILS_ERROR.
  * @see cURL
  */
-eARUTILS_ERROR ARUTILS_BLEFtp_IsCanceled(ARUTILS_BLEFtp_Connection_t *connection);
+eARUTILS_ERROR ARUTILS_BLEFtp_Connection_IsCanceled(ARUTILS_BLEFtp_Connection_t *connection);
+
+/**
+ * @brief Reset an Ftp Connection command in progress (get, put, list etc)
+ * @param connection The address of the pointer on the Ftp Connection
+ * @retval On success, returns ARUTILS_OK. Otherwise, it returns an error number of eARUTILS_ERROR.
+ * @see ARUTILS_Ftp_NewConnection ()
+ */
+eARUTILS_ERROR ARUTILS_BLEFtp_Connection_Reset(ARUTILS_BLEFtp_Connection_t *connection);
 
 /**
  * @brief Execute Ftp List command to retrieve directory content

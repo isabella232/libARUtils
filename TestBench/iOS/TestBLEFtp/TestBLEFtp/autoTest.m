@@ -176,7 +176,7 @@
         ARUtils_BLEFtp *bleFtp = SINGLETON_FOR_CLASS(ARUtils_BLEFtp);
         eARUTILS_ERROR result = ARUTILS_OK;
         
-        result = [bleFtp resisterPeripheral:peripheral cancelSem:&cancelSem port:21];
+        result = [bleFtp registerPeripheral:peripheral cancelSem:&cancelSem port:21];
         result = [bleFtp registerCharacteristics];
         
         /*if (result == ARUTILS_OK)

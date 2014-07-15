@@ -93,7 +93,7 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(ARUtils_BLEFtp, initBLEFtp)
     return &connectionLock;
 }
 
-- (eARUTILS_ERROR)resisterPeripheral:(CBPeripheral *)peripheral cancelSem:(ARSAL_Sem_t*)cancelSem port:(int)port
+- (eARUTILS_ERROR)registerPeripheral:(CBPeripheral *)peripheral cancelSem:(ARSAL_Sem_t*)cancelSem port:(int)port
 {
     eARUTILS_ERROR result = ARUTILS_OK;
     
@@ -115,7 +115,7 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(ARUtils_BLEFtp, initBLEFtp)
     return result;
 }
 
-- (eARUTILS_ERROR)unresisterPeripheral
+- (eARUTILS_ERROR)unregisterPeripheral
 {
     eARUTILS_ERROR result = ARUTILS_OK;
     
@@ -260,6 +260,25 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(ARUtils_BLEFtp, initBLEFtp)
     
     [SINGLETON_FOR_CLASS(ARSAL_BLEManager) cancelReadNotification:kARUTILS_BLEFtp_Getting];
     
+    return result;
+}
+
+- (eARUTILS_ERROR)resetConnection:(ARSAL_Sem_t*)cancelSem
+{
+    eARUTILS_ERROR result = ARUTILS_OK;
+    
+#if ARUTILS_BLEFTP_ENABLE_LOG
+    NSLog(@"%s", __FUNCTION__);
+#endif
+    
+    if (cancelSem != NULL)
+    {
+        while (ARSAL_Sem_Trywait(cancelSem))
+        {
+            /* Do Nothing */
+        }
+    }
+
     return result;
 }
 
@@ -1374,7 +1393,7 @@ ARUTILS_BLEFtp_Connection_t * ARUTILS_BLEFtp_Connection_New(ARSAL_Sem_t *cancelS
             CBPeripheral *peripheral = (__bridge CBPeripheral *)device;
             ARUtils_BLEFtp *bleFtpObject = SINGLETON_FOR_CLASS(ARUtils_BLEFtp);
             
-            result = [bleFtpObject resisterPeripheral:peripheral cancelSem:cancelSem port:port];
+            result = [bleFtpObject registerPeripheral:peripheral cancelSem:cancelSem port:port];
             if (result == ARUTILS_OK)
             {
                 result = [bleFtpObject registerCharacteristics];
@@ -1404,7 +1423,7 @@ void ARUTILS_BLEFtp_Connection_Delete(ARUTILS_BLEFtp_Connection_t **connectionAd
         if (connection != NULL)
         {
             ARUtils_BLEFtp *bleFtpObject = (__bridge ARUtils_BLEFtp *)connection->bleFtpObject;
-            [bleFtpObject unresisterPeripheral];
+            [bleFtpObject unregisterPeripheral];
             [bleFtpObject unregisterCharacteristics];
 
             CFRelease(connection->bleFtpObject);
@@ -1437,7 +1456,7 @@ eARUTILS_ERROR ARUTILS_BLEFtp_Connection_Cancel(ARUTILS_BLEFtp_Connection_t *con
     return result;
 }
 
-eARUTILS_ERROR ARUTILS_BLEFtp_IsCanceled(ARUTILS_BLEFtp_Connection_t *connection)
+eARUTILS_ERROR ARUTILS_BLEFtp_Connection_IsCanceled(ARUTILS_BLEFtp_Connection_t *connection)
 {
     ARUtils_BLEFtp *bleFtpObject = nil;
     eARUTILS_ERROR result = ARUTILS_OK;
@@ -1452,6 +1471,65 @@ eARUTILS_ERROR ARUTILS_BLEFtp_IsCanceled(ARUTILS_BLEFtp_Connection_t *connection
         bleFtpObject = (__bridge ARUtils_BLEFtp *)connection->bleFtpObject;
         ARSAL_Sem_t *cancelSem = connection->cancelSem;
         
+        if (cancelSem != NULL)
+        {
+            int resultSys = ARSAL_Sem_Trywait(cancelSem);
+            
+            if (resultSys == 0)
+            {
+                result = ARUTILS_ERROR_FTP_CANCELED;
+                
+                //give back the signal state lost from trywait
+                ARSAL_Sem_Post(cancelSem);
+            }
+            else if (errno != EAGAIN)
+            {
+                result = ARUTILS_ERROR_SYSTEM;
+            }
+        }
+    }
+    
+    return result;
+}
+
+eARUTILS_ERROR ARUTILS_BLEFtp_Connection_Reset(ARUTILS_BLEFtp_Connection_t *connection)
+{
+    ARUtils_BLEFtp *bleFtpObject = nil;
+    eARUTILS_ERROR result = ARUTILS_OK;
+    
+    if (connection == NULL)
+    {
+        result = ARUTILS_ERROR_BAD_PARAMETER;
+    }
+    
+    if (result == ARUTILS_OK)
+    {
+        bleFtpObject = (__bridge ARUtils_BLEFtp *)connection->bleFtpObject;
+        ARSAL_Sem_t *cancelSem = connection->cancelSem;
+        
+        if (cancelSem != NULL)
+        {
+            while (ARSAL_Sem_Trywait(cancelSem))
+            {
+                /* Do Nothing */
+            }
+        }
+    }
+    
+    return result;
+}
+
+eARUTILS_ERROR ARUTILS_BLEFtp_IsCanceledSem(ARSAL_Sem_t *cancelSem)
+{
+    eARUTILS_ERROR result = ARUTILS_OK;
+    
+    if (cancelSem == NULL)
+    {
+        result = ARUTILS_ERROR_BAD_PARAMETER;
+    }
+    
+    if (cancelSem != NULL)
+    {
         int resultSys = ARSAL_Sem_Trywait(cancelSem);
         
         if (resultSys == 0)
@@ -1470,34 +1548,6 @@ eARUTILS_ERROR ARUTILS_BLEFtp_IsCanceled(ARUTILS_BLEFtp_Connection_t *connection
     return result;
 }
 
-eARUTILS_ERROR ARUTILS_BLEFtp_IsCanceledSem(ARSAL_Sem_t *cancelSem)
-{
-    eARUTILS_ERROR result = ARUTILS_OK;
-    
-    if (cancelSem == NULL)
-    {
-        result = ARUTILS_ERROR_BAD_PARAMETER;
-    }
-    
-    if ((cancelSem != NULL))
-    {
-        int resultSys = ARSAL_Sem_Trywait(cancelSem);
-        
-        if (resultSys == 0)
-        {
-            result = ARUTILS_ERROR_FTP_CANCELED;
-            
-            //give back the signal state lost from trywait
-            ARSAL_Sem_Post(cancelSem);
-        }
-        else if (errno != EAGAIN)
-        {
-            result = ARUTILS_ERROR_SYSTEM;
-        }
-    }
-    
-    return result;
-}
 
 eARUTILS_ERROR ARUTILS_BLEFtp_List(ARUTILS_BLEFtp_Connection_t *connection, const char *remotePath, char **resultList, uint32_t *resultListLen)
 {
@@ -1703,7 +1753,18 @@ eARUTILS_ERROR ARUTILS_BLEFtpAL_Connection_Cancel(ARUTILS_Manager_t *manager)
 
 eARUTILS_ERROR ARUTILS_BLEFtpAL_Connection_IsCanceled(ARUTILS_Manager_t *manager)
 {
-    return ARUTILS_BLEFtp_IsCanceled((ARUTILS_BLEFtp_Connection_t *)manager->connectionObject);
+#if ARUTILS_BLEFTP_ENABLE_LOG
+    NSLog(@"%s", __FUNCTION__);
+#endif
+    return ARUTILS_BLEFtp_Connection_IsCanceled((ARUTILS_BLEFtp_Connection_t *)manager->connectionObject);
+}
+
+eARUTILS_ERROR ARUTILS_BLEFtpAL_Connection_Reset(ARUTILS_Manager_t *manager)
+{
+#if ARUTILS_BLEFTP_ENABLE_LOG
+    NSLog(@"%s", __FUNCTION__);
+#endif
+    return ARUTILS_BLEFtp_Connection_Reset((ARUTILS_BLEFtp_Connection_t *)manager->connectionObject);
 }
 
 eARUTILS_ERROR ARUTILS_BLEFtpAL_List(ARUTILS_Manager_t *manager, const char *namePath, char **resultList, uint32_t *resultListLen)

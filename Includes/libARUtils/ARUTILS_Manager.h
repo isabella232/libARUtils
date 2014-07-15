@@ -111,6 +111,14 @@ eARUTILS_ERROR ARUTILS_Manager_Ftp_Connection_Cancel(ARUTILS_Manager_t *manager)
 eARUTILS_ERROR ARUTILS_Manager_Ftp_Connection_IsCanceled(ARUTILS_Manager_t *manager);
 
 /**
+ * @brief Reset an Ftp Connection command in progress (get, put, list etc)
+ * @param connection The address of the pointer on the Ftp Manager
+ * @retval On success, returns ARUTILS_OK. Otherwise, it returns an error number of eARUTILS_ERROR.
+ * @see ARUTILS_Manager_NewWifiFtp (), ARUTILS_Manager_NewBLEFtp
+ */
+eARUTILS_ERROR ARUTILS_Manager_Ftp_Connection_Reset(ARUTILS_Manager_t *manager);
+
+/**
  * @brief Execute Ftp List command to retrieve directory content
  * @warning This function allocates memory
  * @param manager The address of the pointer on the Ftp Manager
