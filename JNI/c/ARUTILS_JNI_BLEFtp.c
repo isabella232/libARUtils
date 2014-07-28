@@ -648,7 +648,7 @@ eARUTILS_ERROR ARUTILS_BLEFtp_Get_WithBuffer(ARUTILS_BLEFtp_Connection_t *connec
 
         jobjectArray dataArray = (*env)->NewObjectArray(env, 1, objectClass, NULL);
 
-        ret = (*env)->CallBooleanMethod(env, bleFtpObject, ARUTILS_JNI_BLEFTP_METHOD_GET_WITH_BUFFER, jRemotePath, dataArray, (jlong)callback, cancelSemObject);
+        ret = (*env)->CallBooleanMethod(env, bleFtpObject, ARUTILS_JNI_BLEFTP_METHOD_GET_WITH_BUFFER, jRemotePath, dataArray, (jlong)(intptr_t)callback, cancelSemObject);
         if (ret == 0)
         {
             error = ARUTILS_ERROR_BLE_FAILED;
@@ -769,7 +769,7 @@ eARUTILS_ERROR ARUTILS_BLEFtp_Get(ARUTILS_BLEFtp_Connection_t *connection, const
         jstring jDstFile = (*env)->NewStringUTF(env, dstFile);
 
         ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_JNI_BLEFTP_TAG, " %x %x", callback, callback->bleFtpProgressCallback);
-        ret = (*env)->CallBooleanMethod(env, bleFtpObject, ARUTILS_JNI_BLEFTP_METHOD_GET, jRemotePath, jDstFile, (jlong)callback, cancelSemObject);
+        ret = (*env)->CallBooleanMethod(env, bleFtpObject, ARUTILS_JNI_BLEFTP_METHOD_GET, jRemotePath, jDstFile, (jlong)(intptr_t)callback, cancelSemObject);
         if (ret == 0)
         {
             error = ARUTILS_ERROR_BLE_FAILED;
@@ -872,7 +872,7 @@ eARUTILS_ERROR ARUTILS_BLEFtp_Put(ARUTILS_BLEFtp_Connection_t *connection, const
         jstring jRemotePath = (*env)->NewStringUTF(env, remotePath);
         jstring jSrcFile = (*env)->NewStringUTF(env, srcFile);
 
-        ret = (*env)->CallBooleanMethod(env, bleFtpObject, ARUTILS_JNI_BLEFTP_METHOD_PUT, jRemotePath, jSrcFile, (jlong)callback, resume, cancelSemObject);
+        ret = (*env)->CallBooleanMethod(env, bleFtpObject, ARUTILS_JNI_BLEFTP_METHOD_PUT, jRemotePath, jSrcFile, (jlong)(intptr_t)callback, resume, cancelSemObject);
         if (ret == 0)
         {
             error = ARUTILS_ERROR_BLE_FAILED;
