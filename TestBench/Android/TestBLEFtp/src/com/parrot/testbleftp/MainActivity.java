@@ -319,7 +319,9 @@ public class MainActivity extends Activity implements ARDiscoveryServicesDevices
 			//String name = "RS_W000444";
 			//String name = "RS_B000497";
 			//String name = "RS_B000443";
-			    String name = "RS_B000262";
+			    //String name = "RS_B000262";
+				//String name = "RS_B000479";
+				String name = "RS_B000497";
 				//String name = "Maurice";
 				//07-02 17:49:58.933: D/DBG(8280): TestBLEFtp  Flower power 3337
 				//String name = "Flower power 2FB7";
@@ -335,9 +337,9 @@ public class MainActivity extends Activity implements ARDiscoveryServicesDevices
 						mDevice = serviceBle.getBluetoothDevice();
                         mDeviceGatt = connectToBleDevice(mDevice);
                         
-                        getARUtilsManager();
+                        //getARUtilsManager();
                         
-                        //TestBleAL();
+                        TestBleAL();
                         
                         enableButtons(true);
                         setProgressBarIndeterminateVisibility(false);
@@ -512,21 +514,28 @@ public class MainActivity extends Activity implements ARDiscoveryServicesDevices
                             
             try
             {
-                filePath = tmp + "/txt.plf.tmp";
+                filePath = tmp + "/a.plf.tmp";
+                
+                //ret = bleFtp.deleteFileAL("/a.plf.tmp");
+                //Log.d("DBG", APP_TAG + "delete " + ret);
 
                 FileOutputStream dst = new FileOutputStream(filePath);
 
                 //byte[] buffer = new String("123\n").getBytes("UTF-8");
                 byte[] buffer = new byte[132];
 
-                for (int i=0; i<500; i++)
+                //for (int i=0; i<500; i++)
+                //for (int i=0; i<4; i++)
                 {
                     dst.write(buffer, 0, buffer.length);
                 }
+                dst.write(buffer, 0, 32);
+                //dst.write(buffer, 0, 31);
                 dst.flush();
                 dst.close();
 
                 //ret = bleFtp.putFileAL("/a.plf.tmp", filePath, 0, false, cancelSem);
+                ret = bleFtp.putFileAL("/a.plf.tmp", filePath, 0, true, cancelSem);
 
                 Log.d("DBG", APP_TAG + "PUT : " + ret);
             }

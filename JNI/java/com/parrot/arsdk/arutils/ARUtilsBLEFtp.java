@@ -38,7 +38,7 @@ public class ARUtilsBLEFtp
 	public final static String BLE_PACKET_NOT_WRITTEN =    "FILE NOT WRITTEN";
 	public final static String BLE_PACKET_EOF =            "End of Transfer";
 	public final static String BLE_PACKET_RENAME_SUCCESS = "Rename successful";
-	public final static String BLE_PACKET_DELETE_SUCCES =  "Delete successful";
+	public final static String BLE_PACKET_DELETE_SUCCESS =  "Delete successful";
 	public final static int BLE_PACKET_MAX_SIZE = 132;
 	public final static int BLE_PACKET_BLOCK_PUTTING_COUNT = 500;
 	public final static int BLE_PACKET_BLOCK_GETTING_COUNT = 100;
@@ -412,7 +412,7 @@ public class ARUtilsBLEFtp
 			
 			while ((found == false) && (fileName = getListNextItem(resultList[0], nextItem, null, false, indexItem, itemLen)) != null)
 			{
-				Log.d("DBG", APP_TAG + "file " + fileName);
+				ARSALPrint.d("DBG", APP_TAG + "file " + fileName);
 				
 				if (remoteFileName.contentEquals(fileName))
 				{
@@ -427,6 +427,15 @@ public class ARUtilsBLEFtp
 				}
 			}
 		}
+		
+		if (found == true)
+	    {
+	        ret = true;
+	    }
+	    else
+	    {
+	        ret = false;
+	    }
 		
 		return ret;
 	}
@@ -461,20 +470,20 @@ public class ARUtilsBLEFtp
 		return ret;
 	}
 	
-	private boolean getFile(String remotePath, String localFile, long nativeCallbackObject, Semaphore cancelSem)
+	private boolean getFile(String remoteFile, String localFile, long nativeCallbackObject, Semaphore cancelSem)
 	{
 		boolean ret = true;
 		
-		ret = getFileInternal(remotePath, localFile, null, nativeCallbackObject, cancelSem);
+		ret = getFileInternal(remoteFile, localFile, null, nativeCallbackObject, cancelSem);
 		
 		return ret;
 	}
 	
-	private boolean getFileWithBuffer(String remotePath, byte[][] data, long nativeCallbackObject, Semaphore cancelSem)
+	private boolean getFileWithBuffer(String remoteFile, byte[][] data, long nativeCallbackObject, Semaphore cancelSem)
 	{
 		boolean ret = true;
 		
-		ret = getFileInternal(remotePath, null, data, nativeCallbackObject, cancelSem);
+		ret = getFileInternal(remoteFile, null, data, nativeCallbackObject, cancelSem);
 		
 		return ret;
 	}
@@ -523,16 +532,16 @@ public class ARUtilsBLEFtp
 		return ret;
 	}
 	
-	private boolean abortPutFile(String remotePath)
+	private boolean abortPutFile(String remoteFile)
 	{
 		int[] resumeIndex = new int[1];
 		resumeIndex[0] = 0;
 		boolean resume = false;
 		boolean ret = true;
 		
-		remotePath = normalizePathName(remotePath);
+		remoteFile = normalizePathName(remoteFile);
 		
-		ret = readPutResumeIndex(remotePath, resumeIndex);
+		ret = readPutResumeIndex(remoteFile, resumeIndex);
 		if ((ret == true) && (resumeIndex[0] > 0))
 		{
 			resume = true;
@@ -544,7 +553,7 @@ public class ARUtilsBLEFtp
 		
 		if (resume == true)
 		{
-			ret = sendCommand("PUT", remotePath, handling); 
+			ret = sendCommand("PUT", remoteFile, handling); 
 		
 			if (ret == true)
 			{
@@ -552,10 +561,12 @@ public class ARUtilsBLEFtp
 			}
 		}
 		
+		deleteFile(remoteFile);
+		
 		return ret;
 	}
 	
-	private boolean putFile(String remotePath, String localFile, long nativeCallbackObject, boolean resume, Semaphore cancelSem)
+	private boolean putFile(String remoteFile, String localFile, long nativeCallbackObject, boolean resume, Semaphore cancelSem)
 	{
 		FileInputStream src = null;
 		int[] resumeIndex = new int[1];
@@ -563,19 +574,19 @@ public class ARUtilsBLEFtp
 		boolean ret = true;
 		int totalSize = 0;
 		
-		ARSALPrint.d("DBG", APP_TAG + "putFile " + remotePath);
+		ARSALPrint.d("DBG", APP_TAG + "putFile " + remoteFile);
 		
-		remotePath = normalizePathName(remotePath);
+		remoteFile = normalizePathName(remoteFile);
 		
-		/*if (resume == true)
+		if (resume == false)
 		{
-			abortPutFile(remotePath);
+			abortPutFile(remoteFile);
 		}
 		else
 		{
 			if (ret == true)
 			{
-				ret = readPutResumeIndex(remotePath, resumeIndex);
+				ret = readPutResumeIndex(remoteFile, resumeIndex);
 				if (ret == false)
 				{
 					ret = true;
@@ -586,9 +597,9 @@ public class ARUtilsBLEFtp
 			
 			if (resumeIndex[0] > 0)
 			{
-				resume = false;
+				resume = true;
 			}
-		}*/
+		}
 	
 		ARUtilsFileSystem fileSys = new ARUtilsFileSystem();
 		try
@@ -603,7 +614,7 @@ public class ARUtilsBLEFtp
 		
 		if (ret == true)
 		{
-			ret = sendCommand("PUT", remotePath, handling);
+			ret = sendCommand("PUT", remoteFile, handling);
 		}
 		
 		if (ret == true)
@@ -775,48 +786,76 @@ public class ARUtilsBLEFtp
 		return ret;
 	}
 	
+	private boolean sendResponse(byte[] buffer, BluetoothGattCharacteristic characteristic)
+	{
+		boolean ret = true;
+		
+		try
+		{
+			Thread.sleep(BLE_PACKET_WRITE_SLEEP, 0);
+			ret = bleManager.writeData(buffer, characteristic);
+		} 
+		catch (InterruptedException e) 
+		{
+		}
+		
+		return ret;
+	}
+	
 	private boolean sendBufferBlocks(byte[] buffer, BluetoothGattCharacteristic characteristic)
 	{
 		boolean ret = true;
 		
 		try
 		{
-			int bufferIndex = 0;
-			while ((ret == true) && (bufferIndex < buffer.length))
-			{			
-				int blockSize = BLE_MTU_SIZE;
-				if ((buffer.length - bufferIndex) <= (BLE_MTU_SIZE -1))
-				{
-					blockSize = (buffer.length - bufferIndex) + 1;
-				}
-				byte[] block = new byte[blockSize];
-	
-				if (buffer.length < BLE_MTU_SIZE)
-				{
-					block[0] = BLE_BLOCK_HEADER_SINGLE;
-				}
-				else
-				{
-					if (bufferIndex == 0)
-					{
-						block[0] = BLE_BLOCK_HEADER_START;
-					}
-					else if (bufferIndex + (BLE_MTU_SIZE - 1) >= buffer.length) 
-					{
-						block[0] = BLE_BLOCK_HEADER_STOP;
-					}
-					else
-					{
-						block[0] = BLE_BLOCK_HEADER_CONTINUE;
-					}
-				}
-				
-				System.arraycopy(buffer, bufferIndex, block, 1, blockSize - 1);
-				bufferIndex += blockSize - 1;
+			int bufferIndex = 0;			
+			if (buffer.length == 0)
+			{
+				byte[] block = new byte[1];				
+				block[0] = BLE_BLOCK_HEADER_SINGLE;
 				Thread.sleep(BLE_PACKET_WRITE_SLEEP, 0);
 				ret = bleManager.writeData(block, characteristic);
 				
-				ARSALPrint.d("DBG", APP_TAG + "block " + blockSize + ", " + bufferIndex);
+				ARSALPrint.d("DBG", APP_TAG + "block " + 1 + ", " + 0);
+			}
+			else
+			{
+				while ((ret == true) && (bufferIndex < buffer.length))
+				{			
+					int blockSize = BLE_MTU_SIZE;
+					if ((buffer.length - bufferIndex) <= (BLE_MTU_SIZE -1))
+					{
+						blockSize = (buffer.length - bufferIndex) + 1;
+					}
+					byte[] block = new byte[blockSize];
+		
+					if (buffer.length < BLE_MTU_SIZE)
+					{
+						block[0] = BLE_BLOCK_HEADER_SINGLE;
+					}
+					else
+					{
+						if (bufferIndex == 0)
+						{
+							block[0] = BLE_BLOCK_HEADER_START;
+						}
+						else if (bufferIndex + (BLE_MTU_SIZE - 1) >= buffer.length) 
+						{
+							block[0] = BLE_BLOCK_HEADER_STOP;
+						}
+						else
+						{
+							block[0] = BLE_BLOCK_HEADER_CONTINUE;
+						}
+					}
+					
+					System.arraycopy(buffer, bufferIndex, block, 1, blockSize - 1);
+					bufferIndex += blockSize - 1;
+					Thread.sleep(BLE_PACKET_WRITE_SLEEP, 0);
+					ret = bleManager.writeData(block, characteristic);
+					
+					ARSALPrint.d("DBG", APP_TAG + "block " + blockSize + ", " + bufferIndex);
+				}
 			}
 		} 
 		catch (InterruptedException e) 
@@ -858,7 +897,7 @@ public class ARUtilsBLEFtp
 				byte[] block = notificationData.value;
 				int blockIndex = 0;
 				
-				Log.d("DBG", APP_TAG + "Block length " + blockLen);
+				ARSALPrint.d("DBG", APP_TAG + "block length " + blockLen);
 				if (blockLen > 0)
 				{
 					switch(block[0])
@@ -885,7 +924,7 @@ public class ARUtilsBLEFtp
 					{
 						if ((bufferIndex + blockLen) > BLE_PACKET_MAX_SIZE)
 						{
-							Log.d("DBG", APP_TAG + "Packet length " + bufferIndex);
+							ARSALPrint.d("DBG", APP_TAG + "packet length " + bufferIndex);
 							
 							int size = bufferIndex + blockLen - BLE_PACKET_MAX_SIZE;
 							notificationDataArray = new byte[size];
@@ -904,13 +943,13 @@ public class ARUtilsBLEFtp
 						bufferIndex += blockLen;
 						blockCount++;
 						
-						Log.d("DBG", APP_TAG + "block " + blockCount +", "+ blockLen +", "+ bufferIndex);
+						ARSALPrint.d("DBG", APP_TAG + "block " + blockCount +", "+ blockLen +", "+ bufferIndex);
 					}
 				}
 				else
 				{
 					//ret = false;
-					Log.d("DBG", APP_TAG + "Empty block ");
+					ARSALPrint.d("DBG", APP_TAG + "Empty block ");
 				}
 				
 				receivedNotifications.remove(notificationData);
@@ -945,6 +984,13 @@ public class ARUtilsBLEFtp
 		
 		try
 		{
+			if (abort == true)
+		    {
+		        endFile = true;
+		        resumeIndex = 0;
+		        resume = false;
+		    }
+			
 			do
 			{
 				if (abort == false)
@@ -971,8 +1017,6 @@ public class ARUtilsBLEFtp
 							System.arraycopy(buffer, 0, send, 0, packetLen);
 						}
 						
-						//Thread.sleep(BLE_PACKET_WRITE_SLEEP);
-						//ret = bleManager.writeData(send, transferring);
 						ret = sendBufferBlocks(send, transferring);
 						
 						ARSALPrint.d("DBG", APP_TAG + "packet " + packetCount + ", " + packetLen);
@@ -1014,8 +1058,6 @@ public class ARUtilsBLEFtp
 						
 						md5Txt = "MD5" + md5Txt;
 						send = md5Txt.getBytes("UTF8");
-						//Thread.sleep(BLE_PACKET_WRITE_SLEEP);
-						//ret = bleManager.writeData(send, transferring);
 						ret = sendBufferBlocks(send, transferring);
 						
 						if (ret == true)
@@ -1030,9 +1072,7 @@ public class ARUtilsBLEFtp
 			if ((ret == true) && (endFile == true))
 			{
 				send = new byte[0];
-				//Thread.sleep(BLE_PACKET_WRITE_SLEEP);
-				//ret = bleManager.writeData(send, transferring);
-				ret = sendBufferBlocks(send, transferring);
+				ret = sendResponse(send, transferring);
 				
 				if (ret == true)
 				{
@@ -1052,16 +1092,11 @@ public class ARUtilsBLEFtp
 					}
 					else
 					{
-						ARSALPrint.e("DBG", APP_TAG + "md5 end ok");
+						ARSALPrint.w("DBG", APP_TAG + "md5 end ok");
 					}
 				}
 			}
 		}
-		/*catch (InterruptedException e)
-		{
-			ARSALPrint.e("DBG", APP_TAG + e.toString());
-			ret = false;
-		}*/
 		catch (IOException e)
 		{
 			ARSALPrint.e("DBG", APP_TAG + e.toString());
@@ -1125,8 +1160,6 @@ public class ARUtilsBLEFtp
 	
 	private boolean readGetData(int fileSize, FileOutputStream dst, byte[][] data, long nativeCallbackObject, Semaphore cancelSem)
 	{
-		//ArrayList<ARSALManagerNotificationData> receivedNotifications = new ArrayList<ARSALManagerNotificationData>();
-		//ArrayList<ARSALManagerNotificationData> removeNotifications = new ArrayList<ARSALManagerNotificationData>();
 		byte[][] notificationArray = new byte[1][];
 		boolean ret = true;
 		int packetCount = 0;
@@ -1146,10 +1179,6 @@ public class ARUtilsBLEFtp
 			
 			do
 			{
-				/*if (receivedNotifications.size() == 0)
-				{
-					ret = bleManager.readDataNotificationData(receivedNotifications, 1, BLE_GETTING_KEY);
-				}*/
 				ret = readBufferBlocks(notificationArray);
 				if (ret == false)
 				{
@@ -1160,17 +1189,14 @@ public class ARUtilsBLEFtp
 					//for (int i=0; (i < receivedNotifications.size()) && (ret == true) && (blockMD5 == false) && (endMD5 == false); i++)
 					if ((ret == true) && (notificationArray[0] != null) && (blockMD5 == false) && (endMD5 == false))
 					{
-						/*ARSALManagerNotificationData notificationData = receivedNotifications.get(i);
-						int packetLen = notificationData.value.length;
-						byte[] packet = notificationData.value;*/
 						int packetLen = notificationArray[0].length;
 						byte[] packet = notificationArray[0];
 						
 						packetCount++;
 						totalPacket++;
-						Log.d("DBG", APP_TAG + "== packet " + packetLen +", "+ packetCount + ", " + totalPacket + ", " + totalSize);
+						ARSALPrint.d("DBG", APP_TAG + "== packet " + packetLen +", "+ packetCount + ", " + totalPacket + ", " + totalSize);
 						//String s = new String(packet);
-						//Log.d("DBG", APP_TAG + "packet " + s);
+						//ARSALPrint.d("DBG", APP_TAG + "packet " + s);
 						
 						if (packetLen > 0)
 						{
@@ -1321,67 +1347,50 @@ public class ARUtilsBLEFtp
 	
 	private boolean readPudDataWritten()
 	{
-		//ArrayList<ARSALManagerNotificationData> receivedNotifications = new ArrayList<ARSALManagerNotificationData>();
 		byte[][] notificationArray = new byte[1][];
 		boolean ret = false;
 		
-		/*try
-		{*/
-			//ret = bleManager.readDataNotificationData(receivedNotifications, 1, BLE_GETTING_KEY);
-			ret = readBufferBlocks(notificationArray);
-			if (ret = true)
+		ret = readBufferBlocks(notificationArray);
+		if (ret = true)
+		{
+			if (notificationArray[0] != null)
 			{
-				//if (receivedNotifications.size() > 0)
-				if (notificationArray[0] != null)
+				int packetLen = notificationArray[0].length;
+				byte[] packet = notificationArray[0];
+				
+				if (packetLen > 0)
 				{
-					/*ARSALManagerNotificationData  notificationData = receivedNotifications.get(0);
-					byte[] packet = notificationData.value;
-					int packetLen = notificationData.value.length;*/
-					int packetLen = notificationArray[0].length;
-					byte[] packet = notificationArray[0];
+					//String packetTxt = new String(packet, 0, packetLen, "UTF8");
 					
-					if (packetLen > 0)
+					if (compareToString(packet, packetLen, BLE_PACKET_WRITTEN))
 					{
-						//String packetTxt = new String(packet, 0, packetLen, "UTF8");
-						
-						//if (packetTxt.compareTo(BLE_PACKET_WRITTEN) == 0)
-						if (compareToString(packet, packetLen, BLE_PACKET_WRITTEN))
-						{
-							ARSALPrint.d("DBG", APP_TAG + "Written OK");
-							ret = true;
-						}
-						//else if (packetTxt.compareTo(BLE_PACKET_NOT_WRITTEN) == 0)
-						else if (compareToString(packet, packetLen, BLE_PACKET_NOT_WRITTEN))
-						{
-							ARSALPrint.e("DBG", APP_TAG + "NOT Written");
-							ret = false;
-						}
-						else
-						{
-							ARSALPrint.e("DBG", APP_TAG + "UNKNOWN Written");
-							ret = false;
-						}
+						ARSALPrint.d("DBG", APP_TAG + "Written OK");
+						ret = true;
+					}
+					else if (compareToString(packet, packetLen, BLE_PACKET_NOT_WRITTEN))
+					{
+						ARSALPrint.e("DBG", APP_TAG + "NOT Written");
+						ret = false;
+					}
+					else
+					{
+						ARSALPrint.e("DBG", APP_TAG + "UNKNOWN Written");
+						ret = false;
 					}
 				}
-				else
-				{
-					ARSALPrint.e("DBG", APP_TAG + "UNKNOWN Written");
-					ret = false;
-				}
 			}
-		//}
-		/*catch (UnsupportedEncodingException e)
-		{
-			ARSALPrint.e("DBG", APP_TAG + e.toString());
-			ret = false;
-		}*/
+			else
+			{
+				ARSALPrint.e("DBG", APP_TAG + "UNKNOWN Written");
+				ret = false;
+			}
+		}
 		
 		return ret;
 	}
 	
 	private boolean readPutMd5(String[] md5Txt)
 	{
-		//ArrayList<ARSALManagerNotificationData> receivedNotifications = new ArrayList<ARSALManagerNotificationData>();
 		byte[][] notificationArray = new byte[1][];
 		boolean ret = false;
 		
@@ -1389,25 +1398,28 @@ public class ARUtilsBLEFtp
 	
 		try
 		{
-			//ret = bleManager.readDataNotificationData(receivedNotifications, 1, BLE_GETTING_KEY);
 			ret = readBufferBlocks(notificationArray);
 			if (ret == true)
 			{
-				//if (receivedNotifications.size() > 0)
 				if (notificationArray[0] != null)
 				{
-					/*ARSALManagerNotificationData  notificationData = receivedNotifications.get(0);
-					byte[] packet = notificationData.value;
-					int packetLen = notificationData.value.length;*/
 					int packetLen = notificationArray[0].length;
 					byte[] packet = notificationArray[0];
 					
 					if (packetLen > 0)
 					{
-						String packetTxt = new String(packet, 0, packetLen, "UTF8");
-						md5Txt[0] = packetTxt.substring(3, packetTxt.length() - 3);
-						
-						ARSALPrint.d("DBG", APP_TAG + "md5 end received " + md5Txt[0]);
+						if (packetLen == 32)
+						{
+							String packetTxt = new String(packet, 0, packetLen, "UTF8");
+							md5Txt[0] = packetTxt;
+							
+							ARSALPrint.d("DBG", APP_TAG + "md5 end received " + md5Txt[0]);
+						}
+						else
+						{
+							ARSALPrint.e("DBG", APP_TAG + "md5 size failed");
+							ret = false;
+						}
 					}
 					else 
 					{
@@ -1433,27 +1445,20 @@ public class ARUtilsBLEFtp
 	
 	private boolean readRenameData()
 	{
-		//ArrayList<ARSALManagerNotificationData> receivedNotifications = new ArrayList<ARSALManagerNotificationData>();
 		byte[][] notificationArray = new byte[1][];
 		boolean ret = false;
 	
-		//ret = bleManager.readDataNotificationData(receivedNotifications, 1, BLE_GETTING_KEY);
 		ret = readBufferBlocks(notificationArray);
 		if (ret == true)
 		{
-			//if (receivedNotifications.size() > 0)
 			if (notificationArray[0] != null)
 			{
-				/*ARSALManagerNotificationData  notificationData = receivedNotifications.get(0);
-				byte[] packet = notificationData.value;
-				int packetLen = notificationData.value.length;*/
 				int packetLen = notificationArray[0].length;
 				byte[] packet = notificationArray[0];					
 				
 				if (packetLen > 0)
 				{
 					//String packetString = new String(packet);
-					//if ((packetLen == BLE_PACKET_RENAME_SUCCESS.length()) && packetString.contentEquals(BLE_PACKET_RENAME_SUCCESS))
 					if (compareToString(packet, packetLen, BLE_PACKET_RENAME_SUCCESS))
 					{
 					    ARSALPrint.d("DBG", APP_TAG + "Rename Success");
@@ -1482,28 +1487,21 @@ public class ARUtilsBLEFtp
 	
 	private boolean readDeleteData()
 	{
-		//ArrayList<ARSALManagerNotificationData> receivedNotifications = new ArrayList<ARSALManagerNotificationData>();
 		byte[][] notificationArray = new byte[1][];
 		boolean ret = false;
 	
-		//ret = bleManager.readDataNotificationData(receivedNotifications, 1, BLE_GETTING_KEY);
 		ret = readBufferBlocks(notificationArray);
 		if (ret == true)
 		{
-			//if (receivedNotifications.size() > 0)
 			if (notificationArray[0] != null)
 			{
-				/*ARSALManagerNotificationData  notificationData = receivedNotifications.get(0);
-				byte[] packet = notificationData.value;
-				int packetLen = notificationData.value.length;*/
 				int packetLen = notificationArray[0].length;
 				byte[] packet = notificationArray[0];					
 				
 				if (packetLen > 0)
 				{
 					//String packetString = new String(packet);
-					//if ((packetLen == BLE_PACKET_DELETE_SUCCES.length()) && packetString.contentEquals(BLE_PACKET_DELETE_SUCCES))
-					if (compareToString(packet, packetLen, BLE_PACKET_DELETE_SUCCES))
+					if (compareToString(packet, packetLen, BLE_PACKET_DELETE_SUCCESS))
 					{
 					    ARSALPrint.d("DBG", APP_TAG + "Delete Success");
 						ret = true;
@@ -1612,7 +1610,7 @@ public class ARUtilsBLEFtp
 	        if (itemLen != null)
 	        {
 	            itemLen[0] = endLine;
-	            //Log.d("DBG", APP_TAG + "LINE " + list.substring(indexItem[0], indexItem[0] + itemLen[0])); 
+	            //ARSALPrint.d("DBG", APP_TAG + "LINE " + list.substring(indexItem[0], indexItem[0] + itemLen[0])); 
 	        }
 	    }
 	    
