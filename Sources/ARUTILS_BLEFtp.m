@@ -123,7 +123,10 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(ARUtils_BLEFtp, initBLEFtp)
     {
         if (_connectionCount == 1)
         {
-            _peripheral = NULL;
+            _peripheral = nil;
+            _transferring = nil;
+            _getting = nil;
+            _handling = nil;
             _port = 0;
         }
         
