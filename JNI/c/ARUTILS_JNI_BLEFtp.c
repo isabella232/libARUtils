@@ -456,8 +456,17 @@ eARUTILS_ERROR ARUTILS_BLEFtp_List(ARUTILS_BLEFtp_Connection_t *connection, cons
         {
             jstring jList = (jstring) (*env)->GetObjectArrayElement(env, objectList, 0);
 
-            const char *dataList = (*env)->GetStringUTFChars(env, jList, 0);
+            const char *dataList;
 
+            if (jList != NULL)
+            {
+                dataList = (*env)->GetStringUTFChars(env, jList, 0);
+            }
+            else
+            {
+                dataList = "";
+            }
+            
             int dataLen = 0;
             if (dataList != NULL)
             {
@@ -482,7 +491,7 @@ eARUTILS_ERROR ARUTILS_BLEFtp_List(ARUTILS_BLEFtp_Connection_t *connection, cons
                 *resultListLen = dataLen + 1;
             }
 
-            if (dataList != NULL)
+            if (dataList != NULL && jList != NULL)
             {
                 (*env)->ReleaseStringUTFChars(env, jList, dataList);
             }
