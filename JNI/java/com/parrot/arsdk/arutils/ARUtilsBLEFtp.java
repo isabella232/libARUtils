@@ -43,7 +43,7 @@ public class ARUtilsBLEFtp
 	public final static int BLE_PACKET_BLOCK_PUTTING_COUNT = 500;
 	public final static int BLE_PACKET_BLOCK_GETTING_COUNT = 100;
 	
-	public final static long BLE_PACKET_WRITE_SLEEP = 30; /* 20ms or 30ms*/
+	public final static long BLE_PACKET_WRITE_SLEEP = 35; /* 20ms or 30ms*/
 	public final static int BLE_MTU_SIZE = 20;
 	
 	public final static byte BLE_BLOCK_HEADER_START = 0x02;    //Paquet de Start :      ID = 10 (en binaire) + data
