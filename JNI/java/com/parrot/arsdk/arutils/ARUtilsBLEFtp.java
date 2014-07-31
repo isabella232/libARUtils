@@ -43,7 +43,7 @@ public class ARUtilsBLEFtp
 	public final static int BLE_PACKET_BLOCK_PUTTING_COUNT = 500;
 	public final static int BLE_PACKET_BLOCK_GETTING_COUNT = 100;
 	
-	public final static long BLE_PACKET_WRITE_SLEEP = 20; /* 20 ms */
+	public final static long BLE_PACKET_WRITE_SLEEP = 30; /* 20ms or 30ms*/
 	public final static int BLE_MTU_SIZE = 20;
 	
 	public final static byte BLE_BLOCK_HEADER_START = 0x02;    //Paquet de Start :      ID = 10 (en binaire) + data
@@ -138,6 +138,10 @@ public class ARUtilsBLEFtp
 	        {
 	            this.gattDevice = null;
 	            this.port = 0;
+
+	            this.transferring = null;
+	            this.getting = null;
+	            this.handling = null;
 	        }
 	        
 	        connectionCount--;
@@ -981,6 +985,8 @@ public class ARUtilsBLEFtp
 		md5Msg[0] = "";
 		String md5Txt = null;
 		byte[] send = null;
+        float percent = 0.f;
+        float lastPercent = 0.f;
 		
 		try
 		{
@@ -1028,12 +1034,27 @@ public class ARUtilsBLEFtp
 
 					if (nativeCallbackObject != 0)
 					{
-						nativeProgressCallback(nativeCallbackObject, ((float)totalSize / (float)fileSize) * 100.f);
+                        percent = ((float)totalSize / (float)fileSize) * 100.f;
+                        if ((resume == true) && (totalPacket < resumeIndex) && ((percent - lastPercent) > 1.f))
+                        {
+                            lastPercent = percent;
+                            nativeProgressCallback(nativeCallbackObject, percent);
+                        }
+                        else
+                        {
+						    nativeProgressCallback(nativeCallbackObject, percent);
+                        }
 					}
 					
 					if (isConnectionCanceled(cancelSem))
 					{
 					    ARSALPrint.e("DBG", APP_TAG + "Canceled received");
+                        send = new byte[0];
+                        boolean err = false;
+
+				        err = sendResponse(send, transferring);
+                        err = readPutMd5(md5Msg);
+
 						ret = false;
 					}
 				}
