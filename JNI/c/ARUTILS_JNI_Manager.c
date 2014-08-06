@@ -196,6 +196,7 @@ Java_com_parrot_arsdk_arutils_ARUtilsManager_nativeInitBLEFtp
         manager->ftpGetWithBuffer = ARUTILS_BLEFtpAL_Get_WithBuffer;
         manager->ftpGet = ARUTILS_BLEFtpAL_Get;
         manager->ftpPut = ARUTILS_BLEFtpAL_Put;
+        manager->ftpRename = ARUTILS_BLEFtpAL_Rename;
         manager->ftpDelete = ARUTILS_BLEFtpAL_Delete;
     }
 

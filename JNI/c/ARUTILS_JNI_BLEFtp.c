@@ -5,8 +5,6 @@
  * @author
  */
 
-#define DEBUG
-
 #ifdef NDEBUG
 /* Android ndk-build NDK_DEBUG=0*/
 #else

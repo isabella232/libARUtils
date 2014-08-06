@@ -321,14 +321,15 @@ public class MainActivity extends Activity implements ARDiscoveryServicesDevices
 			//String name = "RS_B000443";
 			    //String name = "RS_B000262";
 				//String name = "RS_B000479";
-				String name = "RS_B000497";
+				//String name = "RS_B000497";
+			    String name = "RS_R000377";
 				//String name = "Maurice";
 				//07-02 17:49:58.933: D/DBG(8280): TestBLEFtp  Flower power 3337
 				//String name = "Flower power 2FB7";
 
 				if (serviceIndex.getName().contentEquals(name))
 				{
-					//ardiscoveryService.stop();
+					ardiscoveryService.stop();
 					
 					ARDiscoveryDeviceBLEService serviceBle = (ARDiscoveryDeviceBLEService)serviceIndex.getDevice();
 					
@@ -519,7 +520,7 @@ public class MainActivity extends Activity implements ARDiscoveryServicesDevices
                 //ret = bleFtp.deleteFileAL("/a.plf.tmp");
                 //Log.d("DBG", APP_TAG + "delete " + ret);
 
-                FileOutputStream dst = new FileOutputStream(filePath);
+                FileOutputStream dst = new FileOutputStream(filePath, false);
 
                 //byte[] buffer = new String("123\n").getBytes("UTF-8");
                 byte[] buffer = new byte[132];
@@ -535,7 +536,8 @@ public class MainActivity extends Activity implements ARDiscoveryServicesDevices
                 dst.close();
 
                 //ret = bleFtp.putFileAL("/a.plf.tmp", filePath, 0, false, cancelSem);
-                ret = bleFtp.putFileAL("/a.plf.tmp", filePath, 0, true, cancelSem);
+                //ret = bleFtp.putFileAL("/a.plf.tmp", filePath, 0, true, cancelSem);
+                ret = bleFtp.putFileAL("/rollingspider_update.plf.tmi", filePath, 0, true, cancelSem);
 
                 Log.d("DBG", APP_TAG + "PUT : " + ret);
             }
@@ -548,8 +550,9 @@ public class MainActivity extends Activity implements ARDiscoveryServicesDevices
                 Log.d("DBG", APP_TAG + e.toString());
             }
             
-            
             //ret = bleFtp.renameFileAL("/a.txt", "/b.txt");
+            //ret = bleFtp.renameFileAL("/a.plf.tmp", "/b.plf.tmp");
+            //ret = bleFtp.renameFileAL("/rollingspider_update.plf.tmi", "/rollingspider_update.plf");
             Log.d("DBG", APP_TAG + "rename " + ret);
             
             //ret = bleFtp.deleteFileAL("/b.txt");
@@ -603,7 +606,7 @@ public class MainActivity extends Activity implements ARDiscoveryServicesDevices
         	String tmp = sysHome.getAbsolutePath();
         	filePath = tmp + "/txt.txt";
 			
-			FileOutputStream dst = new FileOutputStream(filePath);
+			FileOutputStream dst = new FileOutputStream(filePath, false);
 			
 			byte[] buffer = new String("123\n").getBytes("UTF-8");
 			
@@ -674,11 +677,11 @@ public class MainActivity extends Activity implements ARDiscoveryServicesDevices
             String tmp = sysHome.getAbsolutePath();
             filePath = tmp + filename/*"/txt.plf.tmp"*/;
 
-            FileOutputStream dst = new FileOutputStream(filePath);
+            FileOutputStream dst = new FileOutputStream(filePath, false);
 
             byte[] buffer = new byte[132];
 
-            for (int i=0; i<10; i++)
+            for (int i=0; i<2; i++)
             {
                 dst.write(buffer, 0, buffer.length);
             }
@@ -813,7 +816,7 @@ public class MainActivity extends Activity implements ARDiscoveryServicesDevices
     {
         Log.d(APP_TAG, "testBlePutFile");
 
-        String filePath = createTestFile("toto");
+        String filePath = createTestFile("/toto.tmp");
 
         if (mUtilsManager != null)
         {
@@ -857,7 +860,8 @@ public class MainActivity extends Activity implements ARDiscoveryServicesDevices
         {
             Log.d(APP_TAG, "send RENAME command:");
 
-            mUtilsManager.BLEFtpRename("/toto.tmp", "/toto1.tmp");
+            //mUtilsManager.BLEFtpRename("/toto.tmp", "/toto1.tmp");
+            mUtilsManager.BLEFtpRename("/b.plf.tmp", "/a.plf.tmp");
         }
         else
         {

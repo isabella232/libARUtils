@@ -540,12 +540,14 @@ public class ARUtilsBLEFtp
 	{
 		int[] resumeIndex = new int[1];
 		resumeIndex[0] = 0;
+		int[] remoteSize = new int[1];
+		remoteSize[0] = 0;
 		boolean resume = false;
 		boolean ret = true;
 		
 		remoteFile = normalizePathName(remoteFile);
 		
-		ret = readPutResumeIndex(remoteFile, resumeIndex);
+		ret = readPutResumeIndex(remoteFile, resumeIndex, remoteSize);
 		if ((ret == true) && (resumeIndex[0] > 0))
 		{
 			resume = true;
@@ -575,6 +577,8 @@ public class ARUtilsBLEFtp
 		FileInputStream src = null;
 		int[] resumeIndex = new int[1];
 		resumeIndex[0] = 0;
+	    int[] remoteSize = new int[1];
+	    remoteSize[0] = 0;
 		boolean ret = true;
 		int totalSize = 0;
 		
@@ -590,7 +594,7 @@ public class ARUtilsBLEFtp
 		{
 			if (ret == true)
 			{
-				ret = readPutResumeIndex(remoteFile, resumeIndex);
+				ret = readPutResumeIndex(remoteFile, resumeIndex, remoteSize);
 				if (ret == false)
 				{
 					ret = true;
@@ -615,33 +619,44 @@ public class ARUtilsBLEFtp
 		    ARSALPrint.e("DBG", APP_TAG + e.toString());
 			ret = false;
 		}
-		
-		if (ret == true)
+
+		if ((ret == true) && (resume == true) && (remoteSize[0] == totalSize))
 		{
-			ret = sendCommand("PUT", remoteFile, handling);
+		    ARSALPrint.w("DBG", APP_TAG + "full resume");
+		    if (nativeCallbackObject != 0)
+            {
+                nativeProgressCallback(nativeCallbackObject, 100.f);
+            }
 		}
-		
-		if (ret == true)
+		else
 		{
-			try
-			{
-				src = new FileInputStream(localFile);
-			}
-			catch(FileNotFoundException e)
-			{
-			    ARSALPrint.e("DBG", APP_TAG + e.toString());
-				ret = false;
-			}
-		}
-		
-		if (ret == true)
-		{
-			ret = sendPutData(totalSize, src, resumeIndex[0], resume, false, nativeCallbackObject, cancelSem);
-		}
-		
-		if (src != null)
-		{
-			try { src.close(); } catch(IOException e) { }
+    		if (ret == true)
+    		{
+    			ret = sendCommand("PUT", remoteFile, handling);
+    		}
+    		
+    		if (ret == true)
+    		{
+    			try
+    			{
+    				src = new FileInputStream(localFile);
+    			}
+    			catch(FileNotFoundException e)
+    			{
+    			    ARSALPrint.e("DBG", APP_TAG + e.toString());
+    				ret = false;
+    			}
+    		}
+    		
+    		if (ret == true)
+    		{
+    			ret = sendPutData(totalSize, src, resumeIndex[0], resume, false, nativeCallbackObject, cancelSem);
+    		}
+    		
+    		if (src != null)
+    		{
+    			try { src.close(); } catch(IOException e) { }
+    		}
 		}
 		
 		return ret;
@@ -1025,7 +1040,7 @@ public class ARUtilsBLEFtp
 						
 						ret = sendBufferBlocks(send, transferring);
 						
-						ARSALPrint.d("DBG", APP_TAG + "packet " + packetCount + ", " + packetLen);
+						ARSALPrint.d("DBG", APP_TAG + "packet " + packetCount + ", " + packetLen);						
 					}
 					else
 					{
@@ -1035,10 +1050,13 @@ public class ARUtilsBLEFtp
 					if (nativeCallbackObject != 0)
 					{
                         percent = ((float)totalSize / (float)fileSize) * 100.f;
-                        if ((resume == true) && (totalPacket < resumeIndex) && ((percent - lastPercent) > 1.f))
+                        if ((resume == true) && (totalPacket < resumeIndex))
                         {
-                            lastPercent = percent;
-                            nativeProgressCallback(nativeCallbackObject, percent);
+                            if ((percent - lastPercent) > 1.f)
+                            {
+                                lastPercent = percent;
+                                nativeProgressCallback(nativeCallbackObject, percent);
+                            }
                         }
                         else
                         {
@@ -1163,7 +1181,7 @@ public class ARUtilsBLEFtp
 		
 		return ret;
 	}*/
-	private boolean readPutResumeIndex(String remoteFile, int[] resumeIndex)
+	private boolean readPutResumeIndex(String remoteFile, int[] resumeIndex, int[]totalSize)
 	{
 		double[] fileSize = new double[1];
 		fileSize[0] = 0.f;
@@ -1174,6 +1192,7 @@ public class ARUtilsBLEFtp
 		if (ret == true)
 		{
 			resumeIndex[0] = (int)fileSize[0] / BLE_PACKET_MAX_SIZE;
+			totalSize[0] = (int)fileSize[0];
 		}
 	
 		return ret;
