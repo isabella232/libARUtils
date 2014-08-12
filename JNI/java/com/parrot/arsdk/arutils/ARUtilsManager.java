@@ -145,7 +145,12 @@ public class ARUtilsManager
             error = ARUTILS_ERROR_ENUM.ARUTILS_ERROR_BAD_PARAMETER;
         }
 
-        if((port == 0) || ((port % 10) != 1))
+        if (deviceGatt == null)
+        {
+            error = ARUTILS_ERROR_ENUM.ARUTILS_ERROR_BAD_PARAMETER;
+        }
+
+        if ((port == 0) || ((port % 10) != 1))
         {
             error = ARUTILS_ERROR_ENUM.ARUTILS_ERROR_BAD_PARAMETER;
         }

@@ -1,0 +1,12 @@
+Build/INSTALL
+Build/Makefile.in
+Build/aclocal.m4
+Build/autom4te.cache/
+Build/config.h.in
+Build/config/
+Build/configure
+Build/m4/
+JNI/java/com/parrot/arsdk/arutils/ARUTILS_ERROR_ENUM.java
+JNI/java/com/parrot/arsdk/arutils/ARUTILS_FTP_RESUME_ENUM.java
+JNI/java/com/parrot/arsdk/arutils/ARUTILS_HTTPS_PROTOCOL_ENUM.java
+Sources/ARUTILS_Error.c
