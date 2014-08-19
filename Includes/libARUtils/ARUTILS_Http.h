@@ -51,7 +51,7 @@ typedef void (*ARUTILS_Http_ProgressCallback_t)(void* arg, float percent);
 /**
  * @brief Create a new Http Connection
  * @warning This function allocates memory
- * @param cancelSem The pointer of the Http get/put cancel semaphore or null
+ * @param cancelSem The pointer of the Http get/post cancel semaphore or null
  * @param server The Http server IP address
  * @param port The Http server port
  * @param security The security flag: to indicate HTTP or HTTPS connection
@@ -72,7 +72,7 @@ ARUTILS_Http_Connection_t * ARUTILS_Http_Connection_New(ARSAL_Sem_t *cancelSem, 
 void ARUTILS_Http_Connection_Delete(ARUTILS_Http_Connection_t **connection);
 
 /**
- * @brief Cancel an Http Connection command in progress (get, put, list etc)
+ * @brief Cancel an Http Connection command in progress (get, post, etc)
  * @param connection The address of the pointer on the Http Connection
  * @retval On success, returns ARUTILS_OK. Otherwise, it returns an error number of eARUTILS_ERROR.
  * @see ARUTILS_Http_NewConnection ()
@@ -114,15 +114,16 @@ eARUTILS_ERROR ARUTILS_Http_Get(ARUTILS_Http_Connection_t *connection, const cha
 eARUTILS_ERROR ARUTILS_Http_Get_WithBuffer(ARUTILS_Http_Connection_t *connection, const char *namePath, uint8_t **data, uint32_t *dataLen, ARUTILS_Http_ProgressCallback_t progressCallback, void* progressArg);
 
 /**
- * @brief Put a file to a remote Http server
+ * @brief Post a file to a remote Http server
  * @param connection The address of the pointer on the Http Connection
  * @param namePath The string of the file name path on the remote Http server
- * @param srcFile The string of the local file name path to be put
+ * @param srcFile The string of the local file name path to be post
  * @param progressCallback The progress callback function
  * @param progressArg The progress callback function arg
  * @retval On success, returns ARUTILS_OK. Otherwise, it returns an error number of eARUTILS_ERROR.
  * @see ARUTILS_Http_NewConnection (), ARUTILS_Http_ProgressCallback_t
  */
-eARUTILS_ERROR ARUTILS_Http_Put(ARUTILS_Http_Connection_t *connection, const char *namePath, const char *srcFile, ARUTILS_Http_ProgressCallback_t progressCallback, void* progressArg);
+//eARUTILS_ERROR ARUTILS_Http_Post(ARUTILS_Http_Connection_t *connection, const char *namePath, const char *srcFile, ARUTILS_Http_ProgressCallback_t progressCallback, void* progressArg);
+eARUTILS_ERROR ARUTILS_Http_Post_WithRange(ARUTILS_Http_Connection_t *connection, const char *namePath, const char *srcFile, const char *md5Txt, uint32_t startRange, uint32_t endRange, uint8_t **outData, uint32_t *outDataLen, ARUTILS_Http_ProgressCallback_t progressCallback, void* progressArg);
 
 #endif /* _ARUTILS_HTTP_H_ */

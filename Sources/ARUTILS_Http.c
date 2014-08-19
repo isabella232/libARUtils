@@ -13,6 +13,7 @@
 
 #include <libARSAL/ARSAL_Sem.h>
 #include <libARSAL/ARSAL_Print.h>
+#include <libARSAL/ARSAL_MD5_Manager.h>
 #include <curl/curl.h>
 
 #include "libARUtils/ARUTILS_Error.h"
@@ -220,9 +221,9 @@ eARUTILS_ERROR ARUTILS_Http_Get_Internal(ARUTILS_Http_Connection_t *connection, 
 
     if ((result == ARUTILS_OK) && (dstFile != NULL))
     {
-        connection->cbdata.file = fopen(dstFile, "wb");
+        connection->cbdata.writeFile = fopen(dstFile, "wb");
 
-        if (connection->cbdata.file == NULL)
+        if (connection->cbdata.writeFile == NULL)
         {
             result = ARUTILS_ERROR_SYSTEM;
         }
@@ -328,7 +329,7 @@ eARUTILS_ERROR ARUTILS_Http_Get_Internal(ARUTILS_Http_Connection_t *connection, 
         {
             if (dstFile != NULL)
             {
-                fflush(connection->cbdata.file);
+                fflush(connection->cbdata.writeFile);
             }
         }
         else if (httpCode == 401)
@@ -362,9 +363,9 @@ eARUTILS_ERROR ARUTILS_Http_Get_Internal(ARUTILS_Http_Connection_t *connection, 
     {
         if (result == ARUTILS_OK)
         {
-            *data = connection->cbdata.data;
-            connection->cbdata.data = NULL;
-            *dataLen = connection->cbdata.dataSize;
+            *data = connection->cbdata.writeData;
+            connection->cbdata.writeData = NULL;
+            *dataLen = connection->cbdata.writeDataSize;
         }
     }
 
@@ -377,13 +378,10 @@ eARUTILS_ERROR ARUTILS_Http_Get_Internal(ARUTILS_Http_Connection_t *connection, 
     return result;
 }
 
-eARUTILS_ERROR ARUTILS_Http_Put(ARUTILS_Http_Connection_t *connection, const char *namePath, const char *srcFile, ARUTILS_Http_ProgressCallback_t progressCallback, void* progressArg)
+eARUTILS_ERROR ARUTILS_Http_Post_WithRange(ARUTILS_Http_Connection_t *connection, const char *namePath, const char *srcFile, const char *md5Txt, uint32_t startRange, uint32_t endRange, uint8_t **outData, uint32_t *outDataLen, ARUTILS_Http_ProgressCallback_t progressCallback, void* progressArg)
 {
-    return ARUTILS_Http_Put_Internal(connection, namePath, srcFile, NULL, 0, progressCallback, progressArg);
-}
-
-eARUTILS_ERROR ARUTILS_Http_Put_Internal(ARUTILS_Http_Connection_t *connection, const char *namePath, const char *srcFile, uint8_t *data, uint32_t dataLen, ARUTILS_Http_ProgressCallback_t progressCallback, void* progressArg)
-{
+    char contentRange[ARUTILS_HTTP_MAX_PATH_SIZE];
+    struct curl_slist *headers = NULL;
     struct curl_httppost *formItems = NULL;
     struct curl_httppost *lastFormItem = NULL;
     char fileUrl[ARUTILS_HTTP_MAX_URL_SIZE];
@@ -395,24 +393,9 @@ eARUTILS_ERROR ARUTILS_Http_Put_Internal(ARUTILS_Http_Connection_t *connection, 
     
     ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_HTTP_TAG, "%s, %s", namePath ? namePath : "null", srcFile ? srcFile : "null");
     
-    if ((connection == NULL) || (connection->curl == NULL) || (namePath == NULL))
+    if ((connection == NULL) || (connection->curl == NULL) || (namePath == NULL) || (srcFile == NULL) || (md5Txt == NULL))
     {
         result =  ARUTILS_ERROR_BAD_PARAMETER;
-    }
-    
-    if (srcFile != NULL)
-    {
-        if ((data != NULL) || (dataLen != 0))
-        {
-            result =  ARUTILS_ERROR_BAD_PARAMETER;
-        }
-    }
-    else
-    {
-        if ((data == NULL) || (dataLen == 0))
-        {
-            result =  ARUTILS_ERROR_BAD_PARAMETER;
-        }
     }
     
     if (result == ARUTILS_OK)
@@ -425,9 +408,27 @@ eARUTILS_ERROR ARUTILS_Http_Put_Internal(ARUTILS_Http_Connection_t *connection, 
         result = ARUTILS_Http_ResetOptions(connection);
     }
     
+    if ((result == ARUTILS_OK) && (srcFile != NULL))
+    {
+        result = ARUTILS_FileSystem_GetFileSize(srcFile, &localSize);
+    }
+    
     if (result == ARUTILS_OK)
     {
-        code = curl_easy_setopt(connection->curl, CURLOPT_CUSTOMREQUEST, "PUT");
+        if (endRange > (localSize - 1))
+        {
+            result =  ARUTILS_ERROR_BAD_PARAMETER;
+        }
+        else
+        {
+            connection->cbdata.readMaxSize = endRange + 1;
+            connection->cbdata.readDataSize = startRange;
+        }
+    }
+    
+    if (result == ARUTILS_OK)
+    {
+        code = curl_easy_setopt(connection->curl, CURLOPT_CUSTOMREQUEST, "POST");
         
         if (code != CURLE_OK)
         {
@@ -451,17 +452,21 @@ eARUTILS_ERROR ARUTILS_Http_Put_Internal(ARUTILS_Http_Connection_t *connection, 
     
     if ((result == ARUTILS_OK) && (srcFile != NULL))
     {
-        connection->cbdata.file = fopen(srcFile, "rb");
+        connection->cbdata.readFile = fopen(srcFile, "rb");
         
-        if (connection->cbdata.file == NULL)
+        if (startRange > 0)
+        {
+            int fileResult = fseek(connection->cbdata.readFile, (long)startRange, SEEK_SET);
+            if (fileResult != 0)
+            {
+                result = ARUTILS_ERROR_SYSTEM;
+            }
+        }
+        
+        if (connection->cbdata.readFile == NULL)
         {
             result = ARUTILS_ERROR_SYSTEM;
         }
-    }
-    
-    if ((result == ARUTILS_OK) && (srcFile != NULL))
-    {
-        result = ARUTILS_FileSystem_GetFileSize(srcFile, &localSize);
     }
     
     if (result == ARUTILS_OK)
@@ -486,7 +491,68 @@ eARUTILS_ERROR ARUTILS_Http_Put_Internal(ARUTILS_Http_Connection_t *connection, 
     
     if (result == ARUTILS_OK)
     {
-        if (connection->cbdata.file != NULL)
+        code = curl_easy_setopt(connection->curl, CURLOPT_WRITEDATA, connection);
+        
+        if (code != CURLE_OK)
+        {
+            result = ARUTILS_ERROR_CURL_SETOPT;
+        }
+    }
+    
+    if (result == ARUTILS_OK)
+    {
+        code = curl_easy_setopt(connection->curl, CURLOPT_WRITEFUNCTION, ARUTILS_Http_WriteDataCallback);
+        
+        if (code != CURLE_OK)
+        {
+            result = ARUTILS_ERROR_CURL_SETOPT;
+        }
+    }
+    
+    if (result == ARUTILS_OK)
+    {
+        //Content-Range: bytes 0-6000/7913
+        sprintf(contentRange, "Content-Range: bytes %d-%d/%d", startRange, endRange, localSize - 1);
+        headers = curl_slist_append(headers, contentRange);
+        if (headers == NULL)
+        {
+            result = ARUTILS_ERROR_ALLOC;
+        }
+    }
+    
+    if (result == ARUTILS_OK)
+    {
+        headers = curl_slist_append(headers, "Expect:");
+        if (headers == NULL)
+        {
+            result = ARUTILS_ERROR_ALLOC;
+        }
+    }
+    
+    if (result == ARUTILS_OK)
+    {
+        code = curl_easy_setopt(connection->curl, CURLOPT_HTTPHEADER, headers);
+        if (code != CURLE_OK)
+        {
+            result = ARUTILS_ERROR_CURL_SETOPT;
+        }
+    }
+    
+    if (result == ARUTILS_OK)
+    {
+        formCode = curl_formadd(&formItems, &lastFormItem,
+                                CURLFORM_COPYNAME, "md5",
+                                CURLFORM_COPYCONTENTS, md5Txt,
+                                CURLFORM_END);
+        if (formCode != CURL_FORMADD_OK)
+        {
+            result = ARUTILS_ERROR_CURL_SETOPT;
+        }
+    }
+    
+    if (result == ARUTILS_OK)
+    {
+        if (connection->cbdata.readFile != NULL)
         {
             const char *fileName = srcFile + strlen(srcFile);
             while ((fileName > srcFile) && (*fileName != '/'))
@@ -499,22 +565,24 @@ eARUTILS_ERROR ARUTILS_Http_Put_Internal(ARUTILS_Http_Connection_t *connection, 
             }
             
             formCode = curl_formadd(&formItems, &lastFormItem,
-                                    CURLFORM_COPYNAME, "userfile",
+                                    CURLFORM_COPYNAME, "file",
                                     CURLFORM_STREAM, connection,
                                     CURLFORM_FILENAME, fileName,
-                                    CURLFORM_CONTENTSLENGTH, (long)localSize,
-                                    //CURLFORM_CONTENTTYPE, "text/plain",
+                                    //CURLFORM_CONTENTSLENGTH, (long)localSize,
+                                    CURLFORM_CONTENTSLENGTH, (long)(endRange + 1 - startRange),
+                                    CURLFORM_CONTENTTYPE, "application/octet-stream",
                                     CURLFORM_END);
         }
-        else
+        /*else
         {
             formCode = curl_formadd(&formItems, &lastFormItem,
-                                                 CURLFORM_COPYNAME, "userdata",
-                                                 //CURLFORM_FILENAME, "data.bin",
-                                                 CURLFORM_COPYCONTENTS, data,
-                                                 CURLFORM_CONTENTSLENGTH, (long)dataLen,
-                                                 CURLFORM_END);
-        }
+                                     CURLFORM_COPYNAME, "file",//"userdata",
+                                     //CURLFORM_FILENAME, "data.bin",
+                                     CURLFORM_COPYCONTENTS, data,
+                                     CURLFORM_CONTENTSLENGTH, (long)dataLen,
+                                     CURLFORM_CONTENTTYPE, "application/octet-stream",
+                                     CURLFORM_END);
+        }*/
         
         if (formCode != CURL_FORMADD_OK)
         {
@@ -598,7 +666,7 @@ eARUTILS_ERROR ARUTILS_Http_Put_Internal(ARUTILS_Http_Connection_t *connection, 
     if (result == ARUTILS_OK)
     {
         // GET OK (200)
-        if (httpCode == 200)
+        if ((httpCode == 200) || (httpCode == 201))
         {
         }
         else if (httpCode == 401)
@@ -615,7 +683,23 @@ eARUTILS_ERROR ARUTILS_Http_Put_Internal(ARUTILS_Http_Connection_t *connection, 
         }
     }
     
+    if (result == ARUTILS_OK)
+    {
+        if ((outData != NULL) && (outDataLen != NULL))
+        {
+            *outData = connection->cbdata.writeData;
+            connection->cbdata.writeData = NULL;
+            *outDataLen = connection->cbdata.writeDataSize;
+            connection->cbdata.writeDataSize = 0;
+        }
+    }
+    
     //cleanup
+    if (headers != NULL)
+    {
+        curl_slist_free_all(headers);
+    }
+    
     if (formItems != NULL)
     {
         curl_formfree(formItems);
@@ -726,7 +810,7 @@ size_t ARUTILS_Http_ReadDataCallback(void *ptr, size_t size, size_t nmemb, void 
     size_t readSize = 0;
     size_t retSize = 0;
 
-    //ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_HTTP_TAG, "%d, %d", (int)size, (int)nmemb);
+    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_HTTP_TAG, "%d, %d", (int)size, (int)nmemb);
 
     if (connection != NULL)
     {
@@ -734,15 +818,20 @@ size_t ARUTILS_Http_ReadDataCallback(void *ptr, size_t size, size_t nmemb, void 
 
         if (connection->cbdata.error == ARUTILS_OK)
         {
-            if (connection->cbdata.file != NULL)
+            if (connection->cbdata.readFile != NULL)
             {
                 do
                 {
-                    readSize = fread(ptr, size, nmemb, connection->cbdata.file);
+                    if ((connection->cbdata.readDataSize + nmemb) > connection->cbdata.readMaxSize)
+                    {
+                        nmemb = connection->cbdata.readMaxSize - connection->cbdata.readDataSize;
+                    }
+                    
+                    readSize = fread(ptr, size, nmemb, connection->cbdata.readFile);
 
                     if (readSize == 0)
                     {
-                        int err = ferror(connection->cbdata.file);
+                        int err = ferror(connection->cbdata.readFile);
                         if (err != 0)
                         {
                             connection->cbdata.error = ARUTILS_ERROR_SYSTEM;
@@ -752,8 +841,13 @@ size_t ARUTILS_Http_ReadDataCallback(void *ptr, size_t size, size_t nmemb, void 
                     {
                         retSize = readSize;
                     }
+                    
+                    connection->cbdata.readDataSize += retSize;
                 }
-                while ((connection->cbdata.error == ARUTILS_OK) && (readSize == 0) && !feof(connection->cbdata.file));
+                while ((connection->cbdata.error == ARUTILS_OK)
+                       && (connection->cbdata.readDataSize < connection->cbdata.readMaxSize)
+                       && (readSize == 0)
+                       && !feof(connection->cbdata.readFile));
             }
         }
 
@@ -776,7 +870,7 @@ size_t ARUTILS_Http_WriteDataCallback(void *ptr, size_t size, size_t nmemb, void
     u_char *olddata = NULL;
     size_t retSize = 0;
 
-    //ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_HTTP_TAG, "%d, %d", (int)size, (int)nmemb);
+    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_HTTP_TAG, "%d, %d", (int)size, (int)nmemb);
 
     if (connection != NULL)
     {
@@ -784,35 +878,35 @@ size_t ARUTILS_Http_WriteDataCallback(void *ptr, size_t size, size_t nmemb, void
 
         if (connection->cbdata.error == ARUTILS_OK)
         {
-            if (connection->cbdata.file == NULL)
+            if (connection->cbdata.writeFile == NULL)
             {
-                olddata = connection->cbdata.data;
-                connection->cbdata.data = (u_char *)realloc(connection->cbdata.data, connection->cbdata.dataSize + (size * nmemb));
-                if (connection->cbdata.data == NULL)
+                olddata = connection->cbdata.writeData;
+                connection->cbdata.writeData = (u_char *)realloc(connection->cbdata.writeData, connection->cbdata.writeDataSize + (size * nmemb));
+                if (connection->cbdata.writeData == NULL)
                 {
-                    connection->cbdata.data = olddata;
+                    connection->cbdata.writeData = olddata;
                     connection->cbdata.error = ARUTILS_ERROR_ALLOC;
                 }
             }
             else
             {
-                int len = fwrite(ptr, size, nmemb, connection->cbdata.file);
+                int len = fwrite(ptr, size, nmemb, connection->cbdata.writeFile);
                 if (len != size * nmemb)
                 {
                     connection->cbdata.error = ARUTILS_ERROR_SYSTEM;
                 }
                 else
                 {
-                    connection->cbdata.dataSize += size * nmemb;
+                    connection->cbdata.writeDataSize += size * nmemb;
                     retSize = nmemb;
                 }
             }
         }
 
-        if ((connection->cbdata.error == ARUTILS_OK) && (connection->cbdata.file == NULL) && (connection->cbdata.data != NULL))
+        if ((connection->cbdata.error == ARUTILS_OK) && (connection->cbdata.writeFile == NULL) && (connection->cbdata.writeData != NULL))
         {
-            memcpy(&connection->cbdata.data[connection->cbdata.dataSize], ptr, size * nmemb);
-            connection->cbdata.dataSize += size * nmemb;
+            memcpy(&connection->cbdata.writeData[connection->cbdata.writeDataSize], ptr, size * nmemb);
+            connection->cbdata.writeDataSize += size * nmemb;
             retSize = nmemb;
         }
 
@@ -870,19 +964,34 @@ void ARUTILS_Http_FreeCallbackData(ARUTILS_Http_CallbackData_t *cbdata)
 
     if (cbdata != NULL)
     {
-        if (cbdata->file != NULL)
+        if (cbdata->readFile != NULL)
         {
-            if (cbdata->file != NULL)
+            if (cbdata->readFile != NULL)
             {
-                fclose(cbdata->file);
-                cbdata->file = NULL;
+                fclose(cbdata->readFile);
+                cbdata->readFile = NULL;
+            }
+        }
+        
+        if (cbdata->writeFile != NULL)
+        {
+            if (cbdata->writeFile != NULL)
+            {
+                fclose(cbdata->writeFile);
+                cbdata->writeFile = NULL;
             }
         }
 
-        if (cbdata->data != NULL)
+        if (cbdata->readData != NULL)
         {
-            free(cbdata->data);
-            cbdata->data = NULL;
+            free(cbdata->readData);
+            cbdata->readData = NULL;
+        }
+        
+        if (cbdata->writeData != NULL)
+        {
+            free(cbdata->writeData);
+            cbdata->writeData = NULL;
         }
 
         memset(cbdata, 0, sizeof(ARUTILS_Http_CallbackData_t));
