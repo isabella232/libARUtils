@@ -276,7 +276,7 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(ARUtils_BLEFtp, initBLEFtp)
     
     if (cancelSem != NULL)
     {
-        while (ARSAL_Sem_Trywait(cancelSem))
+        while (ARSAL_Sem_Trywait(cancelSem) == 0)
         {
             /* Do Nothing */
         }
@@ -1522,7 +1522,7 @@ eARUTILS_ERROR ARUTILS_BLEFtp_Connection_Reset(ARUTILS_BLEFtp_Connection_t *conn
         
         if (cancelSem != NULL)
         {
-            while (ARSAL_Sem_Trywait(cancelSem))
+            while (ARSAL_Sem_Trywait(cancelSem) == 0)
             {
                 /* Do Nothing */
             }
