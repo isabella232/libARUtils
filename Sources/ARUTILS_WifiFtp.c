@@ -1567,16 +1567,6 @@ eARUTILS_ERROR ARUTILS_WifiFtp_ResetOptions(ARUTILS_WifiFtp_Connection_t *connec
             result = ARUTILS_ERROR_CURL_SETOPT;
         }
     }
-        
-    if (result == ARUTILS_OK)
-    {
-        code = curl_easy_setopt(connection->curl, CURLOPT_FORBID_REUSE, 1);
-        
-        if ((code != CURLE_OK) && (code != CURLE_UNKNOWN_OPTION))
-        {
-            result = ARUTILS_ERROR_CURL_SETOPT;
-        }
-    }
 
     if (result == ARUTILS_OK)
     {
