@@ -136,6 +136,58 @@ void ARUTILS_WifiFtp_Connection_Delete(ARUTILS_WifiFtp_Connection_t **connection
     }
 }
 
+eARUTILS_ERROR ARUTILS_WifiFtp_Connection_Disconnect(ARUTILS_WifiFtp_Connection_t *connection)
+{
+    eARUTILS_ERROR result = ARUTILS_OK;
+    
+    if (connection != NULL)
+    {
+        if (connection->curl != NULL)
+        {
+            curl_easy_cleanup(connection->curl);
+            connection->curl = NULL;
+        }
+        else
+        {
+            result = ARUTILS_ERROR_BAD_PARAMETER;
+        }
+    }
+    else
+    {
+        result = ARUTILS_ERROR_BAD_PARAMETER;
+    }
+    
+    return result;
+}
+
+eARUTILS_ERROR ARUTILS_WifiFtp_Connection_Reconnect(ARUTILS_WifiFtp_Connection_t *connection)
+{
+    eARUTILS_ERROR result = ARUTILS_OK;
+    
+    if (connection != NULL)
+    {
+        if (connection->curl == NULL)
+        {
+            connection->curl = curl_easy_init();
+            
+            if (connection->curl == NULL)
+            {
+                result = ARUTILS_ERROR_CURL_ALLOC;
+            }
+        }
+        else
+        {
+            result = ARUTILS_ERROR_BAD_PARAMETER;
+        }
+    }
+    else
+    {
+        result = ARUTILS_ERROR_BAD_PARAMETER;
+    }
+    
+    return result;
+}
+
 eARUTILS_ERROR ARUTILS_WifiFtp_Connection_Cancel(ARUTILS_WifiFtp_Connection_t *connection)
 {
     eARUTILS_ERROR result = ARUTILS_OK;
@@ -1567,6 +1619,16 @@ eARUTILS_ERROR ARUTILS_WifiFtp_ResetOptions(ARUTILS_WifiFtp_Connection_t *connec
             result = ARUTILS_ERROR_CURL_SETOPT;
         }
     }
+    
+    if (result == ARUTILS_OK)
+    {
+        code = curl_easy_setopt(connection->curl, CURLOPT_MAXCONNECTS, 1);
+        
+        if ((code != CURLE_OK) && (code != CURLE_UNKNOWN_OPTION))
+        {
+            result = ARUTILS_ERROR_CURL_SETOPT;
+        }
+    }
 
     if (result == ARUTILS_OK)
     {
@@ -1862,6 +1924,8 @@ eARUTILS_ERROR ARUTILS_Manager_InitWifiFtp(ARUTILS_Manager_t *manager, const cha
 
     if (result == ARUTILS_OK)
     {
+        manager->ftpConnectionDisconnect = ARUTILS_WifiFtpAL_Connection_Disconnect;
+        manager->ftpConnectionReconnect = ARUTILS_WifiFtpAL_Connection_Reconnect;
         manager->ftpConnectionCancel = ARUTILS_WifiFtpAL_Connection_Cancel;
         manager->ftpConnectionIsCanceled = ARUTILS_WifiFtpAL_Connection_IsCanceled;
         manager->ftpConnectionReset = ARUTILS_WifiFtpAL_Connection_Reset;
@@ -1885,6 +1949,16 @@ void ARUTILS_Manager_CloseWifiFtp(ARUTILS_Manager_t *manager)
 
         ARSAL_Sem_Destroy(&manager->cancelSem);
     }
+}
+
+eARUTILS_ERROR ARUTILS_WifiFtpAL_Connection_Disconnect(ARUTILS_Manager_t *manager)
+{
+    return ARUTILS_WifiFtp_Connection_Disconnect((ARUTILS_WifiFtp_Connection_t *)manager->connectionObject);
+}
+
+eARUTILS_ERROR ARUTILS_WifiFtpAL_Connection_Reconnect(ARUTILS_Manager_t *manager)
+{
+    return ARUTILS_WifiFtp_Connection_Reconnect((ARUTILS_WifiFtp_Connection_t *)manager->connectionObject);
 }
 
 eARUTILS_ERROR ARUTILS_WifiFtpAL_Connection_Cancel(ARUTILS_Manager_t *manager)

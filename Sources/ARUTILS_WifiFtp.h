@@ -327,6 +327,21 @@ void ARUTILS_WifiFtp_FreeCallbackData(ARUTILS_WifiFtp_CallbackData_t *cbdata);
  */
 eARUTILS_ERROR ARUTILS_WifiFtp_GetErrorFromCode(ARUTILS_WifiFtp_Connection_t *connection, CURLcode code);
 
+/**
+ * @brief Disconnect an remote Ftp server connection
+ * @param connection The address of the pointer on the Ftp Manager
+ * @retval On success, returns ARUTILS_OK. Otherwise, it returns an error number of eARUTILS_ERROR.
+ * @see ARUTILS_Manager_NewWifiFtp ()
+ */
+eARUTILS_ERROR ARUTILS_WifiFtpAL_Connection_Disconnect(ARUTILS_Manager_t *manager);
+
+/**
+ * @brief Reconnect an remote Ftp server connection
+ * @param connection The address of the pointer on the Ftp Manager
+ * @retval On success, returns ARUTILS_OK. Otherwise, it returns an error number of eARUTILS_ERROR.
+ * @see ARUTILS_Manager_NewWifiFtp ()
+ */
+eARUTILS_ERROR ARUTILS_WifiFtpAL_Connection_Reconnect(ARUTILS_Manager_t *manager);
 
 /**
 * @brief Cancel an Ftp Connection command in progress (get, put, list etc)

@@ -56,6 +56,34 @@ void ARUTILS_Manager_Delete(ARUTILS_Manager_t **managerAddr)
     }
 }
 
+eARUTILS_ERROR ARUTILS_Manager_Ftp_Connection_Disconnect(ARUTILS_Manager_t *manager)
+{
+    eARUTILS_ERROR result = ARUTILS_OK;
+    if ((manager == NULL) || (manager->ftpConnectionDisconnect == NULL))
+    {
+        result = ARUTILS_ERROR_BAD_PARAMETER;
+    }
+    else
+    {
+        result = manager->ftpConnectionDisconnect(manager);
+    }
+    return result;
+}
+
+eARUTILS_ERROR ARUTILS_Manager_Ftp_Connection_Reconnect(ARUTILS_Manager_t *manager)
+{
+    eARUTILS_ERROR result = ARUTILS_OK;
+    if ((manager == NULL) || (manager->ftpConnectionReconnect == NULL))
+    {
+        result = ARUTILS_ERROR_BAD_PARAMETER;
+    }
+    else
+    {
+        result = manager->ftpConnectionReconnect(manager);
+    }
+    return result;
+}
+
 eARUTILS_ERROR ARUTILS_Manager_Ftp_Connection_Cancel(ARUTILS_Manager_t *manager)
 {
     eARUTILS_ERROR result = ARUTILS_OK;

@@ -95,6 +95,22 @@ eARUTILS_ERROR ARUTILS_Manager_InitBLEFtp(ARUTILS_Manager_t *manager, ARUTILS_BL
 void ARUTILS_Manager_CloseBLEFtp(ARUTILS_Manager_t *manager);
 
 /**
+ * @brief Disconnect an remote Ftp server connection
+ * @param connection The address of the pointer on the Ftp Manager
+ * @retval On success, returns ARUTILS_OK. Otherwise, it returns an error number of eARUTILS_ERROR.
+ * @see ARUTILS_Manager_InitWifiFtp (), ARUTILS_Manager_InitBLEFtp ()
+ */
+eARUTILS_ERROR ARUTILS_Manager_Ftp_Connection_Disconnect(ARUTILS_Manager_t *manager);
+
+/**
+ * @brief Reconnect an remote Ftp server connection
+ * @param connection The address of the pointer on the Ftp Manager
+ * @retval On success, returns ARUTILS_OK. Otherwise, it returns an error number of eARUTILS_ERROR.
+ * @see ARUTILS_Manager_InitWifiFtp (), ARUTILS_Manager_InitBLEFtp ()
+ */
+eARUTILS_ERROR ARUTILS_Manager_Ftp_Connection_Reconnect(ARUTILS_Manager_t *manager);
+
+/**
  * @brief Cancel an Ftp Connection command in progress (get, put, list etc)
  * @param connection The address of the pointer on the Ftp Manager
  * @retval On success, returns ARUTILS_OK. Otherwise, it returns an error number of eARUTILS_ERROR.
@@ -188,6 +204,22 @@ eARUTILS_ERROR ARUTILS_Manager_Ftp_Delete(ARUTILS_Manager_t *manager, const char
  * @see ARUTILS_WifiFtp_NewConnection ()
  */
 eARUTILS_ERROR ARUTILS_Manager_Ftp_Rename(ARUTILS_Manager_t *manager, const char *oldNamePath, const char *newNamePath);
+
+/**
+ * @brief Disconnect an remote Ftp server connection
+ * @param connection The address of the pointer on the Ftp Manager
+ * @retval On success, returns ARUTILS_OK. Otherwise, it returns an error number of eARUTILS_ERROR.
+ * @see ARUTILS_Manager_InitWifiFtp (), ARUTILS_Manager_CloseWifiFtp ()
+ */
+typedef eARUTILS_ERROR (*ARUTILS_Manager_Ftp_Connection_Disconnect_t)(ARUTILS_Manager_t *manager);
+
+/**
+ * @brief Reconnect an remote Ftp server connection
+ * @param connection The address of the pointer on the Ftp Manager
+ * @retval On success, returns ARUTILS_OK. Otherwise, it returns an error number of eARUTILS_ERROR.
+ * @see ARUTILS_Manager_InitWifiFtp (), ARUTILS_Manager_CloseWifiFtp ()
+ */
+typedef eARUTILS_ERROR (*ARUTILS_Manager_Ftp_Connection_Reconnect_t)(ARUTILS_Manager_t *manager);
 
 /**
  * @brief Cancel an Ftp Connection command in progress (get, put, list etc)
@@ -296,6 +328,8 @@ typedef eARUTILS_ERROR (*ARUTILS_Manager_Ftp_Rename_t)(ARUTILS_Manager_t *manage
  */
 struct ARUTILS_Manager_t
 {
+    ARUTILS_Manager_Ftp_Connection_Disconnect_t ftpConnectionDisconnect;
+    ARUTILS_Manager_Ftp_Connection_Reconnect_t ftpConnectionReconnect;
     ARUTILS_Manager_Ftp_Connection_Cancel_t ftpConnectionCancel;
     ARUTILS_Manager_Ftp_Connection_IsCanceled_t ftpConnectionIsCanceled;
     ARUTILS_Manager_Ftp_Connection_Reset_t ftpConnectionReset;
