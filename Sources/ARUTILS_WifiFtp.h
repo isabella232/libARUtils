@@ -98,6 +98,7 @@ struct ARUTILS_WifiFtp_Connection_t
 {
     ARSAL_Sem_t *cancelSem;
     CURL *curl;
+    int curlSocket;
     char serverUrl[ARUTILS_FTP_MAX_URL_SIZE];
     char username[ARUTILS_FTP_MAX_USER_SIZE];
     char password[ARUTILS_FTP_MAX_USER_SIZE];
@@ -265,6 +266,16 @@ size_t ARUTILS_WifiFtp_WriteDataCallback(void *ptr, size_t size, size_t nmemb, v
  * @see cURL
  */
 int ARUTILS_WifiFtp_ProgressCallback(void *userData, double dltotal, double dlnow, double ultotal, double ulnow);
+
+/**
+ * @brief Progress callback of cURL connection
+ * @param clientp
+ * @param purpose
+ * @param address
+ * @retval On success, returns socket. Otherwise, it returns 0.
+ * @see cURL
+ */
+curl_socket_t ARUTILS_WifiFtp_OpensocketCallback(void *clientp, curlsocktype purpose, struct curl_sockaddr *address);
 
 /**
  * @brief Execute a command on remote Ftp server file

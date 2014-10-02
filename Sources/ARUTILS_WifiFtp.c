@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
+#include <sys/socket.h>
 
 #include <libARSAL/ARSAL_Sem.h>
 #include <libARSAL/ARSAL_Print.h>
@@ -74,6 +75,7 @@ ARUTILS_WifiFtp_Connection_t * ARUTILS_WifiFtp_Connection_New(ARSAL_Sem_t *cance
 
     if (result == ARUTILS_OK)
     {
+        newConnection->curlSocket = -1;
         newConnection->cancelSem = cancelSem;
     }
 
@@ -207,6 +209,14 @@ eARUTILS_ERROR ARUTILS_WifiFtp_Connection_Cancel(ARUTILS_WifiFtp_Connection_t *c
         if (resutlSys != 0)
         {
             result = ARUTILS_ERROR_SYSTEM;
+        }
+    }
+    
+    if (result == ARUTILS_OK)
+    {
+        if (connection->curlSocket != -1)
+        {
+            shutdown(connection->curlSocket, SHUT_RDWR);
         }
     }
 
@@ -1649,6 +1659,26 @@ eARUTILS_ERROR ARUTILS_WifiFtp_ResetOptions(ARUTILS_WifiFtp_Connection_t *connec
             result = ARUTILS_ERROR_CURL_SETOPT;
         }
     }
+    
+    if (result == ARUTILS_OK)
+    {
+        code = curl_easy_setopt(connection->curl, CURLOPT_OPENSOCKETFUNCTION, ARUTILS_WifiFtp_OpensocketCallback);
+        
+        if (code != CURLE_OK)
+        {
+            result = ARUTILS_ERROR_CURL_SETOPT;
+        }
+    }
+    
+    if (result == ARUTILS_OK)
+    {
+        code = curl_easy_setopt(connection->curl, CURLOPT_OPENSOCKETDATA, &connection->curlSocket);
+        
+        if (code != CURLE_OK)
+        {
+            result = ARUTILS_ERROR_CURL_SETOPT;
+        }
+    }
 
     return result;
 }
@@ -1795,6 +1825,24 @@ int ARUTILS_WifiFtp_ProgressCallback(void *userData, double dltotal, double dlno
     }
 
     return 0;
+}
+
+curl_socket_t ARUTILS_WifiFtp_OpensocketCallback(void *clientp, curlsocktype purpose, struct curl_sockaddr *address)
+{
+    curl_socket_t sock = 0;
+    //ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_WIFIFTP_TAG, "%x", clientp);
+    
+    if ((address != NULL) && (purpose == CURLSOCKTYPE_IPCXN))
+    {
+        sock = socket(address->family, address->socktype, address->protocol);
+        
+        if (clientp != NULL)
+        {
+            *((int*)clientp) = sock;
+        }
+    }
+    
+    return sock;
 }
 
 void ARUTILS_WifiFtp_FreeCallbackData(ARUTILS_WifiFtp_CallbackData_t *cbdata)
