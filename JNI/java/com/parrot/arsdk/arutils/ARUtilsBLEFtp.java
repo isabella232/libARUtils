@@ -1351,8 +1351,22 @@ public class ARUtilsBLEFtp
 				{
 					ARSALPrint.d("DBG", APP_TAG + "md5 block ok");
 				}
-				
-				ret = sendResponse("MD5 OK", getting);
+	
+				//firmware 1.0.45 protocol dosen't implement cancel today at the and of 100 packets download
+				if (isConnectionCanceled(cancelSem))
+		        {
+				    ARSALPrint.e("DBG", APP_TAG + "Canceled received");
+		            ret = false;
+		        }
+
+		        if (ret == false)
+		        {
+		        	ret = sendResponse("CANCEL", getting);
+		        }
+		        else
+		        {
+					ret = sendResponse("MD5 OK", getting);
+		        }
 			}
 		}
 		

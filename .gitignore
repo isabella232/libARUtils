@@ -10,3 +10,7 @@ JNI/java/com/parrot/arsdk/arutils/ARUTILS_ERROR_ENUM.java
 JNI/java/com/parrot/arsdk/arutils/ARUTILS_FTP_RESUME_ENUM.java
 JNI/java/com/parrot/arsdk/arutils/ARUTILS_HTTPS_PROTOCOL_ENUM.java
 Sources/ARUTILS_Error.c
+TestBench/Android/TestARUtils/bin/
+TestBench/Android/TestBLEFtp/bin/
+TestBench/Android/TestBLEFtp/gen/
+TestBench/Android/TestBLEFtp/libs/
