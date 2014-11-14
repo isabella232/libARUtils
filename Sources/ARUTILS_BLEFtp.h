@@ -64,6 +64,24 @@ ARUTILS_BLEFtp_Connection_t * ARUTILS_BLEFtp_Connection_New(ARSAL_Sem_t *cancelS
  */
 void ARUTILS_BLEFtp_Connection_Delete(ARUTILS_BLEFtp_Connection_t **connection);
 
+
+/**
+ * @brief Disconnect an remote Ftp server connection
+ * @param connection The address of the pointer on the Ftp Manager
+ * @retval On success, returns ARUTILS_OK. Otherwise, it returns an error number of eARUTILS_ERROR.
+ * @see ARUTILS_Manager_NewBLEFtp ()
+ */
+eARUTILS_ERROR ARUTILS_BLEFtpAL_Connection_Disconnect(ARUTILS_Manager_t *manager);
+
+/**
+ * @brief Reconnect an remote Ftp server connection
+ * @param connection The address of the pointer on the Ftp Manager
+ * @retval On success, returns ARUTILS_OK. Otherwise, it returns an error number of eARUTILS_ERROR.
+ * @see ARUTILS_Manager_NewBLEFtp ()
+ */
+eARUTILS_ERROR ARUTILS_BLEFtpAL_Connection_Reconnect(ARUTILS_Manager_t *manager);
+
+
 /**
  * @brief Cancel an Ftp Connection command in progress (get, put, list etc)
  * @param connection The address of the pointer on the Ftp Connection

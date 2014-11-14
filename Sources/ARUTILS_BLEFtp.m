@@ -1733,6 +1733,8 @@ eARUTILS_ERROR ARUTILS_Manager_InitBLEFtp(ARUTILS_Manager_t *manager, ARUTILS_BL
     
     if (result == ARUTILS_OK)
     {
+        manager->ftpConnectionDisconnect = ARUTILS_BLEFtpAL_Connection_Disconnect;
+        manager->ftpConnectionReconnect = ARUTILS_BLEFtpAL_Connection_Reconnect;
         manager->ftpConnectionCancel = ARUTILS_BLEFtpAL_Connection_Cancel;
         manager->ftpConnectionIsCanceled = ARUTILS_BLEFtpAL_Connection_IsCanceled;
         manager->ftpConnectionReset = ARUTILS_BLEFtpAL_Connection_Reset;
@@ -1755,6 +1757,22 @@ void ARUTILS_Manager_CloseBLEFtp(ARUTILS_Manager_t *manager)
         
         ARSAL_Sem_Destroy(&manager->cancelSem);
     }
+}
+
+eARUTILS_ERROR ARUTILS_BLEFtpAL_Connection_Reconnect(ARUTILS_Manager_t *manager)
+{
+#if ARUTILS_BLEFTP_ENABLE_LOG
+    NSLog(@"%s", __FUNCTION__);
+#endif
+    return ARUTILS_OK;
+}
+
+eARUTILS_ERROR ARUTILS_BLEFtpAL_Connection_Disconnect(ARUTILS_Manager_t *manager)
+{
+#if ARUTILS_BLEFTP_ENABLE_LOG
+    NSLog(@"%s", __FUNCTION__);
+#endif
+    return ARUTILS_OK;
 }
 
 eARUTILS_ERROR ARUTILS_BLEFtpAL_Connection_Cancel(ARUTILS_Manager_t *manager)
