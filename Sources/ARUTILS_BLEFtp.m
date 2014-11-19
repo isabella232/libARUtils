@@ -39,6 +39,7 @@ NSString* const kARUTILS_BLEFtp_Getting = @"kARUTILS_BLEFtp_Getting";
 #define BLE_PACKET_WRITTEN         "FILE WRITTEN"
 #define BLE_PACKET_NOT_WRITTEN     "FILE NOT WRITTEN"
 #define BLE_PACKET_RENAME_SUCCESS   "Rename successful"
+#define BLE_PACKET_RENAME_FROM_SUCCESS   "Rename successful"
 #define BLE_PACKET_DELETE_SUCCESS   "Delete successful"
 #define BLE_PACKET_
 #define BLE_PACKET_BLOCK_GETTING_COUNT     100
@@ -571,6 +572,49 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(ARUtils_BLEFtp, initBLEFtp)
 }
 
 - (eARUTILS_ERROR)renameFile:(NSString*)oldNamePath newNamePath:(NSString*)newNamePath
+{
+    eARUTILS_ERROR result = ARUTILS_OK;
+    NSString *param = [NSString stringWithFormat:@"%@ %@", oldNamePath, newNamePath];
+#if ARUTILS_BLEFTP_ENABLE_LOG
+    NSLog(@"%s", __FUNCTION__);
+#endif
+    if ([param length] > BLE_PACKET_MAX_SIZE)
+    {
+        result = [self renameLongFile:oldNamePath newNamePath:newNamePath];
+    }
+    else
+    {
+        result = [self renameShortFile:oldNamePath newNamePath:newNamePath];
+    }
+    
+    return result;
+}
+
+- (eARUTILS_ERROR)renameLongFile:(NSString*)oldNamePath newNamePath:(NSString*)newNamePath
+{
+    eARUTILS_ERROR result = ARUTILS_OK;
+#if ARUTILS_BLEFTP_ENABLE_LOG
+    NSLog(@"%s", __FUNCTION__);
+#endif
+    
+    result = [self sendCommand:"RNFR" param:[oldNamePath UTF8String] characteristic:_handling];
+    if (result == ARUTILS_OK)
+    {
+        result = [self readRenameData];
+    }
+    if (result == ARUTILS_OK)
+    {
+        result = [self sendCommand:"RNTO" param:[newNamePath UTF8String] characteristic:_handling];
+    }
+    if (result == ARUTILS_OK)
+    {
+        result = [self readRenameData];
+    }
+    
+    return result;
+}
+
+- (eARUTILS_ERROR)renameShortFile:(NSString*)oldNamePath newNamePath:(NSString*)newNamePath
 {
     eARUTILS_ERROR result = ARUTILS_OK;
     NSString *param = [NSString stringWithFormat:@"%@ %@", oldNamePath, newNamePath];
