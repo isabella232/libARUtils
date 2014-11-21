@@ -1179,6 +1179,7 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(ARUtils_BLEFtp, initBLEFtp)
                 if (retBLE == ARSAL_ERROR_BLE_TIMEOUT)
                  {
                      result = [self sendCommand:"CANCEL" param:NULL characteristic:_getting];
+                     result = ARUTILS_ERROR_FTP_CANCELED;
                     #if ARUTILS_BLEFTP_ENABLE_LOG
                          NSLog(@"ARSAL_ERROR_BLE_TIMEOUT result :%d",result);
                     #endif
