@@ -134,7 +134,7 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(ARUtils_BLEFtp, initBLEFtp)
         _port = port;
         _connectionCount++;
     }
-    else if ((_peripheral == peripheral) && (_port = port))
+    else if ((_peripheral == peripheral) && (_port == port))
     {
         _connectionCount++;
     }
