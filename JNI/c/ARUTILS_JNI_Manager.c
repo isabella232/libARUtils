@@ -34,7 +34,7 @@
  * @date 30/12/2013
  * @author david.flattin.ext@parrot.com
  **/
-
+#define DEBUG
 #ifdef NDEBUG
 /* Android ndk-build NDK_DEBUG=0*/
 #else
@@ -219,6 +219,8 @@ Java_com_parrot_arsdk_arutils_ARUtilsManager_nativeInitBLEFtp
 
     if (manager)
     {
+        manager->ftpConnectionDisconnect = ARUTILS_BLEFtpAL_Connection_Disconnect;
+        manager->ftpConnectionReconnect = ARUTILS_BLEFtpAL_Connection_Reconnect;
         manager->ftpConnectionCancel = ARUTILS_BLEFtpAL_Connection_Cancel;
         manager->ftpConnectionIsCanceled = ARUTILS_BLEFtpAL_Connection_IsCanceled;
         manager->ftpConnectionReset = ARUTILS_BLEFtpAL_Connection_Reset;
@@ -546,6 +548,46 @@ Java_com_parrot_arsdk_arutils_ARUtilsManager_nativeBLEFtpGetWithBuffer
 
     return result;
 }
+
+JNIEXPORT jint JNICALL
+Java_com_parrot_arsdk_arutils_ARUtilsManager_nativeBLEFtpConnectionDisconnect
+  (JNIEnv *env, jobject obj, jlong jManager)
+ {
+    ARUTILS_Manager_t *manager = (ARUTILS_Manager_t*) (intptr_t) jManager;
+    eARUTILS_ERROR error = ARUTILS_OK;
+
+    if (manager == NULL)
+    {
+        ARSAL_PRINT(ARSAL_PRINT_ERROR, ARUTILS_JNI_MANAGER_TAG, "Wrong parameter: %x", manager);
+        error = ARUTILS_ERROR_BAD_PARAMETER;
+    }
+
+    if (error == ARUTILS_OK)
+    {
+        error = error = ARUTILS_BLEFtpAL_Connection_Disconnect(manager);
+    }
+    return error;
+ }
+
+JNIEXPORT jint JNICALL
+Java_com_parrot_arsdk_arutils_ARUtilsManager_nativeBLEFtpConnectionReconnect
+  (JNIEnv *env, jobject obj, jlong jManager)
+ {
+    ARUTILS_Manager_t *manager = (ARUTILS_Manager_t*) (intptr_t) jManager;
+    eARUTILS_ERROR error = ARUTILS_OK;
+
+    if (manager == NULL)
+    {
+        ARSAL_PRINT(ARSAL_PRINT_ERROR, ARUTILS_JNI_MANAGER_TAG, "Wrong parameter: %x", manager);
+        error = ARUTILS_ERROR_BAD_PARAMETER;
+    }
+
+    if (error == ARUTILS_OK)
+    {
+        error = error = ARUTILS_BLEFtpAL_Connection_Reconnect(manager);
+    }
+    return error;
+ }
 
 JNIEXPORT jint JNICALL
 Java_com_parrot_arsdk_arutils_ARUtilsManager_nativeBLEFtpConnectionCancel

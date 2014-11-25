@@ -151,7 +151,7 @@ public class LoopConnectActivity extends Activity implements ARDiscoveryServices
             // Not on UI thread.
             Log.d(TAG, "WE ARE NOT ON UI THREAD :-(");
         }
-        ArrayList<ARDiscoveryDeviceService> list = ardiscoveryService.getDeviceServicesArray();
+        List<ARDiscoveryDeviceService> list = ardiscoveryService.getDeviceServicesArray();
         Iterator<ARDiscoveryDeviceService> iterator = list.iterator();
         while (iterator.hasNext())
         {

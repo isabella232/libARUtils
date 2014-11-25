@@ -54,14 +54,16 @@ public class ARUtilsManager
     private native void nativeCloseBLEFtp(long jManager);
 
     /*Test Methods*/
+    private native int nativeBLEFtpConnectionDisconnect(long jManager);
+    private native int nativeBLEFtpConnectionReconnect(long jManager);
     private native int nativeBLEFtpConnectionCancel(long jManager);
-    private native int nativeBLEFtpIsConnectionCanceled(long jManager);    
+    private native int nativeBLEFtpIsConnectionCanceled(long jManager);
     private native int nativeBLEFtpConnectionReset(long jManager);
     private native String nativeBLEFtpList(long jManager, String remotePath);
     private native byte[] nativeBLEFtpGetWithBuffer(long jManager, String remotePath, ARUtilsFtpProgressListener progressListener, Object progressArg);
     private native int nativeBLEFtpGet(long jManager, String remotePath, String destFile, ARUtilsFtpProgressListener progressListener, Object progressArg, boolean resume);
     private native int nativeBLEFtpPut(long jManager, String remotePath, String srcFile, ARUtilsFtpProgressListener progressListener, Object progressArg, boolean resume);
-    private native int nativeBLEFtpDelete(long jManager, String remotePath);    
+    private native int nativeBLEFtpDelete(long jManager, String remotePath);
     private native int nativeBLEFtpRename(long jManager, String oldNamePath, String newNamePath);
 
     private long m_managerPtr;
@@ -71,9 +73,9 @@ public class ARUtilsManager
     {
         nativeStaticInit();
     }
-    
+
     /*  Java Methods */
-    
+
     /**
      * Constructor
      */
@@ -141,7 +143,7 @@ public class ARUtilsManager
     public ARUTILS_ERROR_ENUM initWifiFtp(String addr, int port, String username, String password)
     {
         ARUTILS_ERROR_ENUM error = ARUTILS_ERROR_ENUM.ARUTILS_ERROR;
-        
+
         if(addr != null)
         {
             int intError = nativeInitWifiFtp(m_managerPtr, addr, port, username, password);
@@ -161,14 +163,14 @@ public class ARUtilsManager
         error = ARUTILS_ERROR_ENUM.getFromValue(intError);
         return error;
     }
-    
+
     /**
      * Initialize BLE network to send and receive data
      */
     public ARUTILS_ERROR_ENUM initBLEFtp(Context context, BluetoothGatt deviceGatt, int port)
     {
         ARUTILS_ERROR_ENUM error = ARUTILS_ERROR_ENUM.ARUTILS_OK;
-        
+
         /* check parameters */
         if (context == null)
         {
@@ -184,7 +186,7 @@ public class ARUtilsManager
         {
             error = ARUTILS_ERROR_ENUM.ARUTILS_ERROR_BAD_PARAMETER;
         }
-        
+
         if (error == ARUTILS_ERROR_ENUM.ARUTILS_OK)
         {
             /* check if the BLE is available*/
@@ -208,44 +210,44 @@ public class ARUtilsManager
             Semaphore cancelSem = new Semaphore(0);
             nativeInitBLEFtp(m_managerPtr, bleFtp, cancelSem);
         }
-        
+
         return error;
     }
-    
+
     /**
      * cancel BLE network connection
      */
     /*public ARUTILS_ERROR_ENUM cancelBLEFtp()
     {
         ARUTILS_ERROR_ENUM error = ARUTILS_ERROR_ENUM.ARUTILS_OK;
-        
+
         if(m_initOk == true)
         {
             error = ARUTILS_ERROR_ENUM.ARUTILS_ERROR;
         }
-        
+
         if (error == ARUTILS_ERROR_ENUM.ARUTILS_OK)
         {
             //int intError = nativeCancelBLEFtp(m_managerPtr);
             //error = ARUTILS_ERROR_ENUM.getFromValue(intError);
         }
-        
+
         return error;
     }*/
-    
+
     /**
      * Closes BLE network
      */
     public ARUTILS_ERROR_ENUM closeBLEFtp(Context context)
     {
         ARUTILS_ERROR_ENUM error = ARUTILS_ERROR_ENUM.ARUTILS_OK;
-        
+
         /* check parameters */
         if (context == null)
         {
             error = ARUTILS_ERROR_ENUM.ARUTILS_ERROR_BAD_PARAMETER;
         }
-        
+
         if (error == ARUTILS_ERROR_ENUM.ARUTILS_OK)
         {
             /* check if the BLE is available*/
@@ -254,7 +256,7 @@ public class ARUtilsManager
                 error = ARUTILS_ERROR_ENUM.ARUTILS_ERROR_NETWORK_TYPE;
             }
         }
-        
+
         if (error == ARUTILS_ERROR_ENUM.ARUTILS_OK)
         {
             ARUtilsBLEFtp bleFtp = ARUtilsBLEFtp.getInstance(context);
@@ -264,12 +266,22 @@ public class ARUtilsManager
         }
         return error;
     }
-    
+
+    public ARUTILS_ERROR_ENUM BLEFtpConnectionDisconnect()
+    {
+        return ARUTILS_ERROR_ENUM.getFromValue(nativeBLEFtpConnectionDisconnect(m_managerPtr));
+    }
+
+    public ARUTILS_ERROR_ENUM BLEFtpConnectionReconnect()
+    {
+        return ARUTILS_ERROR_ENUM.getFromValue(nativeBLEFtpConnectionReconnect(m_managerPtr));
+    }
+
     public ARUTILS_ERROR_ENUM BLEFtpConnectionCancel()
     {
         return ARUTILS_ERROR_ENUM.getFromValue(nativeBLEFtpConnectionCancel(m_managerPtr));
     }
-    
+
     public ARUTILS_ERROR_ENUM BLEFtpIsConnectionCanceled()
     {
         return ARUTILS_ERROR_ENUM.getFromValue(nativeBLEFtpIsConnectionCanceled(m_managerPtr));
@@ -303,12 +315,12 @@ public class ARUtilsManager
     public ARUTILS_ERROR_ENUM BLEFtpDelete(String remotePath)
     {
         return ARUTILS_ERROR_ENUM.getFromValue(nativeBLEFtpDelete(m_managerPtr, remotePath));
-    }    
+    }
 
     public ARUTILS_ERROR_ENUM BLEFtpRename(String oldNamePath, String newNamePath)
     {
         return ARUTILS_ERROR_ENUM.getFromValue(nativeBLEFtpRename(m_managerPtr, oldNamePath, newNamePath));
     }
-    
+
 }
 

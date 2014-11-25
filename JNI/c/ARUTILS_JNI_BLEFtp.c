@@ -34,7 +34,7 @@
  * @date
  * @author
  */
-
+#define DEBUG
 #ifdef NDEBUG
 /* Android ndk-build NDK_DEBUG=0*/
 #else
@@ -494,7 +494,7 @@ eARUTILS_ERROR ARUTILS_BLEFtp_List(ARUTILS_BLEFtp_Connection_t *connection, cons
             {
                 dataList = "";
             }
-            
+
             int dataLen = 0;
             if (dataList != NULL)
             {
@@ -1010,6 +1010,17 @@ eARUTILS_ERROR ARUTILS_BLEFtp_Rename(ARUTILS_BLEFtp_Connection_t *connection, co
     return error;
 }
 
+eARUTILS_ERROR ARUTILS_BLEFtpAL_Connection_Disconnect(ARUTILS_Manager_t *manager)
+{
+    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_JNI_BLEFTP_TAG, "");
+    return ARUTILS_OK;
+}
+
+eARUTILS_ERROR ARUTILS_BLEFtpAL_Connection_Reconnect(ARUTILS_Manager_t *manager)
+{
+    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_JNI_BLEFTP_TAG, "");
+    return ARUTILS_OK;
+}
 
 eARUTILS_ERROR ARUTILS_BLEFtpAL_Connection_Cancel(ARUTILS_Manager_t *manager)
 {

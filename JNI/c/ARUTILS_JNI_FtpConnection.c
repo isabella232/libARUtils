@@ -186,6 +186,44 @@ JNIEXPORT void JNICALL Java_com_parrot_arsdk_arutils_ARUtilsFtpConnection_native
     }
 }
 
+JNIEXPORT jint JNICALL Java_com_parrot_arsdk_arutils_ARUtilsFtpConnection_nativeDisconnect(JNIEnv *env, jobject jThis, jlong jFtpConnection)
+{
+    ARUTILS_JNI_FtpConnection_t *nativeFtpConnection = (ARUTILS_JNI_FtpConnection_t *)(intptr_t) jFtpConnection;
+    eARUTILS_ERROR result = ARUTILS_OK;
+
+    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_JNI_FTPCONNECTION_TAG, "");
+
+    if (nativeFtpConnection == NULL)
+    {
+        result = ARUTILS_ERROR_SYSTEM;
+    }
+    else
+    {
+        result = ARUTILS_WifiFtp_Connection_Disconnect(nativeFtpConnection->ftpConnection);
+    }
+
+    return result;
+}
+
+JNIEXPORT jint JNICALL Java_com_parrot_arsdk_arutils_ARUtilsFtpConnection_nativeReconnect(JNIEnv *env, jobject jThis, jlong jFtpConnection)
+{
+    ARUTILS_JNI_FtpConnection_t *nativeFtpConnection = (ARUTILS_JNI_FtpConnection_t *)(intptr_t) jFtpConnection;
+    eARUTILS_ERROR result = ARUTILS_OK;
+
+    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_JNI_FTPCONNECTION_TAG, "");
+
+    if (nativeFtpConnection == NULL)
+    {
+        result = ARUTILS_ERROR_SYSTEM;
+    }
+    else
+    {
+        result = ARUTILS_WifiFtp_Connection_Reconnect(nativeFtpConnection->ftpConnection);
+    }
+
+    return result;
+}
+
 JNIEXPORT jint JNICALL Java_com_parrot_arsdk_arutils_ARUtilsFtpConnection_nativeCancel(JNIEnv *env, jobject jThis, jlong jFtpConnection)
 {
     ARUTILS_JNI_FtpConnection_t *nativeFtpConnection = (ARUTILS_JNI_FtpConnection_t *)(intptr_t) jFtpConnection;
