@@ -40,51 +40,50 @@
 
 #include "libARUtils/ARUTILS_Manager.h"
 
+
+/**
+ * @brief BLEFtp Connection structure containing private connection data.
+ * @see ARUTILS_BLEFtp_Connection_New
+ */
+typedef struct _ARUTILS_BLEFtp_Connection_t_
+{
+    ARUTILS_Manager_t *manager; /**< Backpointer to the ARUTILS_Manager. */
+
+} ARUTILS_BLEFtp_Connection_t;
+
+
 @interface ARUtils_BLEFtp : NSObject
 DECLARE_SINGLETON_FOR_CLASS(ARUtils_BLEFtp)
 
 - (id)initBLEFtp;
-- (eARUTILS_ERROR)registerPeripheral:(CBPeripheral *)peripheral cancelSem:(ARSAL_Sem_t*)cancelSem port:(int)port;
-- (eARUTILS_ERROR)unregisterPeripheral;
+- (eARUTILS_ERROR)registerConnection:(ARUTILS_BLEFtp_Connection_t*)connection withPeripheral:(CBPeripheral *)peripheral port:(int)port;
+- (eARUTILS_ERROR)unregisterConnection:(ARUTILS_BLEFtp_Connection_t*)connection;
 - (eARUTILS_ERROR)registerCharacteristics;
 - (eARUTILS_ERROR)unregisterCharacteristics;
 
-- (eARUTILS_ERROR)cancelFile:(ARSAL_Sem_t*)cancelSem;
-- (eARUTILS_ERROR)listFiles:(NSString*)remotePath resultList:(char **)resultList resultListLen:(uint32_t *)resultListLen;
-- (eARUTILS_ERROR)sizeFile:(NSString*)remoteFile fileSize:(double*)fileSize;
-- (eARUTILS_ERROR)getFile:(NSString*)remoteFile localFile:(NSString*)localFile progressCallback:(ARUTILS_Ftp_ProgressCallback_t)progressCallback progressArg:(void *)progressArg cancelSem:(ARSAL_Sem_t*)cancelSem;
-- (eARUTILS_ERROR)getFileWithBuffer:(NSString*)remoteFile data:(uint8_t**)data dataLen:(uint32_t*)dataLen progressCallback:(ARUTILS_Ftp_ProgressCallback_t)progressCallback progressArg:(void *)progressArg cancelSem:(ARSAL_Sem_t*)cancelSem;
-- (eARUTILS_ERROR)putFile:(NSString*)remoteFile localFile:(NSString*)localFile progressCallback:(ARUTILS_Ftp_ProgressCallback_t)progressCallback progressArg:(void *)progressArg resume:(BOOL)resume cancelSem:(ARSAL_Sem_t*)cancelSem;
-- (eARUTILS_ERROR)abortPutFile:(NSString*)remoteFile;
-- (eARUTILS_ERROR)deleteFile:(NSString*)remoteFile;
-- (eARUTILS_ERROR)renameFile:(NSString*)oldNamePath newNamePath:(NSString*)newNamePath;
+- (eARUTILS_ERROR)cancelConnection:(ARUTILS_BLEFtp_Connection_t*)connection;
+- (eARUTILS_ERROR)listFiles:(NSString*)remotePath resultList:(char **)resultList resultListLen:(uint32_t *)resultListLen forConnection:(ARUTILS_BLEFtp_Connection_t*)connection;
+- (eARUTILS_ERROR)sizeFile:(NSString*)remoteFile fileSize:(double*)fileSize forConnection:(ARUTILS_BLEFtp_Connection_t*)connection;
+- (eARUTILS_ERROR)getFile:(NSString*)remoteFile localFile:(NSString*)localFile progressCallback:(ARUTILS_Ftp_ProgressCallback_t)progressCallback progressArg:(void *)progressArg forConnection:(ARUTILS_BLEFtp_Connection_t*)connection;
+- (eARUTILS_ERROR)getFileWithBuffer:(NSString*)remoteFile data:(uint8_t**)data dataLen:(uint32_t*)dataLen progressCallback:(ARUTILS_Ftp_ProgressCallback_t)progressCallback progressArg:(void *)progressArg forConnection:(ARUTILS_BLEFtp_Connection_t*)connection;
+- (eARUTILS_ERROR)putFile:(NSString*)remoteFile localFile:(NSString*)localFile progressCallback:(ARUTILS_Ftp_ProgressCallback_t)progressCallback progressArg:(void *)progressArg resume:(BOOL)resume forConnection:(ARUTILS_BLEFtp_Connection_t*)connection;
+- (eARUTILS_ERROR)abortPutFile:(NSString*)remoteFile forConnection:(ARUTILS_BLEFtp_Connection_t*)connection;
+- (eARUTILS_ERROR)deleteFile:(NSString*)remoteFile forConnection:(ARUTILS_BLEFtp_Connection_t*)connection;
+- (eARUTILS_ERROR)renameFile:(NSString*)oldNamePath newNamePath:(NSString*)newNamePath forConnection:(ARUTILS_BLEFtp_Connection_t*)connection;
 
 @end
 
 
 /**
- * @brief WifiFtp Connection structure
- * @param cancelSem The semaphore to cancel Ftp command
- * @param bleFtpObject The ble manager
- * @see ARUTILS_BLEFtp_Connection_New
- */
-typedef struct _ARUTILS_BLEFtp_Connection_t_
-{
-    void *bleFtpObject;
-    ARSAL_Sem_t *cancelSem;
-    
-} ARUTILS_BLEFtp_Connection_t;
-
-/**
  * @brief Create a new Ftp Connection
  * @warning This function allocates memory
- * @param cancelSem The pointer of the Ftp get/put cancel semaphore or null
- * @param device The BLE Ftp device
+ * @param[in] manager A pointer to the manager the connection is tied to.
+ * @param[in] device The BLE Ftp device
  * @param[out] error The pointer of the error code: if success ARUTILS_OK, otherwise an error number of eARUTILS_ERROR
- * @retval On success, returns an ARUTILS_FtpAL_Connection_t. Otherwise, it returns null.
+ * @retval On success, returns an ARUTILS_BLEFtp_Connection_t. Otherwise, it returns NULL.
  * @see ARUTILS_FtpAL_DeleteConnection ()
  */
-ARUTILS_BLEFtp_Connection_t * ARUTILS_BLEFtp_Connection_New(ARSAL_Sem_t *cancelSem, ARUTILS_BLEDevice_t device, int port, eARUTILS_ERROR *error);
+ARUTILS_BLEFtp_Connection_t * ARUTILS_BLEFtp_Connection_New(ARUTILS_Manager_t *manager, ARUTILS_BLEDevice_t device, int port, eARUTILS_ERROR *error);
 
 /**
  * @brief Delete an Ftp Connection
@@ -196,14 +195,6 @@ eARUTILS_ERROR ARUTILS_BLEFtp_Get(ARUTILS_BLEFtp_Connection_t *connection, const
  * @see ARUTILS_BLEFtp_NewConnection (), ARUTILS_Ftp_ProgressCallback_t, eARUTILS_FTP_RESUME
  */
 eARUTILS_ERROR ARUTILS_BLEFtp_Put(ARUTILS_BLEFtp_Connection_t *connection, const char *remotePath, const char *srcFile, ARUTILS_Ftp_ProgressCallback_t progressCallback, void* progressArg, eARUTILS_FTP_RESUME resume);
-
-/**
- * @brief Cancel an Ftp Connection command in progress (get, put, list etc)
- * @param cancelSem The address of the pointer on the Ftp Connection
- * @retval On success, returns ARUTILS_OK. Otherwise, it returns an error number of eARUTILS_ERROR.
- * @see ARUTILS_Manager_NewBLEFtp ()
- */
-eARUTILS_ERROR ARUTILS_BLEFtp_IsCanceledSem(ARSAL_Sem_t *cancelSem);
 
 /**
  * @brief Cancel an Ftp Connection command in progress (get, put, list etc)
