@@ -1075,39 +1075,37 @@ eARUTILS_ERROR ARUTILS_WifiFtp_GetInternal(ARUTILS_WifiFtp_Connection_t *connect
         }
     }
 
-    if (progressCallback != NULL)
+    /* Setup progress callback. */
+    if (result == ARUTILS_OK)
     {
-        if (result == ARUTILS_OK)
+        connection->cbdata.progressCallback = progressCallback;
+        connection->cbdata.progressArg = progressArg;
+
+        code = curl_easy_setopt(connection->curl, CURLOPT_PROGRESSDATA, connection);
+
+        if (code != CURLE_OK)
         {
-            connection->cbdata.progressCallback = progressCallback;
-            connection->cbdata.progressArg = progressArg;
-
-            code = curl_easy_setopt(connection->curl, CURLOPT_PROGRESSDATA, connection);
-
-            if (code != CURLE_OK)
-            {
-                result = ARUTILS_ERROR_CURL_SETOPT;
-            }
+            result = ARUTILS_ERROR_CURL_SETOPT;
         }
+    }
 
-        if (result == ARUTILS_OK)
+    if (result == ARUTILS_OK)
+    {
+        code = curl_easy_setopt(connection->curl, CURLOPT_PROGRESSFUNCTION, ARUTILS_WifiFtp_ProgressCallback);
+
+        if (code != CURLE_OK)
         {
-            code = curl_easy_setopt(connection->curl, CURLOPT_PROGRESSFUNCTION, ARUTILS_WifiFtp_ProgressCallback);
-
-            if (code != CURLE_OK)
-            {
-                result = ARUTILS_ERROR_CURL_SETOPT;
-            }
+            result = ARUTILS_ERROR_CURL_SETOPT;
         }
+    }
 
-        if (result == ARUTILS_OK)
+    if (result == ARUTILS_OK)
+    {
+        code = curl_easy_setopt(connection->curl, CURLOPT_NOPROGRESS, 0L);
+
+        if (code != CURLE_OK)
         {
-            code = curl_easy_setopt(connection->curl, CURLOPT_NOPROGRESS, 0L);
-
-            if (code != CURLE_OK)
-            {
-                result = ARUTILS_ERROR_CURL_SETOPT;
-            }
+            result = ARUTILS_ERROR_CURL_SETOPT;
         }
     }
 
@@ -1339,39 +1337,36 @@ eARUTILS_ERROR ARUTILS_WifiFtp_Put(ARUTILS_WifiFtp_Connection_t *connection, con
         }
     }
 
-    if (progressCallback != NULL)
+    if (result == ARUTILS_OK)
     {
-        if (result == ARUTILS_OK)
+        connection->cbdata.progressCallback = progressCallback;
+        connection->cbdata.progressArg = progressArg;
+
+        code = curl_easy_setopt(connection->curl, CURLOPT_PROGRESSDATA, connection);
+
+        if (code != CURLE_OK)
         {
-            connection->cbdata.progressCallback = progressCallback;
-            connection->cbdata.progressArg = progressArg;
-
-            code = curl_easy_setopt(connection->curl, CURLOPT_PROGRESSDATA, connection);
-
-            if (code != CURLE_OK)
-            {
-                result = ARUTILS_ERROR_CURL_SETOPT;
-            }
+            result = ARUTILS_ERROR_CURL_SETOPT;
         }
+    }
 
-        if (result == ARUTILS_OK)
+    if (result == ARUTILS_OK)
+    {
+        code = curl_easy_setopt(connection->curl, CURLOPT_PROGRESSFUNCTION, ARUTILS_WifiFtp_ProgressCallback);
+
+        if (code != CURLE_OK)
         {
-            code = curl_easy_setopt(connection->curl, CURLOPT_PROGRESSFUNCTION, ARUTILS_WifiFtp_ProgressCallback);
-
-            if (code != CURLE_OK)
-            {
-                result = ARUTILS_ERROR_CURL_SETOPT;
-            }
+            result = ARUTILS_ERROR_CURL_SETOPT;
         }
+    }
 
-        if (result == ARUTILS_OK)
+    if (result == ARUTILS_OK)
+    {
+        code = curl_easy_setopt(connection->curl, CURLOPT_NOPROGRESS, 0L);
+
+        if (code != CURLE_OK)
         {
-            code = curl_easy_setopt(connection->curl, CURLOPT_NOPROGRESS, 0L);
-
-            if (code != CURLE_OK)
-            {
-                result = ARUTILS_ERROR_CURL_SETOPT;
-            }
+            result = ARUTILS_ERROR_CURL_SETOPT;
         }
     }
 
@@ -1826,6 +1821,7 @@ int ARUTILS_WifiFtp_ProgressCallback(void *userData, double dltotal, double dlno
 {
     ARUTILS_WifiFtp_Connection_t *connection = (ARUTILS_WifiFtp_Connection_t *)userData;
     float percent;
+    int retval = 0;
 
     //ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_WIFIFTP_TAG, "%.0f, %.0f, %.0f, %.0f", dltotal, dlnow, ultotal, ulnow);
 
@@ -1852,9 +1848,13 @@ int ARUTILS_WifiFtp_ProgressCallback(void *userData, double dltotal, double dlno
                 }
             }
         }
+        if (ARUTILS_WifiFtp_IsCanceled(connection) != ARUTILS_OK)
+        {
+            retval = 1; /* Return non-zero to abort transfer. */
+        }
     }
 
-    return 0;
+    return retval;
 }
 
 curl_socket_t ARUTILS_WifiFtp_OpensocketCallback(void *clientp, curlsocktype purpose, struct curl_sockaddr *address)
