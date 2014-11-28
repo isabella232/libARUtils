@@ -89,10 +89,12 @@ typedef void (*ARUTILS_Ftp_ProgressCallback_t)(void* arg, float percent);
  * @param isDirectory The file type requested: 1 directory or 0 file
  * @param indexItem The beginning of the line item if address is not null
  * @param itemLen The length of the line item if address is not null
+ * @param lineData The buffer that will receive the result
+ * @param lineDataLen The size of the buffer that will receive the result
  * @retval On success, returns the file name of the found item, Otherwise, it returns null
  * @see ARUTILS_Ftp_List ()
  */
-const char * ARUTILS_Ftp_List_GetNextItem(const char *list, const char **nextItem, const char *prefix, int isDirectory, const char **indexItem, int *itemLen);
+const char * ARUTILS_Ftp_List_GetNextItem(const char *list, const char **nextItem, const char *prefix, int isDirectory, const char **indexItem, int *itemLen, char *lineData, int lineDataLen);
 
 /**
  * @brief File size accessor function from a file of a File list
@@ -104,14 +106,11 @@ const char * ARUTILS_Ftp_List_GetNextItem(const char *list, const char **nextIte
  */
 const char * ARUTILS_Ftp_List_GetItemSize(const char *line, int lineSize, double *size);
 
-
-
-
-
-
-
+/**
+ * @brief Public Ftp Connection struct
+ * @see ARUTILS_WifiFtp_Connection_New, ARUTILS_WifiFtp_DeleteConnection ()
+ */
 typedef struct ARUTILS_WifiFtp_Connection_t ARUTILS_WifiFtp_Connection_t;
-
 
 /**
  * @brief Create a new Ftp Connection

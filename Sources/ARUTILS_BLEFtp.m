@@ -69,7 +69,6 @@ NSString* const kARUTILS_BLEFtp_Getting = @"kARUTILS_BLEFtp_Getting";
 #define BLE_PACKET_WRITTEN         "FILE WRITTEN"
 #define BLE_PACKET_NOT_WRITTEN     "FILE NOT WRITTEN"
 #define BLE_PACKET_RENAME_SUCCESS   "Rename successful"
-#define BLE_PACKET_RENAME_FROM_SUCCESS   "Rename successful"
 #define BLE_PACKET_DELETE_SUCCESS   "Delete successful"
 #define BLE_PACKET_
 #define BLE_PACKET_BLOCK_GETTING_COUNT     100
@@ -358,6 +357,7 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(ARUtils_BLEFtp, initBLEFtp)
 
 - (eARUTILS_ERROR)sizeFile:(NSString*)remoteFile fileSize:(double*)fileSize forConnection:(ARUTILS_BLEFtp_Connection_t*)connection
 {
+    char lineData[ARUTILS_FTP_MAX_PATH_SIZE];
     char *resultList = NULL;
     uint32_t resultListLen = 0;
     BOOL found = NO;
@@ -381,7 +381,7 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(ARUtils_BLEFtp, initBLEFtp)
         const char *indexItem = NULL;
         int itemLen = 0;
         
-        while ((found == NO) && (fileName = ARUTILS_Ftp_List_GetNextItem(resultList, &nextItem, NULL, 0, &indexItem, &itemLen)) != NULL)
+        while ((found == NO) && (fileName = ARUTILS_Ftp_List_GetNextItem(resultList, &nextItem, NULL, 0, &indexItem, &itemLen, lineData, ARUTILS_FTP_MAX_PATH_SIZE)) != NULL)
         {
             if (strcmp(remoteFileName, fileName) == 0)
             {

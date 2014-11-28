@@ -1449,9 +1449,8 @@ drwxr-xr-x    2 0        0             160 Jan  1  2000 data
 drwxr-xr-x    4 122      128          4096 Jan 24 14:34 AR.Drone
 drwxr-xr-x    4 122      128          4096 Jan 24 14:34 Jumping Sumo
 */
-const char * ARUTILS_Ftp_List_GetNextItem(const char *list, const char **nextItem, const char *prefix, int isDirectory, const char **indexItem, int *itemLen)
+const char * ARUTILS_Ftp_List_GetNextItem(const char *list, const char **nextItem, const char *prefix, int isDirectory, const char **indexItem, int *itemLen, char *lineData, int lineDataLen)
 {
-    static char lineData[ARUTILS_FTP_MAX_LIST_LINE_SIZE];
     char *item = NULL;
     const char *line = NULL;
     const char *fileIdx;
@@ -1511,9 +1510,12 @@ const char * ARUTILS_Ftp_List_GetNextItem(const char *list, const char **nextIte
                     if (fileIdx != NULL)
                     {
                         int len = ((endLine - fileIdx) < ARUTILS_FTP_MAX_LIST_LINE_SIZE) ? (endLine - fileIdx) : (ARUTILS_FTP_MAX_LIST_LINE_SIZE - 1);
-                        strncpy(lineData, fileIdx, len);
-                        lineData[len] = '\0';
-                        item = lineData;
+                        if ((lineData != NULL) && (len < (lineDataLen + 1)))
+                        {
+                            strncpy(lineData, fileIdx, len);
+                            lineData[len] = '\0';
+                            item = lineData;
+                        }
                     }
                 }
             }
