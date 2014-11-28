@@ -130,7 +130,11 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(ARUtils_BLEFtp, initBLEFtp)
     /* We cannot register a connection twice. */
     for (NSUInteger i = 0; i < _connections.count; i ++)
     {
-        assert(connection != [_connections pointerAtIndex:i]);
+        if (connection == [_connections pointerAtIndex:i])
+        {
+            ARSAL_PRINT(ARSAL_PRINT_ERROR, ARUTILS_BLEFTP_TAG, "BUG: You registered the same connection twice!");
+            return ARUTILS_ERROR_BAD_PARAMETER;
+        }
     }
 
     if (_connections.count == 0)
@@ -155,7 +159,11 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(ARUtils_BLEFtp, initBLEFtp)
 {
     eARUTILS_ERROR result = ARUTILS_OK;
 
-    assert(_connections.count > 0);
+    if (_connections.count == 0)
+    {
+        ARSAL_PRINT(ARSAL_PRINT_ERROR, ARUTILS_BLEFTP_TAG, "BUG: Attempting to unregister a connection but none are registered.");
+        return ARUTILS_ERROR_BAD_PARAMETER;
+    }
 
     NSUInteger idx = NSNotFound;
     for (NSUInteger i = 0; i < _connections.count; i ++)
@@ -166,7 +174,11 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(ARUtils_BLEFtp, initBLEFtp)
             break;
         }
     }
-    assert(idx != NSNotFound);
+    if (idx == NSNotFound)
+    {
+        ARSAL_PRINT(ARSAL_PRINT_ERROR, ARUTILS_BLEFTP_TAG, "BUG: Attempting to unregister a connection which is not registered.");
+        return ARUTILS_ERROR_BAD_PARAMETER;
+    }
     [_connections removePointerAtIndex:idx];
     if (_connections.count == 0)
     {
