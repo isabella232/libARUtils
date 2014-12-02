@@ -92,7 +92,6 @@ public class ARUtilsBLEFtp
 	private BluetoothGattCharacteristic getting = null;
 	private BluetoothGattCharacteristic handling = null;
 	private ArrayList<BluetoothGattCharacteristic> arrayGetting = null;
-	private byte[] notificationDataArray = null;
 
 	private native void nativeProgressCallback(long nativeCallbackObject, float percent);
 
@@ -960,22 +959,14 @@ public class ARUtilsBLEFtp
 	private boolean readBufferBlocks(byte[][] notificationArray)
 	{
 		ArrayList<ARSALManagerNotificationData> receivedNotifications = new ArrayList<ARSALManagerNotificationData>();
-		ARSALManagerNotificationData notificationData = null;
 		boolean ret = true;
 		boolean end = false;
 		int bufferIndex = 0;
-		byte[] buffer = null;
+		byte[] buffer = new byte[BLE_PACKET_MAX_SIZE];
 		int blockCount = 0;
 
 		do
 		{
-			if (notificationDataArray != null)
-			{
-				buffer = notificationDataArray;
-				bufferIndex += notificationDataArray.length;
-				notificationDataArray = null;
-			}
-
 			if (receivedNotifications.size() == 0)
 			{
 				ret = bleManager.readDataNotificationData(receivedNotifications, 1, BLE_GETTING_KEY);
@@ -983,6 +974,7 @@ public class ARUtilsBLEFtp
 
 			if ((ret == true) && (receivedNotifications.size() > 0))
 			{
+				ARSALManagerNotificationData notificationData = null;
 				notificationData = receivedNotifications.get(0);
 				int blockLen = notificationData.value.length;
 				byte[] block = notificationData.value;
@@ -995,14 +987,15 @@ public class ARUtilsBLEFtp
 					{
 					case BLE_BLOCK_HEADER_SINGLE:
 					case BLE_BLOCK_HEADER_STOP:
+						ARSALPrint.d("DBG", APP_TAG + "this is the last block.");
 						end = true;
-						blockLen = blockLen -1;
+						blockLen = blockLen - 1;
 						blockIndex = 1;
 						break;
 
 					case BLE_BLOCK_HEADER_CONTINUE:
 					case BLE_BLOCK_HEADER_START:
-						blockLen = blockLen -1;
+						blockLen = blockLen - 1;
 						blockIndex = 1;
 						break;
 					default:
@@ -1013,23 +1006,26 @@ public class ARUtilsBLEFtp
 
 					if (ret == true)
 					{
-						if ((bufferIndex + blockLen) > BLE_PACKET_MAX_SIZE)
+						/* Check that the buffer is large enough to hold the current
+						 * data block. If it isn't, enlarge it by one allocation unit.
+						 */
+						if ((bufferIndex + blockLen) > buffer.length)
 						{
-							ARSALPrint.d("DBG", APP_TAG + "packet length " + bufferIndex);
-
-							int size = bufferIndex + blockLen - BLE_PACKET_MAX_SIZE;
-							notificationDataArray = new byte[size];
-							System.arraycopy(block, BLE_MTU_SIZE - size, notificationDataArray, 0, size);
-							blockLen -= size;
-						}
-
-						byte[] oldBuffer = buffer;
-						buffer = new byte[bufferIndex + blockLen];
-						if (oldBuffer != null)
-						{
+							int minSize = bufferIndex + blockLen;
+							int newSize = buffer.length + BLE_PACKET_MAX_SIZE;
+							/* Just in the (unlikely) event when block would be larger
+							 * than BLE_PACKET_MAX_SIZE. */
+							if (newSize < minSize)
+							{
+								newSize = minSize;
+							}
+							ARSALPrint.d("DBG", APP_TAG + "buffer alloc size " + buffer.length + " -> " + newSize);
+							byte[] oldBuffer = buffer;
+							buffer = new byte[newSize];
 							System.arraycopy(oldBuffer, 0, buffer, 0, oldBuffer.length);
 						}
 
+						/* Copy the current block to the packet buffer. */
 						System.arraycopy(block, blockIndex, buffer, bufferIndex, blockLen);
 						bufferIndex += blockLen;
 						blockCount++;
@@ -1048,9 +1044,20 @@ public class ARUtilsBLEFtp
 		}
 		while ((ret == true) && (end == false));
 
-		if (buffer != null)
+		if (bufferIndex > 0)
 		{
-			notificationArray[0] = buffer;
+			/* Allocate a buffer just the right size copy the read packet to it. */
+			byte[] finalBuffer = new byte[bufferIndex];
+			System.arraycopy(buffer, 0, finalBuffer, 0, bufferIndex);
+
+			if ((notificationArray != null) && (notificationArray.length > 0))
+			{
+				notificationArray[0] = finalBuffer;
+			}
+			else
+			{
+				ret = false;
+			}
 		}
 
 		return ret;
