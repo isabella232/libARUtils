@@ -91,7 +91,7 @@ NSString* const kARUTILS_BLEFtp_Getting = @"kARUTILS_BLEFtp_Getting";
 
 @property (nonatomic, retain) CBPeripheral *peripheral;
 @property (nonatomic, assign) int port;
-@property (nonatomic, retain) NSPointerArray *connections;
+@property (nonatomic, assign) int connectionCount;
 
 @property (nonatomic, retain) CBCharacteristic *transferring;
 @property (nonatomic, retain) CBCharacteristic *getting;
@@ -109,7 +109,6 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(ARUtils_BLEFtp, initBLEFtp)
     if (self != nil)
     {
         ARSAL_Mutex_Init(&connectionLock);
-        _connections = [NSPointerArray pointerArrayWithOptions:(NSPointerFunctionsOpaquePersonality | NSPointerFunctionsOpaqueMemory)];
     }
     return self;
 }
@@ -127,25 +126,18 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(ARUtils_BLEFtp, initBLEFtp)
 - (eARUTILS_ERROR)registerConnection:(ARUTILS_BLEFtp_Connection_t*)connection withPeripheral:(CBPeripheral *)peripheral port:(int)port
 {
     eARUTILS_ERROR result = ARUTILS_OK;
-    /* We cannot register a connection twice. */
-    for (NSUInteger i = 0; i < _connections.count; i ++)
-    {
-        if (connection == [_connections pointerAtIndex:i])
-        {
-            ARSAL_PRINT(ARSAL_PRINT_ERROR, ARUTILS_BLEFTP_TAG, "BUG: You registered the same connection twice!");
-            return ARUTILS_ERROR_BAD_PARAMETER;
-        }
-    }
 
-    if (_connections.count == 0)
+    if (_connectionCount == 0)
     {
         _peripheral = peripheral;
         _port = port;
-        [_connections addPointer:connection];
+        _connectionCount++;
+        
+        result = [self registerCharacteristics];
     }
     else if ((_peripheral == peripheral) && (_port == port))
     {
-        [_connections addPointer:connection];
+        _connectionCount++;
     }
     else
     {
@@ -159,34 +151,19 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(ARUtils_BLEFtp, initBLEFtp)
 {
     eARUTILS_ERROR result = ARUTILS_OK;
 
-    if (_connections.count == 0)
+    if (_connectionCount == 0)
     {
-        ARSAL_PRINT(ARSAL_PRINT_ERROR, ARUTILS_BLEFTP_TAG, "BUG: Attempting to unregister a connection but none are registered.");
         return ARUTILS_ERROR_BAD_PARAMETER;
     }
 
-    NSUInteger idx = NSNotFound;
-    for (NSUInteger i = 0; i < _connections.count; i ++)
-    {
-        if ([_connections pointerAtIndex:i] == connection)
-        {
-            idx = i;
-            break;
-        }
-    }
-    if (idx == NSNotFound)
-    {
-        ARSAL_PRINT(ARSAL_PRINT_ERROR, ARUTILS_BLEFTP_TAG, "BUG: Attempting to unregister a connection which is not registered.");
-        return ARUTILS_ERROR_BAD_PARAMETER;
-    }
-    [_connections removePointerAtIndex:idx];
-    if (_connections.count == 0)
+    if (_connectionCount == 0)
     {
         _peripheral = nil;
         _transferring = nil;
         _getting = nil;
         _handling = nil;
         _port = 0;
+        [self unregisterCharacteristics];
     }
 
     return result;
@@ -285,13 +262,11 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(ARUtils_BLEFtp, initBLEFtp)
 #if ARUTILS_BLEFTP_ENABLE_LOG
     NSLog(@"%s", __FUNCTION__);
 #endif
-    if (_connections.count == 0)
+    
+    retBLE = [SINGLETON_FOR_CLASS(ARSAL_BLEManager) unregisterNotificationCharacteristics:kARUTILS_BLEFtp_Getting];
+    if (retBLE != ARSAL_OK)
     {
-        retBLE = [SINGLETON_FOR_CLASS(ARSAL_BLEManager) unregisterNotificationCharacteristics:kARUTILS_BLEFtp_Getting];
-        if (retBLE != ARSAL_OK)
-        {
-            result = ARUTILS_ERROR_FTP_CONNECT;
-        }
+        result = ARUTILS_ERROR_FTP_CONNECT;
     }
     
     return result;
@@ -1428,10 +1403,6 @@ ARUTILS_BLEFtp_Connection_t * ARUTILS_BLEFtp_Connection_New(ARUTILS_Manager_t *m
             ARUtils_BLEFtp *bleFtpObject = SINGLETON_FOR_CLASS(ARUtils_BLEFtp);
 
             result = [bleFtpObject registerConnection:newConnection withPeripheral:peripheral port:port];
-            if (result == ARUTILS_OK)
-            {
-                result = [bleFtpObject registerCharacteristics];
-            }
         }
     }
     
@@ -1453,7 +1424,6 @@ void ARUTILS_BLEFtp_Connection_Delete(ARUTILS_BLEFtp_Connection_t **connectionAd
         {
             ARUtils_BLEFtp *bleFtpObject = SINGLETON_FOR_CLASS(ARUtils_BLEFtp);
             [bleFtpObject unregisterConnection:connection];
-            [bleFtpObject unregisterCharacteristics];
 
             free(connection);
         }
