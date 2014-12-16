@@ -585,11 +585,12 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(ARUtils_BLEFtp, initBLEFtp)
 - (eARUTILS_ERROR)renameFile:(NSString*)oldNamePath newNamePath:(NSString*)newNamePath forConnection:(ARUTILS_BLEFtp_Connection_t*)connection
 {
     eARUTILS_ERROR result = ARUTILS_OK;
+    NSString *cmd = @"REN";
     NSString *param = [NSString stringWithFormat:@"%@ %@", oldNamePath, newNamePath];
 #if ARUTILS_BLEFTP_ENABLE_LOG
     NSLog(@"%s", __FUNCTION__);
 #endif
-    if ([param length] > BLE_PACKET_MAX_SIZE)
+    if (([cmd length] + [param length]) > BLE_PACKET_MAX_SIZE)
     {
         result = [self renameLongFile:oldNamePath newNamePath:newNamePath];
     }
