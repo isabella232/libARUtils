@@ -144,6 +144,8 @@ public class ARUtilsBLEFtp
 	        this.gattDevice = gattDevice;
 	        this.port = port;
 	        connectionCount++;
+
+	        ret = registerCharacteristics();
 	    }
 	    else if ((this.gattDevice == gattDevice) && (this.port == port))
 	    {
@@ -172,6 +174,8 @@ public class ARUtilsBLEFtp
 	            this.transferring = null;
 	            this.getting = null;
 	            this.handling = null;
+
+	            unregisterCharacteristics();
 	        }
 
 	        connectionCount--;
@@ -652,7 +656,7 @@ public class ARUtilsBLEFtp
 
 		if ((ret == true) && (resume == true) && (remoteSize[0] == totalSize))
 		{
-		    ARSALPrint.w("DBG", APP_TAG + "full resume");
+		    ARSALPrint.d("DBG", APP_TAG + "full resume");
 		    if (nativeCallbackObject != 0)
             {
                 nativeProgressCallback(nativeCallbackObject, 100.f);
@@ -709,15 +713,16 @@ public class ARUtilsBLEFtp
 	private boolean renameFile(String oldNamePath, String newNamePath)
 	{
         boolean ret = true;
+        String cmd = "REN";
 		String param = oldNamePath + " " + newNamePath;
 
-		if (param.length() > BLE_PACKET_MAX_SIZE)
+		if ((cmd.length() + param.length()) > BLE_PACKET_MAX_SIZE)
 		{
-            ret = renameShortFile(oldNamePath, newNamePath);
+            ret = renameLongFile(oldNamePath, newNamePath);
 		}
 		else
 		{
-            ret = renameLongFile(oldNamePath, newNamePath);
+            ret = renameShortFile(oldNamePath, newNamePath);
 		}
 
 		return ret;
@@ -1210,7 +1215,7 @@ public class ARUtilsBLEFtp
 					}
 					else
 					{
-						ARSALPrint.w("DBG", APP_TAG + "md5 end ok");
+						ARSALPrint.d("DBG", APP_TAG + "md5 end ok");
 					}
 				}
 			}

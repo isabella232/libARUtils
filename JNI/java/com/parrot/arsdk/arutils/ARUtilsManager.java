@@ -206,7 +206,6 @@ public class ARUtilsManager
         {
             ARUtilsBLEFtp bleFtp = ARUtilsBLEFtp.getInstance(context);
             bleFtp.registerDevice(deviceGatt, port);
-            bleFtp.registerCharacteristics();
             Semaphore cancelSem = new Semaphore(0);
             nativeInitBLEFtp(m_managerPtr, bleFtp, cancelSem);
         }
@@ -260,7 +259,6 @@ public class ARUtilsManager
         if (error == ARUTILS_ERROR_ENUM.ARUTILS_OK)
         {
             ARUtilsBLEFtp bleFtp = ARUtilsBLEFtp.getInstance(context);
-            bleFtp.unregisterCharacteristics();
             bleFtp.unregisterDevice();
             nativeCloseBLEFtp(m_managerPtr);
         }
