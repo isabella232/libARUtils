@@ -817,18 +817,18 @@ public class ARUtilsBLEFtp
 			{
 				buffer = new byte[bufferCmd.length + bufferParam.length + 1];
 			}
-		}
 
-		System.arraycopy(bufferCmd, 0, buffer, 0, bufferCmd.length);
-		indexBuffer = bufferCmd.length;
+		    System.arraycopy(bufferCmd, 0, buffer, 0, bufferCmd.length);
+		    indexBuffer = bufferCmd.length;
 
-		if (bufferParam != null)
-		{
-			System.arraycopy(bufferParam, 0, buffer, indexBuffer, bufferParam.length);
-			indexBuffer += bufferParam.length;
-		}
-		buffer[indexBuffer] = 0;
-		ret = sendBufferBlocks(buffer, characteristic);
+		    if (bufferParam != null)
+		    {
+			    System.arraycopy(bufferParam, 0, buffer, indexBuffer, bufferParam.length);
+			    indexBuffer += bufferParam.length;
+		    }
+		    buffer[indexBuffer] = 0;
+		    ret = sendBufferBlocks(buffer, characteristic);
+        }
 
 		return ret;
 	}
@@ -864,15 +864,15 @@ public class ARUtilsBLEFtp
 			if (ret == true)
 			{
 				buffer = new byte[bufferCmd.length + 1];
+
+			    System.arraycopy(bufferCmd, 0, buffer, 0, bufferCmd.length);
+			    indexBuffer = bufferCmd.length;
+
+			    buffer[indexBuffer] = 0;
+
+			    Thread.sleep(BLE_PACKET_WRITE_SLEEP, 0);
+			    ret = bleManager.writeData(buffer, characteristic);
 			}
-
-			System.arraycopy(bufferCmd, 0, buffer, 0, bufferCmd.length);
-			indexBuffer = bufferCmd.length;
-
-			buffer[indexBuffer] = 0;
-
-			Thread.sleep(BLE_PACKET_WRITE_SLEEP, 0);
-			ret = bleManager.writeData(buffer, characteristic);
 		}
 		catch (InterruptedException e)
 		{
