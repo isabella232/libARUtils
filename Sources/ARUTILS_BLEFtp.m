@@ -150,20 +150,23 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(ARUtils_BLEFtp, initBLEFtp)
 - (eARUTILS_ERROR)unregisterConnection:(ARUTILS_BLEFtp_Connection_t*)connection
 {
     eARUTILS_ERROR result = ARUTILS_OK;
-
-    if (_connectionCount == 0)
+    
+    if (_connectionCount > 0)
     {
-        return ARUTILS_ERROR_BAD_PARAMETER;
+        if (_connectionCount == 1)
+        {
+            _peripheral = nil;
+            _transferring = nil;
+            _getting = nil;
+            _handling = nil;
+            _port = 0;
+            [self unregisterCharacteristics];
+        }
+        _connectionCount--;
     }
-
-    if (_connectionCount == 0)
+    else
     {
-        _peripheral = nil;
-        _transferring = nil;
-        _getting = nil;
-        _handling = nil;
-        _port = 0;
-        [self unregisterCharacteristics];
+        result = ARUTILS_ERROR_BAD_PARAMETER;
     }
 
     return result;
