@@ -55,6 +55,7 @@
 
 #define ARUTILS_HTTP_LOW_SPEED_TIME   5
 #define ARUTILS_HTTP_LOW_SPEED_LIMIT  1
+#define ARUTILS_HTTP_TIMEOUT 3
 
 #ifdef DEBUG
 #define ARUTILS_HTTP_CURL_VERBOSE         1
@@ -840,7 +841,17 @@ eARUTILS_ERROR ARUTILS_Http_ResetOptions(ARUTILS_Http_Connection_t *connection)
             result = ARUTILS_ERROR_CURL_SETOPT;
         }
     }
-
+    
+    if (result == ARUTILS_OK)
+    {
+        code = curl_easy_setopt(connection->curl,CURLOPT_CONNECTTIMEOUT, ARUTILS_HTTP_TIMEOUT);
+        
+        if (code != CURLE_OK)
+        {
+            result = ARUTILS_ERROR_CURL_SETOPT;
+        }
+    }
+    
     return result;
 }
 
