@@ -57,7 +57,7 @@
 
 #define ARUTILS_WIFIFTP_LOW_SPEED_TIME   5
 #define ARUTILS_WIFIFTP_LOW_SPEED_LIMIT  1
-
+#define ARUTILS_WIFIFTP_TIMEOUT 3
 #ifdef DEBUG
 #define ARUTILS_FTP_CURL_VERBOSE         1
 #endif
@@ -1706,7 +1706,17 @@ eARUTILS_ERROR ARUTILS_WifiFtp_ResetOptions(ARUTILS_WifiFtp_Connection_t *connec
             result = ARUTILS_ERROR_CURL_SETOPT;
         }
     }
-
+    
+    if (result == ARUTILS_OK)
+    {
+        code = curl_easy_setopt(connection->curl,CURLOPT_CONNECTTIMEOUT, ARUTILS_WIFIFTP_TIMEOUT);
+        
+        if (code != CURLE_OK)
+        {
+            result = ARUTILS_ERROR_CURL_SETOPT;
+        }
+    }
+    
     return result;
 }
 
