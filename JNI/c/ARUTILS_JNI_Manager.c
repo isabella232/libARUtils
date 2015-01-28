@@ -56,6 +56,7 @@
 #include "libARUtils/ARUTILS_Http.h"
 #include "libARUtils/ARUTILS_Ftp.h"
 #include "ARUTILS_JNI_BLEFtp.h"
+#include "ARUTILS_JNI_RFCommFtp.h"
 
 #include "ARUTILS_JNI.h"
 
@@ -249,6 +250,53 @@ Java_com_parrot_arsdk_arutils_ARUtilsManager_nativeCloseBLEFtp
     {
         ARUTILS_BLEFtp_Connection_Delete((ARUTILS_BLEFtp_Connection_t **)&manager->connectionObject);
 
+        ARSAL_Sem_Destroy(&manager->cancelSem);
+    }
+}
+
+/*
+ * Class:     com_parrot_arsdk_arutils_ARUtilsManager
+ * Method:    nativeInitRFCommFtp
+ */
+JNIEXPORT jint JNICALL
+Java_com_parrot_arsdk_arutils_ARUtilsManager_nativeInitRFCommFtp
+(JNIEnv *env, jobject obj, jlong jManager, jobject jRFCommFtp, jobject jCancelSem)
+{
+    ARUTILS_Manager_t *manager = (ARUTILS_Manager_t*) (intptr_t) jManager;
+    eARUTILS_ERROR error = ARUTILS_OK;
+    
+    if (error == ARUTILS_OK)
+    {
+        manager->connectionObject = ARUTILS_RFCommFtp_Connection_New(jRFCommFtp, jCancelSem, &error);
+    }
+    
+    if (manager)
+    {
+        manager->ftpConnectionDisconnect = ARUTILS_RFCommFtpAL_Connection_Disconnect;
+        manager->ftpConnectionReconnect = ARUTILS_RFCommFtpAL_Connection_Reconnect;
+        manager->ftpConnectionCancel = ARUTILS_RFCommFtpAL_Connection_Cancel;
+        manager->ftpConnectionIsCanceled = ARUTILS_RFCommFtpAL_Connection_IsCanceled;
+        manager->ftpConnectionReset = ARUTILS_RFCommFtpAL_Connection_Reset;
+        manager->ftpPut = ARUTILS_RFCommFtpAL_Put;
+    }
+    
+    return error;
+}
+
+/*
+ * Class:     com_parrot_arsdk_arutils_ARUtilsManager
+ * Method:    nativeCloseRFCommFtp
+ */
+JNIEXPORT jint JNICALL
+Java_com_parrot_arsdk_arutils_ARUtilsManager_nativeCloseRFCommFtp
+(JNIEnv *env, jobject obj, jlong jManager)
+{
+    ARUTILS_Manager_t *manager = (ARUTILS_Manager_t*) (intptr_t) jManager;
+    
+    if (manager != NULL)
+    {
+        ARUTILS_RFCommFtp_Connection_Delete((ARUTILS_RFCommFtp_Connection_t **)&manager->connectionObject);
+        
         ARSAL_Sem_Destroy(&manager->cancelSem);
     }
 }

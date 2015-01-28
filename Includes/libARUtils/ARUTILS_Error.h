@@ -76,6 +76,8 @@ typedef enum
     ARUTILS_ERROR_BLE_FAILED = -6000, /**< BLE ftp failed error */
 
     ARUTILS_ERROR_NETWORK_TYPE = -7000, /**< Network type, not available for the platform error */
+    
+    ARUTILS_ERROR_RFCOMM_FAILED = -8000, /**< RFComm ftp failed error */
 
 } eARUTILS_ERROR;
 

@@ -125,6 +125,24 @@ eARUTILS_ERROR ARUTILS_Manager_InitBLEFtp(ARUTILS_Manager_t *manager, ARUTILS_BL
 void ARUTILS_Manager_CloseBLEFtp(ARUTILS_Manager_t *manager);
 
 /**
+ * @brief Create a new RFComm FTP Connection
+ * @warning This function allocates memory
+ * @param manager The Manager
+ * @retval On success, returns an ARUTILS_OK. Otherwise an error number of eARUTILS_ERROR
+ * @see ARUTILS_Manager_CloseRFCommFtp ()
+ */
+eARUTILS_ERROR ARUTILS_Manager_InitRFCommFtp(ARUTILS_Manager_t *manager);
+
+/**
+ * @brief Delete an RFComm Ftp Connection
+ * @warning This function frees memory
+ * @param manager The address of the pointer on the Ftp Connection
+ * @see ARUTILS_Manager_InitWifiFtp ()
+ */
+void ARUTILS_Manager_CloseRFCommFtp(ARUTILS_Manager_t *manager);
+
+
+/**
  * @brief Disconnect an remote Ftp server connection
  * @param connection The address of the pointer on the Ftp Manager
  * @retval On success, returns ARUTILS_OK. Otherwise, it returns an error number of eARUTILS_ERROR.

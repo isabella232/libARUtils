@@ -52,6 +52,8 @@ public class ARUtilsManager
     private native int nativeCloseWifiFtp(long jManager);
     private native int nativeInitBLEFtp(long jManager, ARUtilsBLEFtp bleFtp, Semaphore cancelSem);
     private native void nativeCloseBLEFtp(long jManager);
+    private native int nativeInitRFCommFtp(long jManager, ARUtilsRFCommFtp rfcommFtp, Semaphore cancelSem);
+    private native void nativeCloseRFCommFtp(long jManager);
 
     /*Test Methods*/
     private native int nativeBLEFtpConnectionDisconnect(long jManager);
@@ -65,6 +67,13 @@ public class ARUtilsManager
     private native int nativeBLEFtpPut(long jManager, String remotePath, String srcFile, ARUtilsFtpProgressListener progressListener, Object progressArg, boolean resume);
     private native int nativeBLEFtpDelete(long jManager, String remotePath);
     private native int nativeBLEFtpRename(long jManager, String oldNamePath, String newNamePath);
+    
+    private native int nativeRFCommFtpConnectionDisconnect(long jManager);
+    private native int nativeRFCommFtpConnectionReconnect(long jManager);
+    private native int nativeRFCommFtpConnectionCancel(long jManager);
+    private native int nativeRFCommFtpIsConnectionCanceled(long jManager);
+    private native int nativeRFCommFtpConnectionReset(long jManager);
+    private native int nativeRFCommFtpPut(long jManager, String remotePath, String srcFile, ARUtilsFtpProgressListener progressListener, Object progressArg, boolean resume);
 
     private long m_managerPtr;
     private boolean m_initOk;
@@ -318,6 +327,117 @@ public class ARUtilsManager
     public ARUTILS_ERROR_ENUM BLEFtpRename(String oldNamePath, String newNamePath)
     {
         return ARUTILS_ERROR_ENUM.getFromValue(nativeBLEFtpRename(m_managerPtr, oldNamePath, newNamePath));
+    }
+    
+    
+    /**
+     * Initialize RFComm network to send and receive data
+     */
+    public ARUTILS_ERROR_ENUM initRFCommFtp(Context context, BluetoothGatt deviceGatt, int port)
+    {
+        ARUTILS_ERROR_ENUM error = ARUTILS_ERROR_ENUM.ARUTILS_OK;
+        
+        /* check parameters */
+        if (context == null)
+        {
+            error = ARUTILS_ERROR_ENUM.ARUTILS_ERROR_BAD_PARAMETER;
+        }
+        
+        if (deviceGatt == null)
+        {
+            error = ARUTILS_ERROR_ENUM.ARUTILS_ERROR_BAD_PARAMETER;
+        }
+        
+        if ((port == 0) || ((port % 10) != 1))
+        {
+            error = ARUTILS_ERROR_ENUM.ARUTILS_ERROR_BAD_PARAMETER;
+        }
+        
+        if (error == ARUTILS_ERROR_ENUM.ARUTILS_OK)
+        {
+            /* check if the RFComm is available*/
+            if (context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH) != true)
+            {
+                error = ARUTILS_ERROR_ENUM.ARUTILS_ERROR_NETWORK_TYPE;
+            }
+        }
+        if (error == ARUTILS_ERROR_ENUM.ARUTILS_OK)
+        {
+            // No need to connect because we will always be connected before reaching this step (in FreeFlight!)
+            //if (bleManager.connect(device) != ARSAL_ERROR_ENUM.ARSAL_OK) {
+            //    error = ARUTILS_ERROR_ENUM.ARUTILS_ERROR_BLE_FAILED;
+            //}
+        }
+        if (error == ARUTILS_ERROR_ENUM.ARUTILS_OK)
+        {
+            ARUtilsRFCommFtp rfcommFtp = ARUtilsRFCommFtp.getInstance(context);
+            rfcommFtp.registerDevice(deviceGatt, port);
+            Semaphore cancelSem = new Semaphore(0);
+            nativeInitRFCommFtp(m_managerPtr, rfcommFtp, cancelSem);
+        }
+        
+        return error;
+    }
+    
+    /**
+     * Closes BLE network
+     */
+    public ARUTILS_ERROR_ENUM closeRFCommFtp(Context context)
+    {
+        ARUTILS_ERROR_ENUM error = ARUTILS_ERROR_ENUM.ARUTILS_OK;
+        
+        /* check parameters */
+        if (context == null)
+        {
+            error = ARUTILS_ERROR_ENUM.ARUTILS_ERROR_BAD_PARAMETER;
+        }
+        
+        if (error == ARUTILS_ERROR_ENUM.ARUTILS_OK)
+        {
+            /* check if the BLE is available*/
+            if (context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH) != true)
+            {
+                error = ARUTILS_ERROR_ENUM.ARUTILS_ERROR_NETWORK_TYPE;
+            }
+        }
+        
+        if (error == ARUTILS_ERROR_ENUM.ARUTILS_OK)
+        {
+            ARUtilsRFCommFtp rfcommFtp = ARUtilsRFCommFtp.getInstance(context);
+            rfcommFtp.unregisterDevice();
+            nativeCloseRFCommFtp(m_managerPtr);
+        }
+        return error;
+    }
+    
+    public ARUTILS_ERROR_ENUM RFCommFtpConnectionDisconnect()
+    {
+        return ARUTILS_ERROR_ENUM.getFromValue(nativeRFCommFtpConnectionDisconnect(m_managerPtr));
+    }
+    
+    public ARUTILS_ERROR_ENUM RFCommFtpConnectionReconnect()
+    {
+        return ARUTILS_ERROR_ENUM.getFromValue(nativeRFCommFtpConnectionReconnect(m_managerPtr));
+    }
+    
+    public ARUTILS_ERROR_ENUM RFCommFtpConnectionCancel()
+    {
+        return ARUTILS_ERROR_ENUM.getFromValue(nativeRFCommFtpConnectionCancel(m_managerPtr));
+    }
+    
+    public ARUTILS_ERROR_ENUM RFCommFtpIsConnectionCanceled()
+    {
+        return ARUTILS_ERROR_ENUM.getFromValue(nativeRFCommFtpIsConnectionCanceled(m_managerPtr));
+    }
+    
+    public ARUTILS_ERROR_ENUM RFCommFtpConnectionReset()
+    {
+        return ARUTILS_ERROR_ENUM.getFromValue(nativeRFCommFtpConnectionReset(m_managerPtr));
+    }
+    
+    public ARUTILS_ERROR_ENUM RFCommFtpPut(String remotePath, String srcFile, ARUtilsFtpProgressListener progressListener, Object progressArg, boolean resume)
+    {
+        return ARUTILS_ERROR_ENUM.getFromValue(nativeRFCommFtpPut(m_managerPtr, remotePath, srcFile, progressListener, progressArg, resume));
     }
 
 }
