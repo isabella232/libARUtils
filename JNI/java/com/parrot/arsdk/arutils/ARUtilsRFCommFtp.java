@@ -822,9 +822,9 @@ public class ARUtilsRFCommFtp
 //    	core on several bytes
 //    	2-byte trailer (sign)
 // ==============================================================================
-//    	–	X current packet number, on 1 byte, value 1
-//    	–	Y total number of packets, on 1 byte, value 1
-//    	–	ZZ total number of bytes of the packet (including this header)
+//    		X current packet number, on 1 byte, value 1
+//    		Y total number of packets, on 1 byte, value 1
+//    		ZZ total number of bytes of the packet (including this header)
 //    	optional trailer (sign) : inclusive OR (1 byte) and exclusive OR (1 byte).
 //    	These 2 bytes are computed from start of packet up to last header byte
 // ==============================================================================
