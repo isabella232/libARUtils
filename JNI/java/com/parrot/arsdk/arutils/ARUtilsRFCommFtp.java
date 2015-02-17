@@ -158,7 +158,9 @@ public class ARUtilsRFCommFtp
         ARSALPrint.d(LOG_TAG, "registerDevice " + gattDevice.toString() + " port : " + port);
         boolean ret = true;
 
-        if (connectionCount == 0)
+        /*if (connectionCount == 0)
+        {*/
+        if ((this.gattDevice != gattDevice) || (this.port != port))
         {
             this.gattDevice = gattDevice;
             this.port = port;
@@ -168,6 +170,16 @@ public class ARUtilsRFCommFtp
 
             ret = registerCharacteristics();
         }
+        else if (this.gattDevice == null)
+        {
+            ARSALPrint.e(LOG_TAG, "registerDevice : Bad parameters");
+            ret = false;
+        }
+        else
+        {
+            ARSALPrint.e(LOG_TAG, "already on good device");
+        }
+        /*}
         else if ((this.gattDevice == gattDevice) && (this.port == port))
         {
             connectionCount++;
@@ -176,7 +188,7 @@ public class ARUtilsRFCommFtp
         {
             ARSALPrint.e(LOG_TAG, "Bad parameters");
             ret = false;
-        }
+        }*/
 
         return ret;
     }
@@ -222,7 +234,7 @@ public class ARUtilsRFCommFtp
             BluetoothGattService service = servicesIterator.next();
             String serviceUuid = ARUUID.getShortUuid(service.getUuid());
             String name = ARUUID.getShortUuid(service.getUuid());
-            ARSALPrint.d(LOG_TAG, "service " + name);
+            ARSALPrint.e(LOG_TAG, "service " + name);
 
             if (serviceUuid.startsWith(ARNetworkALBLENetwork.ARNETWORKAL_BLENETWORK_PARROT_SERVICE_PREFIX_UUID_RFCOMM))
             {
@@ -233,7 +245,7 @@ public class ARUtilsRFCommFtp
                 {
                     BluetoothGattCharacteristic characteristic = characteristicsIterator.next();
                     String characteristicUuid = ARUUID.getShortUuid(characteristic.getUuid());
-                    ARSALPrint.d(LOG_TAG, "characteristic " + characteristicUuid);
+                    ARSALPrint.e(LOG_TAG, "characteristic " + characteristicUuid);
 
                     if (characteristicUuid.startsWith(ARNetworkALBLENetwork.ARNETWORKAL_BLENETWORK_PARROT_CHARACTERISTIC_PREFIX_UUID_RFCOMM_READ))
                     {
@@ -285,7 +297,7 @@ public class ARUtilsRFCommFtp
     public boolean putFileAL(String remotePath, String localFile, long nativeCallbackObject, boolean resume, Semaphore cancelSem)
     {
         boolean ret = false;
-        ARSALPrint.d(LOG_TAG, "putFileAL");
+        ARSALPrint.e(LOG_TAG, "putFileAL");
         connectionLock.lock();
         ret =  putFile(remotePath, localFile, nativeCallbackObject, resume, cancelSem);
         connectionLock.unlock();
