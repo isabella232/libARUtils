@@ -300,7 +300,7 @@ public class ARUtilsBLEFtp
         boolean ret = true;
 
         connectionLock.lock();
-        ret = sizeFileAL(remoteFile, fileSize);
+        ret = sizeFile(remoteFile, fileSize);
         connectionLock.unlock();
 
         return ret;

@@ -406,7 +406,7 @@ public class ARUtilsRFCommFtp
             // wait a second to delay the close session
             try
             {
-                Thread.sleep(2000);
+                Thread.sleep(5000);
             }
             catch (InterruptedException e)
             {
@@ -420,10 +420,11 @@ public class ARUtilsRFCommFtp
         }
         
         // close the rfcomm connection
-        if (processIsOK)
-        {
-            closeConnection();
-        }
+        closeConnection();
+        //if (processIsOK)
+        //{
+        //    closeConnection();
+        //}
         
         return processIsOK;
     }
@@ -614,6 +615,19 @@ public class ARUtilsRFCommFtp
         }
         mState = ST_NOT_CONNECTED;
     }
+
+    private void unpairDevice(BluetoothDevice device) {
+        try 
+        {
+            Method m = device.getClass()
+                .getMethod("removeBond", (Class[]) null);
+            m.invoke(device, (Object[]) null);
+        } 
+        catch (Exception e) 
+        {
+            ARSALPrint.e(LOG_TAG, e.getMessage());
+        }
+    }
     
     private void sendFile(File file, long nativeCallbackObject, Semaphore cancelSem) 
     {
@@ -709,7 +723,7 @@ public class ARUtilsRFCommFtp
             e.printStackTrace();
         }
         
-        ARSALPrint.d(LOG_TAG, "Sending done. Sent " + total + " bytes");
+        ARSALPrint.e(LOG_TAG, "Sending done. Sent " + total + " bytes");
     }
     
     public boolean sendFirmwareOnDevice(byte[] data, int id) {
@@ -737,12 +751,20 @@ public class ARUtilsRFCommFtp
     }
     
 
-    private synchronized void write(byte[] buffer) {
-        try {
+    private synchronized void write(byte[] buffer) 
+    {
+        try 
+        {
             mOutStream.write(buffer);
-        } catch (IOException e) {
-
+            Thread.sleep(20);
+        } 
+        catch (IOException e) 
+        {
             ARSALPrint.e(LOG_TAG, "Exception during write" + e.getMessage());
+        } 
+        catch (InterruptedException e)
+        {
+            ARSALPrint.e(LOG_TAG, "Exception during sleep" + e.getMessage());
         }
     }
 
@@ -795,29 +817,48 @@ public class ARUtilsRFCommFtp
     }
 
     public synchronized void closeConnection() {
-        try {
-            ARSALPrint.e(LOG_TAG, "Cancel");
+        ARSALPrint.e(LOG_TAG, "closeConnection");
+        try 
+        {
             if (mInStream != null)
             {
                 mInStream.close();
                 mInStream = null;
             }
-            
+        } 
+        catch (IOException e) 
+        {
+            ARSALPrint.e(LOG_TAG, "Closing of mInStream failed", e);
+        }
+        try 
+        {
             if (mOutStream != null)
             {
                 mOutStream.close();
                 mOutStream = null;
             }
-
+        } 
+        catch (IOException e) 
+        {
+            ARSALPrint.e(LOG_TAG, "Closing of mOutStream failed", e);
+        }
+        try 
+        {
             if (mSocket != null)
             {
                 mSocket.close();
                 mSocket = null;
             }
-        } catch (IOException e) {
+        } 
+        catch (IOException e) 
+        {
             ARSALPrint.e(LOG_TAG, "Closing of mSocket failed", e);
         }
-        
+        if (mDevice != null)
+        {
+            unpairDevice(mDevice);
+            mDevice = null;
+        }
         mState = ST_NOT_CONNECTED;
     }
     
