@@ -852,6 +852,16 @@ eARUTILS_ERROR ARUTILS_Http_ResetOptions(ARUTILS_Http_Connection_t *connection)
         }
     }
     
+    if (result == ARUTILS_OK)
+    {
+        code = curl_easy_setopt(connection->curl,CURLOPT_SSL_VERIFYPEER, 0);
+        
+        if (code != CURLE_OK)
+        {
+            result = ARUTILS_ERROR_CURL_SETOPT;
+        }
+    }
+    
     return result;
 }
 
