@@ -641,7 +641,7 @@ public class ARUtilsRFCommFtp
             return;
         }
 
-        byte[] buffer = new byte[1001];
+        byte[] buffer = new byte[990];
         int len = 0;
         long total = 0;
         int id = 0;
