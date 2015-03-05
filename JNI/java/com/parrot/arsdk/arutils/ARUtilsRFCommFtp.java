@@ -641,7 +641,7 @@ public class ARUtilsRFCommFtp
             return;
         }
 
-        byte[] buffer = new byte[990];
+        byte[] buffer = new byte[978];
         int len = 0;
         long total = 0;
         int id = 0;
@@ -756,7 +756,7 @@ public class ARUtilsRFCommFtp
         try 
         {
             mOutStream.write(buffer);
-            Thread.sleep(20);
+            Thread.sleep(40);
         } 
         catch (IOException e) 
         {
