@@ -57,10 +57,11 @@
 
 #define ARUTILS_WIFIFTP_LOW_SPEED_TIME   5
 #define ARUTILS_WIFIFTP_LOW_SPEED_LIMIT  1
-#define ARUTILS_WIFIFTP_TIMEOUT 3
+#define ARUTILS_WIFIFTP_TIMEOUT          3
 #ifdef DEBUG
 #define ARUTILS_FTP_CURL_VERBOSE         1
 #endif
+#define ARUTILS_FTP_CURL_VERBOSE         1
 
 /*****************************************
  *
@@ -920,6 +921,27 @@ eARUTILS_ERROR ARUTILS_WifiFtp_Delete(ARUTILS_WifiFtp_Connection_t *connection, 
         }
     }
 
+    return result;
+}
+
+eARUTILS_ERROR ARUTILS_WifiFtp_RemoveDir(ARUTILS_WifiFtp_Connection_t *connection, const char *namePath)
+{
+    eARUTILS_ERROR result = ARUTILS_OK;
+    long ftpCode = 0L;
+    
+    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_WIFIFTP_TAG, "%s", namePath ? namePath : "null");
+    
+    result = ARUTILS_WifiFtp_Command(connection, namePath, FTP_CMD_RMD, &ftpCode);
+    
+    if (result == ARUTILS_OK)
+    {
+        //DELE OK (250)
+        if (ftpCode != 250)
+        {
+            result = ARUTILS_ERROR_FTP_CODE;
+        }
+    }
+    
     return result;
 }
 
@@ -2025,6 +2047,7 @@ eARUTILS_ERROR ARUTILS_Manager_InitWifiFtp(ARUTILS_Manager_t *manager, const cha
         manager->ftpGet = ARUTILS_WifiFtpAL_Get;
         manager->ftpPut = ARUTILS_WifiFtpAL_Put;
         manager->ftpDelete = ARUTILS_WifiFtpAL_Delete;
+        manager->ftpRemoveDir = ARUTILS_WifiFtpAL_RemoveDir;
         manager->ftpRename = ARUTILS_WifiFtpAL_Rename;
     }
 
@@ -2089,6 +2112,11 @@ eARUTILS_ERROR ARUTILS_WifiFtpAL_Put(ARUTILS_Manager_t *manager, const char *nam
 eARUTILS_ERROR ARUTILS_WifiFtpAL_Delete(ARUTILS_Manager_t *manager, const char *namePath)
 {
     return ARUTILS_WifiFtp_Delete((ARUTILS_WifiFtp_Connection_t *)manager->connectionObject, namePath);
+}
+
+eARUTILS_ERROR ARUTILS_WifiFtpAL_RemoveDir(ARUTILS_Manager_t *manager, const char *namePath)
+{
+    return ARUTILS_WifiFtp_RemoveDir((ARUTILS_WifiFtp_Connection_t *)manager->connectionObject, namePath);
 }
 
 eARUTILS_ERROR ARUTILS_WifiFtpAL_Rename(ARUTILS_Manager_t *manager, const char *oldNamePath, const char *newNamePath)

@@ -215,6 +215,15 @@ eARUTILS_ERROR ARUTILS_WifiFtp_Size(ARUTILS_WifiFtp_Connection_t *connection, co
 eARUTILS_ERROR ARUTILS_WifiFtp_Delete(ARUTILS_WifiFtp_Connection_t *connection, const char *namePath);
 
 /**
+ * @brief Delete an remote Ftp server directory
+ * @param connection The address of the pointer on the Ftp Connection
+ * @param namePath The string of the directory name path on the remote Ftp server
+ * @retval On success, returns ARUTILS_OK. Otherwise, it returns an error number of eARUTILS_ERROR.
+ * @see ARUTILS_WifiFtp_NewConnection ()
+ */
+eARUTILS_ERROR ARUTILS_WifiFtp_RemoveDir(ARUTILS_WifiFtp_Connection_t *connection, const char *namePath);
+
+/**
  * @brief Get an remote Ftp server file
  * @param connection The address of the pointer on the Ftp Connection
  * @param namePath The string of the file name path on the remote Ftp server

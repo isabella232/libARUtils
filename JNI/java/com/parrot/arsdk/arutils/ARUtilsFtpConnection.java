@@ -51,6 +51,7 @@ public class ARUtilsFtpConnection
     private native int nativeRename(long fptConnection, String oldNamePath, String newNamePath);
     private native double nativeSize(long fptConnection, String namePath);
     private native int nativeDelete(long fptConnection, String namePath);
+    private native int nativeRemoveDir(long fptConnection, String namePath);
     private native int nativeGet(long fptConnection, String namePath, String dstFile, ARUtilsFtpProgressListener progressListener, Object progressArg, int resume);
     private native byte[] nativeGetWithBuffer(long fptConnection, String namePath, ARUtilsFtpProgressListener progressListener, Object progressArg) throws ARUtilsException;
     private native int nativePut(long fptConnection, String namePath, String srcFile, ARUtilsFtpProgressListener progressListener, Object progressArg, int resume);
@@ -215,6 +216,24 @@ public class ARUtilsFtpConnection
     {
         int result = nativeDelete(nativeFtpConnection, namePath);
 
+        ARUTILS_ERROR_ENUM error = ARUTILS_ERROR_ENUM.getFromValue(result);
+
+        if (error != ARUTILS_ERROR_ENUM.ARUTILS_OK)
+        {
+            throw new ARUtilsException(error);
+        }
+    }
+    
+    /**
+     * Removes directory on the Ftp server
+     * @param namePath The directory path name
+     * @return void
+     * @throws ARUtilsException if error
+     */
+    public void removeDir(String namePath) throws ARUtilsException
+    {
+        int result = nativeRemoveDir(nativeFtpConnection, namePath);
+        
         ARUTILS_ERROR_ENUM error = ARUTILS_ERROR_ENUM.getFromValue(result);
 
         if (error != ARUTILS_ERROR_ENUM.ARUTILS_OK)

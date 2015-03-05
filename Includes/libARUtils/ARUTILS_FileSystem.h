@@ -47,6 +47,15 @@
 #define ARUTILS_FILE_SYSTEM_MAX_FD_FOR_FTW    20
 
 /**
+ * @brief Check if local file system file or directory exist
+ * @param namePath The string name path
+ * @param[out] size The size of the file if success
+ * @retval On success, returns ARUTILS_OK, ARUTILS_ERROR_FILE_NOT_FOUND if it not exist. Otherwise, it returns an error number of eARUTILS_ERROR.
+ * @see
+ */
+eARUTILS_ERROR ARUTILS_FileSystem_IsExist(const char *namePath);
+
+/**
  * @brief Get local file system file size in bytes
  * @param namePath The string name path
  * @param[out] size The size of the file if success

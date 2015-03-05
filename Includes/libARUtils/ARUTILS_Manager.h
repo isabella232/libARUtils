@@ -244,6 +244,15 @@ eARUTILS_ERROR ARUTILS_Manager_Ftp_Put(ARUTILS_Manager_t *manager, const char *n
 eARUTILS_ERROR ARUTILS_Manager_Ftp_Delete(ARUTILS_Manager_t *manager, const char *namePath);
 
 /**
+ * @brief Delete an remote Ftp server directory
+ * @param manager The address of the pointer on the Ftp Manager
+ * @param namePath The string of the directory name path on the remote Ftp server
+ * @retval On success, returns ARUTILS_OK. Otherwise, it returns an error number of eARUTILS_ERROR.
+ * @see ARUTILS_Manager_InitWifiFtp (), ARUTILS_Manager_InitBLEFtp ()
+ */
+eARUTILS_ERROR ARUTILS_Manager_Ftp_RemoveDir(ARUTILS_Manager_t *manager, const char *namePath);
+
+/**
  * @brief Rename an remote Ftp server file
  * @param manager The address of the pointer on the Ftp Manager
  * @param oldNamePath The string of the old file name path on the remote Ftp server
@@ -355,6 +364,15 @@ typedef eARUTILS_ERROR (*ARUTILS_Manager_Ftp_Put_t) (ARUTILS_Manager_t *manager,
 typedef eARUTILS_ERROR (*ARUTILS_Manager_Ftp_Delete_t) (ARUTILS_Manager_t *manager, const char *namePath);
 
 /**
+ * @brief Delete an remote Ftp server directory
+ * @param manager The address of the pointer on the Ftp Manager
+ * @param namePath The string of the file directory path on the remote Ftp server
+ * @retval On success, returns ARUTILS_OK. Otherwise, it returns an error number of eARUTILS_ERROR.
+ * @see ARUTILS_Manager_New ()
+ */
+typedef eARUTILS_ERROR (*ARUTILS_Manager_Ftp_RemoveDir_t) (ARUTILS_Manager_t *manager, const char *namePath);
+
+/**
  * @brief Rename an remote Ftp server file
  * @param manager The address of the pointer on the Ftp Manager
  * @param oldNamePath The string of the old file name path on the remote Ftp server
@@ -386,6 +404,7 @@ struct ARUTILS_Manager_t
     ARUTILS_Manager_Ftp_Get_t ftpGet;
     ARUTILS_Manager_Ftp_Put_t ftpPut;
     ARUTILS_Manager_Ftp_Delete_t ftpDelete;
+    ARUTILS_Manager_Ftp_Delete_t ftpRemoveDir;
     ARUTILS_Manager_Ftp_Rename_t ftpRename;
 
     ARSAL_Sem_t cancelSem;

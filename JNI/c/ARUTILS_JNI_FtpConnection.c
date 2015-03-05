@@ -415,6 +415,31 @@ JNIEXPORT jint JNICALL Java_com_parrot_arsdk_arutils_ARUtilsFtpConnection_native
     return result;
 }
 
+JNIEXPORT jint JNICALL Java_com_parrot_arsdk_arutils_ARUtilsFtpConnection_nativeRemoveDir(JNIEnv *env, jobject jThis, jlong jFtpConnection, jstring jNamePath)
+{
+    ARUTILS_JNI_FtpConnection_t *nativeFtpConnection = (ARUTILS_JNI_FtpConnection_t *)(intptr_t) jFtpConnection;
+    const char *nativeNamePath = (*env)->GetStringUTFChars(env, jNamePath, 0);
+    eARUTILS_ERROR result = ARUTILS_OK;
+
+    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_JNI_FTPCONNECTION_TAG, "");
+
+    if (nativeFtpConnection == NULL)
+    {
+        result = ARUTILS_ERROR_SYSTEM;
+    }
+    else
+    {
+        result = ARUTILS_WifiFtp_RemoveDir(nativeFtpConnection->ftpConnection, nativeNamePath);
+    }
+    
+    if (nativeNamePath)
+    {
+        (*env)->ReleaseStringUTFChars(env, jNamePath, nativeNamePath);
+    }
+
+    return result;
+}
+
 JNIEXPORT jint JNICALL Java_com_parrot_arsdk_arutils_ARUtilsFtpConnection_nativeGet(JNIEnv *env, jobject jThis, jlong jFtpConnection, jstring jNamePath, jstring jDstFile, jobject jProgressListener, jobject jProgressArg, jint jResume)
 {
     ARUTILS_JNI_FtpConnection_t *nativeFtpConnection = (ARUTILS_JNI_FtpConnection_t *)(intptr_t) jFtpConnection;

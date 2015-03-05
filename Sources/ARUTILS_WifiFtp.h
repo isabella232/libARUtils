@@ -470,6 +470,15 @@ eARUTILS_ERROR ARUTILS_WifiFtpAL_Put(ARUTILS_Manager_t *manager, const char *nam
 eARUTILS_ERROR ARUTILS_WifiFtpAL_Delete(ARUTILS_Manager_t *manager, const char *namePath);
 
 /**
+ * @brief Delete an remote Ftp server directory
+ * @param manger The address of the pointer on the Ftp Connection
+ * @param namePath The string of the directory name path on the remote Ftp server
+ * @retval On success, returns ARUTILS_OK. Otherwise, it returns an error number of eARUTILS_ERROR.
+ * @see ARUTILS_Manager_NewWifiFtp ()
+ */
+eARUTILS_ERROR ARUTILS_WifiFtpAL_RemoveDir(ARUTILS_Manager_t *manager, const char *namePath);
+
+/**
  * @brief Rename an remote Ftp server file
  * @param manager The address of the pointer on the Ftp Connection
  * @param oldNamePath The string of the old file name path on the remote Ftp server

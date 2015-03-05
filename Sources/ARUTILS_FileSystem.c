@@ -63,6 +63,33 @@
  *
  *****************************************/
 
+eARUTILS_ERROR ARUTILS_FileSystem_IsExist(const char *namePath)
+{
+    struct stat statbuf = { 0 };
+    eARUTILS_ERROR result = ARUTILS_OK;
+    int resultSys = 0;
+    
+    if (namePath == NULL)
+    {
+        result = ARUTILS_ERROR_BAD_PARAMETER;
+    }
+    
+    resultSys = stat(namePath, &statbuf);
+    if (resultSys != 0)
+    {
+        if (errno == ENOENT)
+        {
+            result = ARUTILS_ERROR_FILE_NOT_FOUND;
+        }
+        else
+        {
+            result = ARUTILS_ERROR_SYSTEM;
+        }
+    }
+    
+    return result;
+}
+
 eARUTILS_ERROR ARUTILS_FileSystem_GetFileSize(const char *namePath, uint32_t *size)
 {
     struct stat statbuf = { 0 };
