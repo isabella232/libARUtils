@@ -61,7 +61,6 @@
 #ifdef DEBUG
 #define ARUTILS_FTP_CURL_VERBOSE         1
 #endif
-#define ARUTILS_FTP_CURL_VERBOSE         1
 
 /*****************************************
  *
