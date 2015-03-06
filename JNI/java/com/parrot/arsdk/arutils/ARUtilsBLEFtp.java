@@ -138,24 +138,24 @@ public class ARUtilsBLEFtp
 	public boolean registerDevice(BluetoothGatt gattDevice, int port)
 	{
 	    boolean ret = true;
-
-	    if (connectionCount == 0)
-	    {
-	        this.gattDevice = gattDevice;
-	        this.port = port;
-	        connectionCount++;
-
-	        ret = registerCharacteristics();
-	    }
-	    else if ((this.gattDevice == gattDevice) && (this.port == port))
-	    {
-	        connectionCount++;
-	    }
-	    else
-	    {
-	        ARSALPrint.e("DBG", APP_TAG + "Bad parameters");
-	        ret = false;
-	    }
+        
+        if (connectionCount == 0)
+        {
+            this.gattDevice = gattDevice;
+            this.port = port;
+            connectionCount++;
+            
+            ret = registerCharacteristics();
+        }
+        else if ((this.gattDevice == gattDevice) && (this.port == port))
+        {
+            connectionCount++;
+        }
+        else
+        {
+            ARSALPrint.e(APP_TAG, "registerDevice Bad parameters : " + connectionCount + "\nthis.gattDevice = " + this.gattDevice + "\ngattDevice = " + gattDevice + "\nthis.port = " + this.port + "\nport = " + port);
+            ret = false;
+        }
 
 	    return ret;
 	}
@@ -166,6 +166,7 @@ public class ARUtilsBLEFtp
 
 	    if (connectionCount > 0)
 	    {
+            ARSALPrint.e("DBG", "unregisterDevice : connection count is " + connectionCount);
 	        if (connectionCount == 1)
 	        {
 	            this.gattDevice = null;

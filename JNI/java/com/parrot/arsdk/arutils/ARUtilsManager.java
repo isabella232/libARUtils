@@ -179,6 +179,8 @@ public class ARUtilsManager
     public ARUTILS_ERROR_ENUM initBLEFtp(Context context, BluetoothGatt deviceGatt, int port)
     {
         ARUTILS_ERROR_ENUM error = ARUTILS_ERROR_ENUM.ARUTILS_OK;
+        
+        ARUtilsBLEFtp bleFtp = null;
 
         /* check parameters */
         if (context == null)
@@ -213,8 +215,16 @@ public class ARUtilsManager
         }
         if (error == ARUTILS_ERROR_ENUM.ARUTILS_OK)
         {
-            ARUtilsBLEFtp bleFtp = ARUtilsBLEFtp.getInstance(context);
-            bleFtp.registerDevice(deviceGatt, port);
+            bleFtp = ARUtilsBLEFtp.getInstance(context);
+            boolean registered = bleFtp.registerDevice(deviceGatt, port);
+            if (!registered)
+            {
+                error = ARUTILS_ERROR_ENUM.ARUTILS_ERROR_BLE_FAILED;
+            }
+        }
+        
+        if (error == ARUTILS_ERROR_ENUM.ARUTILS_OK)
+        {
             Semaphore cancelSem = new Semaphore(0);
             nativeInitBLEFtp(m_managerPtr, bleFtp, cancelSem);
         }
@@ -336,7 +346,7 @@ public class ARUtilsManager
     public ARUTILS_ERROR_ENUM initRFCommFtp(Context context, BluetoothGatt deviceGatt, int port)
     {
         ARUTILS_ERROR_ENUM error = ARUTILS_ERROR_ENUM.ARUTILS_OK;
-        
+        ARUtilsRFCommFtp rfcommFtp = null;
         /* check parameters */
         if (context == null)
         {
@@ -370,8 +380,16 @@ public class ARUtilsManager
         }
         if (error == ARUTILS_ERROR_ENUM.ARUTILS_OK)
         {
-            ARUtilsRFCommFtp rfcommFtp = ARUtilsRFCommFtp.getInstance(context);
-            rfcommFtp.registerDevice(deviceGatt, port);
+            rfcommFtp = ARUtilsRFCommFtp.getInstance(context);
+            boolean registered = rfcommFtp.registerDevice(deviceGatt, port);
+            if (!registered)
+            {
+                error = ARUTILS_ERROR_ENUM.ARUTILS_ERROR_RFCOMM_FAILED;
+            }
+        }
+        
+        if (error == ARUTILS_ERROR_ENUM.ARUTILS_OK)
+        {
             Semaphore cancelSem = new Semaphore(0);
             nativeInitRFCommFtp(m_managerPtr, rfcommFtp, cancelSem);
         }
