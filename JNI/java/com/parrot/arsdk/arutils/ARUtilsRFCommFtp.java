@@ -401,7 +401,7 @@ public class ARUtilsRFCommFtp
         }
         
         // close the session
-        if (processIsOK)
+        if (processIsOK && !isConnectionCanceled(cancelSem))
         {
             // wait a second to delay the close session
             try
@@ -412,7 +412,11 @@ public class ARUtilsRFCommFtp
             {
                 e.printStackTrace();
             }
-            closeSession(); 
+        }
+        
+        if (processIsOK)
+        {
+            closeSession();
             if (mState != ST_NOT_CONNECTED)
             {
                 processIsOK = false;
