@@ -145,13 +145,13 @@ ARUTILS_WifiFtp_Connection_t * ARUTILS_WifiFtp_Connection_New(ARSAL_Sem_t *cance
     return newConnection;
 }
 
-void ARUTILS_WifiFtp_Connection_Delete(ARUTILS_WifiFtp_Connection_t **connectionPtrAddr)
+void ARUTILS_WifiFtp_Connection_Delete(ARUTILS_WifiFtp_Connection_t **connectionAddr)
 {
     ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_WIFIFTP_TAG, "");
 
-    if (connectionPtrAddr != NULL)
+    if (connectionAddr != NULL)
     {
-        ARUTILS_WifiFtp_Connection_t *connection = *connectionPtrAddr;
+        ARUTILS_WifiFtp_Connection_t *connection = *connectionAddr;
 
         if (connection != NULL)
         {
@@ -163,7 +163,7 @@ void ARUTILS_WifiFtp_Connection_Delete(ARUTILS_WifiFtp_Connection_t **connection
             ARUTILS_WifiFtp_FreeCallbackData(&connection->cbdata);
 
             free(connection);
-            *connectionPtrAddr = NULL;
+            *connectionAddr = NULL;
         }
     }
 }
@@ -247,6 +247,7 @@ eARUTILS_ERROR ARUTILS_WifiFtp_Connection_Cancel(ARUTILS_WifiFtp_Connection_t *c
         if (connection->curlSocket != -1)
         {
             shutdown(connection->curlSocket, SHUT_RDWR);
+            connection->curlSocket = -1;
         }
     }
 
@@ -1530,7 +1531,7 @@ const char * ARUTILS_Ftp_List_GetNextItem(const char *list, const char **nextIte
 
                     if (fileIdx != NULL)
                     {
-                        int len = ((endLine - fileIdx) < ARUTILS_FTP_MAX_LIST_LINE_SIZE) ? (endLine - fileIdx) : (ARUTILS_FTP_MAX_LIST_LINE_SIZE - 1);
+                        size_t len = ((endLine - fileIdx) < ARUTILS_FTP_MAX_LIST_LINE_SIZE) ? (endLine - fileIdx) : (ARUTILS_FTP_MAX_LIST_LINE_SIZE - 1);
                         if ((lineData != NULL) && (len < (lineDataLen + 1)))
                         {
                             strncpy(lineData, fileIdx, len);
@@ -1549,7 +1550,7 @@ const char * ARUTILS_Ftp_List_GetNextItem(const char *list, const char **nextIte
 
         if (itemLen != NULL)
         {
-            *itemLen = endLine - line;
+            *itemLen = (int)(endLine - line);
         }
     }
 
@@ -1817,7 +1818,7 @@ size_t ARUTILS_WifiFtp_WriteDataCallback(void *ptr, size_t size, size_t nmemb, v
             }
             else
             {
-                int len = fwrite(ptr, size, nmemb, connection->cbdata.file);
+                size_t len = fwrite(ptr, size, nmemb, connection->cbdata.file);
                 if (len != size * nmemb)
                 {
                     connection->cbdata.error = ARUTILS_ERROR_SYSTEM;

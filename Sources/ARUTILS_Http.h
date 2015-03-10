@@ -75,7 +75,9 @@ typedef struct _ARUTILS_Http_CallbackData_t_
  * @brief Http Connection structure
  * @param cancelSem The semaphore to cancel Http command
  * @param curl The cURL connection
+ * @param curlSocket The cURL socket
  * @param serverUrl The Http url connection string
+ * @param serverCert The Https server certificate file path
  * @param username The Http connection user name
  * @param passwordThe Http connection user password
  * @param cbdata The Http connection data for callbacks
@@ -85,7 +87,9 @@ struct ARUTILS_Http_Connection_t
 {
     ARSAL_Sem_t *cancelSem;
     CURL *curl;
+    int curlSocket;
     char serverUrl[ARUTILS_HTTP_MAX_URL_SIZE];
+    char serverCert[ARUTILS_HTTP_MAX_PATH_SIZE];
     char username[ARUTILS_HTTP_MAX_USER_SIZE];
     char password[ARUTILS_HTTP_MAX_USER_SIZE];
     ARUTILS_Http_CallbackData_t cbdata;
@@ -124,6 +128,16 @@ size_t ARUTILS_Http_WriteDataCallback(void *ptr, size_t size, size_t nmemb, void
  * @see cURL
  */
 int ARUTILS_Http_ProgressCallback(void *userData, double dltotal, double dlnow, double ultotal, double ulnow);
+
+/**
+ * @brief Opensocket callback of cURL connection
+ * @param clientp
+ * @param purpose
+ * @param address
+ * @retval On success, returns socket. Otherwise, it returns 0.
+ * @see cURL
+ */
+curl_socket_t ARUTILS_Http_OpensocketCallback(void *clientp, curlsocktype purpose, struct curl_sockaddr *address);
 
 /**
  * @brief Reset the Http connection values

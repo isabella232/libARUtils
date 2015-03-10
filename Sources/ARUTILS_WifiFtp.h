@@ -298,7 +298,7 @@ size_t ARUTILS_WifiFtp_WriteDataCallback(void *ptr, size_t size, size_t nmemb, v
 int ARUTILS_WifiFtp_ProgressCallback(void *userData, double dltotal, double dlnow, double ultotal, double ulnow);
 
 /**
- * @brief Progress callback of cURL connection
+ * @brief Opensocket callback of cURL connection
  * @param clientp
  * @param purpose
  * @param address
