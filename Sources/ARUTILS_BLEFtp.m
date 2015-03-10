@@ -651,8 +651,8 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(ARUtils_BLEFtp, initBLEFtp)
 - (eARUTILS_ERROR)sendCommand:(const char *)cmd param:(const char*)param characteristic:(CBCharacteristic *)characteristic
 {
     char *command = NULL;
-    int len = 0;
-    int size;
+    size_t len = 0;
+    size_t size;
     BOOL retBLE;
     eARUTILS_ERROR result = ARUTILS_OK;
     
@@ -893,7 +893,7 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(ARUtils_BLEFtp, initBLEFtp)
         if ([receivedNotifications count] > 0)
         {
             ARSALBLEManagerNotificationData *notificationData = receivedNotifications[0];
-            int packetLen = [[notificationData value] length];
+            size_t packetLen = [[notificationData value] length];
             uint8_t *packet = (uint8_t *)[[notificationData value] bytes];
             
             if (packetLen > 0)
@@ -944,7 +944,7 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(ARUtils_BLEFtp, initBLEFtp)
         if ([receivedNotifications count] > 0)
         {
             ARSALBLEManagerNotificationData *notificationData = receivedNotifications[0];
-            int packetLen = [[notificationData value] length];
+            size_t packetLen = [[notificationData value] length];
             uint8_t *packet = (uint8_t *)[[notificationData value] bytes];
             
             if (packetLen > 0)
@@ -1008,7 +1008,7 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(ARUtils_BLEFtp, initBLEFtp)
         if ([receivedNotifications count] > 0)
         {
             ARSALBLEManagerNotificationData *notificationData = receivedNotifications[0];
-            int packetLen = [[notificationData value] length];
+            size_t packetLen = [[notificationData value] length];
             uint8_t *packet = (uint8_t *)[[notificationData value] bytes];
             
             if (packetLen > 0)
@@ -1064,7 +1064,7 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(ARUtils_BLEFtp, initBLEFtp)
         if ([receivedNotifications count] > 0)
         {
             ARSALBLEManagerNotificationData *notificationData = receivedNotifications[0];
-            int packetLen = [[notificationData value] length];
+            size_t packetLen = [[notificationData value] length];
             uint8_t *packet = (uint8_t *)[[notificationData value] bytes];
             
             if (packetLen)
@@ -1157,7 +1157,7 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(ARUtils_BLEFtp, initBLEFtp)
                 for (int i=0; i<[receivedNotifications count] && (result == ARUTILS_OK) && (blockMD5 == NO) && (endMD5 == NO); i++)
                 {
                     ARSALBLEManagerNotificationData *notificationData = receivedNotifications[i];
-                    int packetLen = [[notificationData value] length];
+                    size_t packetLen = [[notificationData value] length];
                     uint8_t *packet = (uint8_t *)[[notificationData value] bytes];
                     
                     packetCount++;
@@ -1232,8 +1232,8 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(ARUtils_BLEFtp, initBLEFtp)
                         else
                         {
                             totalSize += packetLen;
-                            CC_MD5_Update(&ctx, packet, packetLen);
-                            CC_MD5_Update(&ctxEnd, packet, packetLen);
+                            CC_MD5_Update(&ctx, packet, (int)packetLen);
+                            CC_MD5_Update(&ctxEnd, packet, (int)packetLen);
                             
                             if (dstFile != NULL)
                             {
