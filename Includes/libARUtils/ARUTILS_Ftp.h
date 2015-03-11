@@ -1,3 +1,33 @@
+/*
+    Copyright (C) 2014 Parrot SA
+
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions
+    are met:
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in
+      the documentation and/or other materials provided with the 
+      distribution.
+    * Neither the name of Parrot nor the names
+      of its contributors may be used to endorse or promote products
+      derived from this software without specific prior written
+      permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+    "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+    LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+    FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+    COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+    INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+    BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS
+    OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED 
+    AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+    OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
+    OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+    SUCH DAMAGE.
+*/
 /**
  * @file ARUTILS_Ftp.h
  * @brief libARUtils Ftp header file.
@@ -59,10 +89,12 @@ typedef void (*ARUTILS_Ftp_ProgressCallback_t)(void* arg, float percent);
  * @param isDirectory The file type requested: 1 directory or 0 file
  * @param indexItem The beginning of the line item if address is not null
  * @param itemLen The length of the line item if address is not null
+ * @param lineData The buffer that will receive the result
+ * @param lineDataLen The size of the buffer that will receive the result
  * @retval On success, returns the file name of the found item, Otherwise, it returns null
  * @see ARUTILS_Ftp_List ()
  */
-const char * ARUTILS_Ftp_List_GetNextItem(const char *list, const char **nextItem, const char *prefix, int isDirectory, const char **indexItem, int *itemLen);
+const char * ARUTILS_Ftp_List_GetNextItem(const char *list, const char **nextItem, const char *prefix, int isDirectory, const char **indexItem, int *itemLen, char *lineData, int lineDataLen);
 
 /**
  * @brief File size accessor function from a file of a File list
@@ -74,14 +106,11 @@ const char * ARUTILS_Ftp_List_GetNextItem(const char *list, const char **nextIte
  */
 const char * ARUTILS_Ftp_List_GetItemSize(const char *line, int lineSize, double *size);
 
-
-
-
-
-
-
+/**
+ * @brief Public Ftp Connection struct
+ * @see ARUTILS_WifiFtp_Connection_New, ARUTILS_WifiFtp_DeleteConnection ()
+ */
 typedef struct ARUTILS_WifiFtp_Connection_t ARUTILS_WifiFtp_Connection_t;
-
 
 /**
  * @brief Create a new Ftp Connection
@@ -184,6 +213,15 @@ eARUTILS_ERROR ARUTILS_WifiFtp_Size(ARUTILS_WifiFtp_Connection_t *connection, co
  * @see ARUTILS_WifiFtp_NewConnection ()
  */
 eARUTILS_ERROR ARUTILS_WifiFtp_Delete(ARUTILS_WifiFtp_Connection_t *connection, const char *namePath);
+
+/**
+ * @brief Delete an remote Ftp server directory
+ * @param connection The address of the pointer on the Ftp Connection
+ * @param namePath The string of the directory name path on the remote Ftp server
+ * @retval On success, returns ARUTILS_OK. Otherwise, it returns an error number of eARUTILS_ERROR.
+ * @see ARUTILS_WifiFtp_NewConnection ()
+ */
+eARUTILS_ERROR ARUTILS_WifiFtp_RemoveDir(ARUTILS_WifiFtp_Connection_t *connection, const char *namePath);
 
 /**
  * @brief Get an remote Ftp server file

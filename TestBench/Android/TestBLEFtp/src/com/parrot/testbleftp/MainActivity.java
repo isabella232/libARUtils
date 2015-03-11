@@ -1,3 +1,33 @@
+/*
+    Copyright (C) 2014 Parrot SA
+
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions
+    are met:
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in
+      the documentation and/or other materials provided with the 
+      distribution.
+    * Neither the name of Parrot nor the names
+      of its contributors may be used to endorse or promote products
+      derived from this software without specific prior written
+      permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+    "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+    LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+    FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+    COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+    INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+    BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS
+    OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED 
+    AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+    OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
+    OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+    SUCH DAMAGE.
+*/
 package com.parrot.testbleftp;
 
 import java.io.File;
@@ -44,6 +74,7 @@ import com.parrot.arsdk.arsal.ARSALMd5;
 import com.parrot.arsdk.arsal.ARSALMd5Manager;
 import com.parrot.arsdk.arsal.ARSAL_ERROR_ENUM;
 import com.parrot.arsdk.arsal.ARUUID;
+import com.parrot.arsdk.arutils.ARUTILS_ERROR_ENUM;
 import com.parrot.arsdk.arutils.ARUtilsBLEFtp;
 import com.parrot.arsdk.arutils.ARUtilsException;
 import com.parrot.arsdk.arutils.ARUtilsFtpProgressListener;
@@ -270,6 +301,7 @@ public class MainActivity extends Activity implements ARDiscoveryServicesDevices
                 ardiscoveryService = ((ARDiscoveryService.LocalBinder) service).getService();
                 ardiscoveryServiceBound = true;
 
+                ardiscoveryService.start();
             }
 
             @Override
@@ -302,7 +334,7 @@ public class MainActivity extends Activity implements ARDiscoveryServicesDevices
 	{
 		Log.d("DBG", APP_TAG + "onServicesDevicesListUpdated");
 		
-		ArrayList<ARDiscoveryDeviceService> list = ardiscoveryService.getDeviceServicesArray();
+		List<ARDiscoveryDeviceService> list = ardiscoveryService.getDeviceServicesArray();
 		Iterator<ARDiscoveryDeviceService> iterator = list.iterator();
 		ARDISCOVERY_PRODUCT_ENUM ble = ARDISCOVERY_PRODUCT_ENUM.ARDISCOVERY_PRODUCT_MINIDRONE;
 		while (iterator.hasNext())
@@ -322,7 +354,8 @@ public class MainActivity extends Activity implements ARDiscoveryServicesDevices
 			    //String name = "RS_B000262";
 				//String name = "RS_B000479";
 				//String name = "RS_B000497";
-			    String name = "RS_R000377";
+			    //String name = "RS_R000377";
+			    String name = "RS_W000444";
 				//String name = "Maurice";
 				//07-02 17:49:58.933: D/DBG(8280): TestBLEFtp  Flower power 3337
 				//String name = "Flower power 2FB7";
@@ -340,7 +373,8 @@ public class MainActivity extends Activity implements ARDiscoveryServicesDevices
                         
                         //getARUtilsManager();
                         
-                        TestBleAL();
+                        //TestBleAL();
+                        TestBleManager();
                         
                         enableButtons(true);
                         setProgressBarIndeterminateVisibility(false);
@@ -560,6 +594,46 @@ public class MainActivity extends Activity implements ARDiscoveryServicesDevices
             
             bleManager.disconnect();
 	    }
+	}
+	
+	public void TestBleManager()
+	{
+	    if (mDeviceGatt != null)
+        {
+	        try
+	        {
+                //boolean ret = true;
+                //String[] list = new String[1];
+                //double[] totalSize = new double[1];
+                //Semaphore cancelSem = new Semaphore(0);
+                ARUtilsManager manager = new ARUtilsManager();
+                ARUTILS_ERROR_ENUM error;
+                
+                //ARSALBLEManager bleManager = ARSALBLEManager.getInstance(getApplicationContext());
+                //ARUtilsBLEFtp bleFtp = ARUtilsBLEFtp.getInstance(getApplicationContext());
+                
+                File sysHome = this.getFilesDir();// /data/data/com.example.tstdata/files
+                String tmp = sysHome.getAbsolutePath();
+                String filePath = null;
+                
+                //ret = bleFtp.registerDevice( mDeviceGatt, 51);
+                //ret = bleFtp.registerCharacteristics();
+                
+
+                error = manager.initBLEFtp(getApplicationContext(), mDeviceGatt, 51);
+                
+                error = manager.BLEFtpConnectionDisconnect();
+                
+                error = manager.BLEFtpConnectionReconnect();
+                
+                manager.closeBLEFtp(getApplicationContext());
+                
+	        }
+	        catch (ARUtilsException e)
+	        {
+	            Log.d("DBG", APP_TAG + "Exception: " + e.toString());
+	        }
+        }
 	}
 	
 	public void TestFile()

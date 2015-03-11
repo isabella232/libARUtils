@@ -1,3 +1,33 @@
+/*
+    Copyright (C) 2014 Parrot SA
+
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions
+    are met:
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in
+      the documentation and/or other materials provided with the 
+      distribution.
+    * Neither the name of Parrot nor the names
+      of its contributors may be used to endorse or promote products
+      derived from this software without specific prior written
+      permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+    "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+    LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+    FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+    COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+    INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+    BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS
+    OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED 
+    AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+    OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
+    OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+    SUCH DAMAGE.
+*/
 /**
  * @file ARUTILS_Ftp.c
  * @brief libARUtils Ftp c file.
@@ -27,7 +57,7 @@
 
 #define ARUTILS_WIFIFTP_LOW_SPEED_TIME   5
 #define ARUTILS_WIFIFTP_LOW_SPEED_LIMIT  1
-
+#define ARUTILS_WIFIFTP_TIMEOUT          3
 #ifdef DEBUG
 #define ARUTILS_FTP_CURL_VERBOSE         1
 #endif
@@ -115,13 +145,13 @@ ARUTILS_WifiFtp_Connection_t * ARUTILS_WifiFtp_Connection_New(ARSAL_Sem_t *cance
     return newConnection;
 }
 
-void ARUTILS_WifiFtp_Connection_Delete(ARUTILS_WifiFtp_Connection_t **connectionPtrAddr)
+void ARUTILS_WifiFtp_Connection_Delete(ARUTILS_WifiFtp_Connection_t **connectionAddr)
 {
     ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_WIFIFTP_TAG, "");
 
-    if (connectionPtrAddr != NULL)
+    if (connectionAddr != NULL)
     {
-        ARUTILS_WifiFtp_Connection_t *connection = *connectionPtrAddr;
+        ARUTILS_WifiFtp_Connection_t *connection = *connectionAddr;
 
         if (connection != NULL)
         {
@@ -133,7 +163,7 @@ void ARUTILS_WifiFtp_Connection_Delete(ARUTILS_WifiFtp_Connection_t **connection
             ARUTILS_WifiFtp_FreeCallbackData(&connection->cbdata);
 
             free(connection);
-            *connectionPtrAddr = NULL;
+            *connectionAddr = NULL;
         }
     }
 }
@@ -217,6 +247,7 @@ eARUTILS_ERROR ARUTILS_WifiFtp_Connection_Cancel(ARUTILS_WifiFtp_Connection_t *c
         if (connection->curlSocket != -1)
         {
             shutdown(connection->curlSocket, SHUT_RDWR);
+            connection->curlSocket = -1;
         }
     }
 
@@ -893,6 +924,27 @@ eARUTILS_ERROR ARUTILS_WifiFtp_Delete(ARUTILS_WifiFtp_Connection_t *connection, 
     return result;
 }
 
+eARUTILS_ERROR ARUTILS_WifiFtp_RemoveDir(ARUTILS_WifiFtp_Connection_t *connection, const char *namePath)
+{
+    eARUTILS_ERROR result = ARUTILS_OK;
+    long ftpCode = 0L;
+    
+    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_WIFIFTP_TAG, "%s", namePath ? namePath : "null");
+    
+    result = ARUTILS_WifiFtp_Command(connection, namePath, FTP_CMD_RMD, &ftpCode);
+    
+    if (result == ARUTILS_OK)
+    {
+        //DELE OK (250)
+        if (ftpCode != 250)
+        {
+            result = ARUTILS_ERROR_FTP_CODE;
+        }
+    }
+    
+    return result;
+}
+
 eARUTILS_ERROR ARUTILS_WifiFtp_Cd(ARUTILS_WifiFtp_Connection_t *connection, const char *namePath)
 {
     eARUTILS_ERROR result = ARUTILS_OK;
@@ -1045,39 +1097,37 @@ eARUTILS_ERROR ARUTILS_WifiFtp_GetInternal(ARUTILS_WifiFtp_Connection_t *connect
         }
     }
 
-    if (progressCallback != NULL)
+    /* Setup progress callback. */
+    if (result == ARUTILS_OK)
     {
-        if (result == ARUTILS_OK)
+        connection->cbdata.progressCallback = progressCallback;
+        connection->cbdata.progressArg = progressArg;
+
+        code = curl_easy_setopt(connection->curl, CURLOPT_PROGRESSDATA, connection);
+
+        if (code != CURLE_OK)
         {
-            connection->cbdata.progressCallback = progressCallback;
-            connection->cbdata.progressArg = progressArg;
-
-            code = curl_easy_setopt(connection->curl, CURLOPT_PROGRESSDATA, connection);
-
-            if (code != CURLE_OK)
-            {
-                result = ARUTILS_ERROR_CURL_SETOPT;
-            }
+            result = ARUTILS_ERROR_CURL_SETOPT;
         }
+    }
 
-        if (result == ARUTILS_OK)
+    if (result == ARUTILS_OK)
+    {
+        code = curl_easy_setopt(connection->curl, CURLOPT_PROGRESSFUNCTION, ARUTILS_WifiFtp_ProgressCallback);
+
+        if (code != CURLE_OK)
         {
-            code = curl_easy_setopt(connection->curl, CURLOPT_PROGRESSFUNCTION, ARUTILS_WifiFtp_ProgressCallback);
-
-            if (code != CURLE_OK)
-            {
-                result = ARUTILS_ERROR_CURL_SETOPT;
-            }
+            result = ARUTILS_ERROR_CURL_SETOPT;
         }
+    }
 
-        if (result == ARUTILS_OK)
+    if (result == ARUTILS_OK)
+    {
+        code = curl_easy_setopt(connection->curl, CURLOPT_NOPROGRESS, 0L);
+
+        if (code != CURLE_OK)
         {
-            code = curl_easy_setopt(connection->curl, CURLOPT_NOPROGRESS, 0L);
-
-            if (code != CURLE_OK)
-            {
-                result = ARUTILS_ERROR_CURL_SETOPT;
-            }
+            result = ARUTILS_ERROR_CURL_SETOPT;
         }
     }
 
@@ -1309,39 +1359,36 @@ eARUTILS_ERROR ARUTILS_WifiFtp_Put(ARUTILS_WifiFtp_Connection_t *connection, con
         }
     }
 
-    if (progressCallback != NULL)
+    if (result == ARUTILS_OK)
     {
-        if (result == ARUTILS_OK)
+        connection->cbdata.progressCallback = progressCallback;
+        connection->cbdata.progressArg = progressArg;
+
+        code = curl_easy_setopt(connection->curl, CURLOPT_PROGRESSDATA, connection);
+
+        if (code != CURLE_OK)
         {
-            connection->cbdata.progressCallback = progressCallback;
-            connection->cbdata.progressArg = progressArg;
-
-            code = curl_easy_setopt(connection->curl, CURLOPT_PROGRESSDATA, connection);
-
-            if (code != CURLE_OK)
-            {
-                result = ARUTILS_ERROR_CURL_SETOPT;
-            }
+            result = ARUTILS_ERROR_CURL_SETOPT;
         }
+    }
 
-        if (result == ARUTILS_OK)
+    if (result == ARUTILS_OK)
+    {
+        code = curl_easy_setopt(connection->curl, CURLOPT_PROGRESSFUNCTION, ARUTILS_WifiFtp_ProgressCallback);
+
+        if (code != CURLE_OK)
         {
-            code = curl_easy_setopt(connection->curl, CURLOPT_PROGRESSFUNCTION, ARUTILS_WifiFtp_ProgressCallback);
-
-            if (code != CURLE_OK)
-            {
-                result = ARUTILS_ERROR_CURL_SETOPT;
-            }
+            result = ARUTILS_ERROR_CURL_SETOPT;
         }
+    }
 
-        if (result == ARUTILS_OK)
+    if (result == ARUTILS_OK)
+    {
+        code = curl_easy_setopt(connection->curl, CURLOPT_NOPROGRESS, 0L);
+
+        if (code != CURLE_OK)
         {
-            code = curl_easy_setopt(connection->curl, CURLOPT_NOPROGRESS, 0L);
-
-            if (code != CURLE_OK)
-            {
-                result = ARUTILS_ERROR_CURL_SETOPT;
-            }
+            result = ARUTILS_ERROR_CURL_SETOPT;
         }
     }
 
@@ -1424,9 +1471,8 @@ drwxr-xr-x    2 0        0             160 Jan  1  2000 data
 drwxr-xr-x    4 122      128          4096 Jan 24 14:34 AR.Drone
 drwxr-xr-x    4 122      128          4096 Jan 24 14:34 Jumping Sumo
 */
-const char * ARUTILS_Ftp_List_GetNextItem(const char *list, const char **nextItem, const char *prefix, int isDirectory, const char **indexItem, int *itemLen)
+const char * ARUTILS_Ftp_List_GetNextItem(const char *list, const char **nextItem, const char *prefix, int isDirectory, const char **indexItem, int *itemLen, char *lineData, int lineDataLen)
 {
-    static char lineData[ARUTILS_FTP_MAX_LIST_LINE_SIZE];
     char *item = NULL;
     const char *line = NULL;
     const char *fileIdx;
@@ -1485,10 +1531,13 @@ const char * ARUTILS_Ftp_List_GetNextItem(const char *list, const char **nextIte
 
                     if (fileIdx != NULL)
                     {
-                        int len = ((endLine - fileIdx) < ARUTILS_FTP_MAX_LIST_LINE_SIZE) ? (endLine - fileIdx) : (ARUTILS_FTP_MAX_LIST_LINE_SIZE - 1);
-                        strncpy(lineData, fileIdx, len);
-                        lineData[len] = '\0';
-                        item = lineData;
+                        size_t len = ((endLine - fileIdx) < ARUTILS_FTP_MAX_LIST_LINE_SIZE) ? (endLine - fileIdx) : (ARUTILS_FTP_MAX_LIST_LINE_SIZE - 1);
+                        if ((lineData != NULL) && (len < (lineDataLen + 1)))
+                        {
+                            strncpy(lineData, fileIdx, len);
+                            lineData[len] = '\0';
+                            item = lineData;
+                        }
                     }
                 }
             }
@@ -1501,7 +1550,7 @@ const char * ARUTILS_Ftp_List_GetNextItem(const char *list, const char **nextIte
 
         if (itemLen != NULL)
         {
-            *itemLen = endLine - line;
+            *itemLen = (int)(endLine - line);
         }
     }
 
@@ -1679,7 +1728,17 @@ eARUTILS_ERROR ARUTILS_WifiFtp_ResetOptions(ARUTILS_WifiFtp_Connection_t *connec
             result = ARUTILS_ERROR_CURL_SETOPT;
         }
     }
-
+    
+    if (result == ARUTILS_OK)
+    {
+        code = curl_easy_setopt(connection->curl,CURLOPT_CONNECTTIMEOUT, ARUTILS_WIFIFTP_TIMEOUT);
+        
+        if (code != CURLE_OK)
+        {
+            result = ARUTILS_ERROR_CURL_SETOPT;
+        }
+    }
+    
     return result;
 }
 
@@ -1759,7 +1818,7 @@ size_t ARUTILS_WifiFtp_WriteDataCallback(void *ptr, size_t size, size_t nmemb, v
             }
             else
             {
-                int len = fwrite(ptr, size, nmemb, connection->cbdata.file);
+                size_t len = fwrite(ptr, size, nmemb, connection->cbdata.file);
                 if (len != size * nmemb)
                 {
                     connection->cbdata.error = ARUTILS_ERROR_SYSTEM;
@@ -1796,6 +1855,7 @@ int ARUTILS_WifiFtp_ProgressCallback(void *userData, double dltotal, double dlno
 {
     ARUTILS_WifiFtp_Connection_t *connection = (ARUTILS_WifiFtp_Connection_t *)userData;
     float percent;
+    int retval = 0;
 
     //ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_WIFIFTP_TAG, "%.0f, %.0f, %.0f, %.0f", dltotal, dlnow, ultotal, ulnow);
 
@@ -1822,9 +1882,13 @@ int ARUTILS_WifiFtp_ProgressCallback(void *userData, double dltotal, double dlno
                 }
             }
         }
+        if (ARUTILS_WifiFtp_IsCanceled(connection) != ARUTILS_OK)
+        {
+            retval = 1; /* Return non-zero to abort transfer. */
+        }
     }
 
-    return 0;
+    return retval;
 }
 
 curl_socket_t ARUTILS_WifiFtp_OpensocketCallback(void *clientp, curlsocktype purpose, struct curl_sockaddr *address)
@@ -1983,6 +2047,7 @@ eARUTILS_ERROR ARUTILS_Manager_InitWifiFtp(ARUTILS_Manager_t *manager, const cha
         manager->ftpGet = ARUTILS_WifiFtpAL_Get;
         manager->ftpPut = ARUTILS_WifiFtpAL_Put;
         manager->ftpDelete = ARUTILS_WifiFtpAL_Delete;
+        manager->ftpRemoveDir = ARUTILS_WifiFtpAL_RemoveDir;
         manager->ftpRename = ARUTILS_WifiFtpAL_Rename;
     }
 
@@ -2047,6 +2112,11 @@ eARUTILS_ERROR ARUTILS_WifiFtpAL_Put(ARUTILS_Manager_t *manager, const char *nam
 eARUTILS_ERROR ARUTILS_WifiFtpAL_Delete(ARUTILS_Manager_t *manager, const char *namePath)
 {
     return ARUTILS_WifiFtp_Delete((ARUTILS_WifiFtp_Connection_t *)manager->connectionObject, namePath);
+}
+
+eARUTILS_ERROR ARUTILS_WifiFtpAL_RemoveDir(ARUTILS_Manager_t *manager, const char *namePath)
+{
+    return ARUTILS_WifiFtp_RemoveDir((ARUTILS_WifiFtp_Connection_t *)manager->connectionObject, namePath);
 }
 
 eARUTILS_ERROR ARUTILS_WifiFtpAL_Rename(ARUTILS_Manager_t *manager, const char *oldNamePath, const char *newNamePath)

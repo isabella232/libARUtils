@@ -1,3 +1,33 @@
+/*
+    Copyright (C) 2014 Parrot SA
+
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions
+    are met:
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in
+      the documentation and/or other materials provided with the 
+      distribution.
+    * Neither the name of Parrot nor the names
+      of its contributors may be used to endorse or promote products
+      derived from this software without specific prior written
+      permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+    "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+    LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+    FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+    COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+    INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+    BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS
+    OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED 
+    AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+    OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
+    OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+    SUCH DAMAGE.
+*/
 /**
  * @file ARUTILS_JNI_FtpConnection.c
  * @brief libARUtils JNI_FtpConnection c file.
@@ -154,6 +184,44 @@ JNIEXPORT void JNICALL Java_com_parrot_arsdk_arutils_ARUtilsFtpConnection_native
         ARSAL_Sem_Destroy(&nativeFtpConnection->cancelSem);
         free(nativeFtpConnection);
     }
+}
+
+JNIEXPORT jint JNICALL Java_com_parrot_arsdk_arutils_ARUtilsFtpConnection_nativeDisconnect(JNIEnv *env, jobject jThis, jlong jFtpConnection)
+{
+    ARUTILS_JNI_FtpConnection_t *nativeFtpConnection = (ARUTILS_JNI_FtpConnection_t *)(intptr_t) jFtpConnection;
+    eARUTILS_ERROR result = ARUTILS_OK;
+
+    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_JNI_FTPCONNECTION_TAG, "");
+
+    if (nativeFtpConnection == NULL)
+    {
+        result = ARUTILS_ERROR_SYSTEM;
+    }
+    else
+    {
+        result = ARUTILS_WifiFtp_Connection_Disconnect(nativeFtpConnection->ftpConnection);
+    }
+
+    return result;
+}
+
+JNIEXPORT jint JNICALL Java_com_parrot_arsdk_arutils_ARUtilsFtpConnection_nativeReconnect(JNIEnv *env, jobject jThis, jlong jFtpConnection)
+{
+    ARUTILS_JNI_FtpConnection_t *nativeFtpConnection = (ARUTILS_JNI_FtpConnection_t *)(intptr_t) jFtpConnection;
+    eARUTILS_ERROR result = ARUTILS_OK;
+
+    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_JNI_FTPCONNECTION_TAG, "");
+
+    if (nativeFtpConnection == NULL)
+    {
+        result = ARUTILS_ERROR_SYSTEM;
+    }
+    else
+    {
+        result = ARUTILS_WifiFtp_Connection_Reconnect(nativeFtpConnection->ftpConnection);
+    }
+
+    return result;
 }
 
 JNIEXPORT jint JNICALL Java_com_parrot_arsdk_arutils_ARUtilsFtpConnection_nativeCancel(JNIEnv *env, jobject jThis, jlong jFtpConnection)
@@ -339,6 +407,31 @@ JNIEXPORT jint JNICALL Java_com_parrot_arsdk_arutils_ARUtilsFtpConnection_native
         result = ARUTILS_WifiFtp_Delete(nativeFtpConnection->ftpConnection, nativeNamePath);
     }
 
+    if (nativeNamePath)
+    {
+        (*env)->ReleaseStringUTFChars(env, jNamePath, nativeNamePath);
+    }
+
+    return result;
+}
+
+JNIEXPORT jint JNICALL Java_com_parrot_arsdk_arutils_ARUtilsFtpConnection_nativeRemoveDir(JNIEnv *env, jobject jThis, jlong jFtpConnection, jstring jNamePath)
+{
+    ARUTILS_JNI_FtpConnection_t *nativeFtpConnection = (ARUTILS_JNI_FtpConnection_t *)(intptr_t) jFtpConnection;
+    const char *nativeNamePath = (*env)->GetStringUTFChars(env, jNamePath, 0);
+    eARUTILS_ERROR result = ARUTILS_OK;
+
+    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_JNI_FTPCONNECTION_TAG, "");
+
+    if (nativeFtpConnection == NULL)
+    {
+        result = ARUTILS_ERROR_SYSTEM;
+    }
+    else
+    {
+        result = ARUTILS_WifiFtp_RemoveDir(nativeFtpConnection->ftpConnection, nativeNamePath);
+    }
+    
     if (nativeNamePath)
     {
         (*env)->ReleaseStringUTFChars(env, jNamePath, nativeNamePath);

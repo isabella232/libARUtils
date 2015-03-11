@@ -1,3 +1,33 @@
+/*
+    Copyright (C) 2014 Parrot SA
+
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions
+    are met:
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in
+      the documentation and/or other materials provided with the
+      distribution.
+    * Neither the name of Parrot nor the names
+      of its contributors may be used to endorse or promote products
+      derived from this software without specific prior written
+      permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+    "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+    LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+    FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+    COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+    INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+    BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS
+    OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
+    AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+    OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
+    OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+    SUCH DAMAGE.
+*/
 /**
  * @file  ARNETWORKAL_JNIBLENetwork.c
  * @brief private headers of BLE network manager allow to send over ble network.
@@ -259,7 +289,16 @@ eARUTILS_ERROR ARUTILS_BLEFtp_Connection_Cancel(ARUTILS_BLEFtp_Connection_t *con
     {
         jobject bleFtpObject = connection->bleFtpObject;
         jobject cancelSemObject = connection->cancelSemObject;
+
         ret = (*env)->CallBooleanMethod(env, bleFtpObject, ARUTILS_JNI_BLEFTP_METHOD_CONNECTION_CANCEL, cancelSemObject);
+
+        if ((*env)->ExceptionOccurred(env))
+        {
+            ARSAL_PRINT(ARSAL_PRINT_ERROR, ARUTILS_JNI_BLEFTP_TAG, "EXCEPTION Details:");
+            (*env)->ExceptionDescribe(env);
+            (*env)->ExceptionClear(env);
+            ret = JNI_FALSE;
+        }
 
         if (ret == 0)
         {
@@ -315,7 +354,16 @@ eARUTILS_ERROR ARUTILS_BLEFtp_Connection_IsCanceled(ARUTILS_BLEFtp_Connection_t 
     {
         jobject bleFtpObject = connection->bleFtpObject;
         jobject cancelSemObject = connection->cancelSemObject;
+
         ret = (*env)->CallBooleanMethod(env, bleFtpObject, ARUTILS_JNI_BLEFTP_METHOD_IS_CANCELED, cancelSemObject);
+
+        if ((*env)->ExceptionOccurred(env))
+        {
+            ARSAL_PRINT(ARSAL_PRINT_ERROR, ARUTILS_JNI_BLEFTP_TAG, "EXCEPTION Details:");
+            (*env)->ExceptionDescribe(env);
+            (*env)->ExceptionClear(env);
+            ret = JNI_FALSE;
+        }
 
         if (ret != 0)
         {
@@ -375,7 +423,16 @@ eARUTILS_ERROR ARUTILS_BLEFtp_Connection_Reset(ARUTILS_BLEFtp_Connection_t *conn
     {
         jobject bleFtpObject = connection->bleFtpObject;
         jobject cancelSemObject = connection->cancelSemObject;
+
         ret = (*env)->CallBooleanMethod(env, bleFtpObject, ARUTILS_JNI_BLEFTP_METHOD_CONNECTION_RESET, cancelSemObject);
+
+        if ((*env)->ExceptionOccurred(env))
+        {
+            ARSAL_PRINT(ARSAL_PRINT_ERROR, ARUTILS_JNI_BLEFTP_TAG, "EXCEPTION Details:");
+            (*env)->ExceptionDescribe(env);
+            (*env)->ExceptionClear(env);
+            ret = JNI_FALSE;
+        }
 
         if (ret == 0)
         {
@@ -435,16 +492,20 @@ eARUTILS_ERROR ARUTILS_BLEFtp_List(ARUTILS_BLEFtp_Connection_t *connection, cons
 
     if (error == ARUTILS_OK)
     {
-
         jobject bleFtpObject = connection->bleFtpObject;
-
         jstring jRemotePath = (*env)->NewStringUTF(env, remotePath);
-
         jclass objectClass = (*env)->FindClass(env, "java/lang/String");
-
         jobjectArray objectList = (*env)->NewObjectArray(env, 1, objectClass, NULL);
 
         ret = (*env)->CallBooleanMethod(env, bleFtpObject, ARUTILS_JNI_BLEFTP_METHOD_FTP_LIST, jRemotePath, objectList);
+
+        if ((*env)->ExceptionOccurred(env))
+        {
+            ARSAL_PRINT(ARSAL_PRINT_ERROR, ARUTILS_JNI_BLEFTP_TAG, "EXCEPTION Details:");
+            (*env)->ExceptionDescribe(env);
+            (*env)->ExceptionClear(env);
+            ret = JNI_FALSE;
+        }
 
         if (ret == 0)
         {
@@ -464,7 +525,7 @@ eARUTILS_ERROR ARUTILS_BLEFtp_List(ARUTILS_BLEFtp_Connection_t *connection, cons
             {
                 dataList = "";
             }
-            
+
             int dataLen = 0;
             if (dataList != NULL)
             {
@@ -558,10 +619,19 @@ eARUTILS_ERROR ARUTILS_BLEFtp_Delete(ARUTILS_BLEFtp_Connection_t *connection, co
 
     if (error == ARUTILS_OK)
     {
-
         jobject bleFtpObject = connection->bleFtpObject;
         jstring jRemotePath = (*env)->NewStringUTF(env, remotePath);
+
         ret = (*env)->CallBooleanMethod(env, bleFtpObject, ARUTILS_JNI_BLEFTP_METHOD_DELETE, jRemotePath);
+
+        if ((*env)->ExceptionOccurred(env))
+        {
+            ARSAL_PRINT(ARSAL_PRINT_ERROR, ARUTILS_JNI_BLEFTP_TAG, "EXCEPTION Details:");
+            (*env)->ExceptionDescribe(env);
+            (*env)->ExceptionClear(env);
+            ret = JNI_FALSE;
+        }
+
         if (ret == 0)
         {
             error = ARUTILS_ERROR_BLE_FAILED;
@@ -647,7 +717,6 @@ eARUTILS_ERROR ARUTILS_BLEFtp_Get_WithBuffer(ARUTILS_BLEFtp_Connection_t *connec
 
     if (error == ARUTILS_OK)
     {
-
         jobject bleFtpObject = connection->bleFtpObject;
         jobject cancelSemObject = connection->cancelSemObject;
         jstring jRemotePath = (*env)->NewStringUTF(env, remotePath);
@@ -656,6 +725,15 @@ eARUTILS_ERROR ARUTILS_BLEFtp_Get_WithBuffer(ARUTILS_BLEFtp_Connection_t *connec
         jobjectArray dataArray = (*env)->NewObjectArray(env, 1, objectClass, NULL);
 
         ret = (*env)->CallBooleanMethod(env, bleFtpObject, ARUTILS_JNI_BLEFTP_METHOD_GET_WITH_BUFFER, jRemotePath, dataArray, (jlong)(intptr_t)callback, cancelSemObject);
+
+        if ((*env)->ExceptionOccurred(env))
+        {
+            ARSAL_PRINT(ARSAL_PRINT_ERROR, ARUTILS_JNI_BLEFTP_TAG, "EXCEPTION Details:");
+            (*env)->ExceptionDescribe(env);
+            (*env)->ExceptionClear(env);
+            ret = JNI_FALSE;
+        }
+
         if (ret == 0)
         {
             error = ARUTILS_ERROR_BLE_FAILED;
@@ -777,6 +855,15 @@ eARUTILS_ERROR ARUTILS_BLEFtp_Get(ARUTILS_BLEFtp_Connection_t *connection, const
 
         ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_JNI_BLEFTP_TAG, " %x %x", callback, callback->bleFtpProgressCallback);
         ret = (*env)->CallBooleanMethod(env, bleFtpObject, ARUTILS_JNI_BLEFTP_METHOD_GET, jRemotePath, jDstFile, (jlong)(intptr_t)callback, cancelSemObject);
+
+        if ((*env)->ExceptionOccurred(env))
+        {
+            ARSAL_PRINT(ARSAL_PRINT_ERROR, ARUTILS_JNI_BLEFTP_TAG, "EXCEPTION Details:");
+            (*env)->ExceptionDescribe(env);
+            (*env)->ExceptionClear(env);
+            ret = JNI_FALSE;
+        }
+
         if (ret == 0)
         {
             error = ARUTILS_ERROR_BLE_FAILED;
@@ -880,6 +967,15 @@ eARUTILS_ERROR ARUTILS_BLEFtp_Put(ARUTILS_BLEFtp_Connection_t *connection, const
         jstring jSrcFile = (*env)->NewStringUTF(env, srcFile);
 
         ret = (*env)->CallBooleanMethod(env, bleFtpObject, ARUTILS_JNI_BLEFTP_METHOD_PUT, jRemotePath, jSrcFile, (jlong)(intptr_t)callback, resume, cancelSemObject);
+
+        if ((*env)->ExceptionOccurred(env))
+        {
+            ARSAL_PRINT(ARSAL_PRINT_ERROR, ARUTILS_JNI_BLEFTP_TAG, "EXCEPTION Details:");
+            (*env)->ExceptionDescribe(env);
+            (*env)->ExceptionClear(env);
+            ret = JNI_FALSE;
+        }
+
         if (ret == 0)
         {
             error = ARUTILS_ERROR_BLE_FAILED;
@@ -954,6 +1050,15 @@ eARUTILS_ERROR ARUTILS_BLEFtp_Rename(ARUTILS_BLEFtp_Connection_t *connection, co
         jstring jNewNamePath = (*env)->NewStringUTF(env, newNamePath);
 
         ret = (*env)->CallBooleanMethod(env, bleFtpObject, ARUTILS_JNI_BLEFTP_METHOD_RENAME, jOldNamePath, jNewNamePath);
+
+        if ((*env)->ExceptionOccurred(env))
+        {
+            ARSAL_PRINT(ARSAL_PRINT_ERROR, ARUTILS_JNI_BLEFTP_TAG, "EXCEPTION Details:");
+            (*env)->ExceptionDescribe(env);
+            (*env)->ExceptionClear(env);
+            ret = JNI_FALSE;
+        }
+
         if (ret == 0)
         {
             error = ARUTILS_ERROR_BLE_FAILED;
@@ -980,6 +1085,17 @@ eARUTILS_ERROR ARUTILS_BLEFtp_Rename(ARUTILS_BLEFtp_Connection_t *connection, co
     return error;
 }
 
+eARUTILS_ERROR ARUTILS_BLEFtpAL_Connection_Disconnect(ARUTILS_Manager_t *manager)
+{
+    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_JNI_BLEFTP_TAG, "");
+    return ARUTILS_OK;
+}
+
+eARUTILS_ERROR ARUTILS_BLEFtpAL_Connection_Reconnect(ARUTILS_Manager_t *manager)
+{
+    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_JNI_BLEFTP_TAG, "");
+    return ARUTILS_OK;
+}
 
 eARUTILS_ERROR ARUTILS_BLEFtpAL_Connection_Cancel(ARUTILS_Manager_t *manager)
 {

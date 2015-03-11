@@ -1,3 +1,33 @@
+/*
+    Copyright (C) 2014 Parrot SA
+
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions
+    are met:
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in
+      the documentation and/or other materials provided with the
+      distribution.
+    * Neither the name of Parrot nor the names
+      of its contributors may be used to endorse or promote products
+      derived from this software without specific prior written
+      permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+    "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+    LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+    FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+    COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+    INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+    BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS
+    OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
+    AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+    OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
+    OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+    SUCH DAMAGE.
+*/
 /**
  * @file ARUTILS_JNI_Manager.c
  * @brief libARUtils JNI_Manager c file.
@@ -26,6 +56,7 @@
 #include "libARUtils/ARUTILS_Http.h"
 #include "libARUtils/ARUTILS_Ftp.h"
 #include "ARUTILS_JNI_BLEFtp.h"
+#include "ARUTILS_JNI_RFCommFtp.h"
 
 #include "ARUTILS_JNI.h"
 
@@ -189,6 +220,8 @@ Java_com_parrot_arsdk_arutils_ARUtilsManager_nativeInitBLEFtp
 
     if (manager)
     {
+        manager->ftpConnectionDisconnect = ARUTILS_BLEFtpAL_Connection_Disconnect;
+        manager->ftpConnectionReconnect = ARUTILS_BLEFtpAL_Connection_Reconnect;
         manager->ftpConnectionCancel = ARUTILS_BLEFtpAL_Connection_Cancel;
         manager->ftpConnectionIsCanceled = ARUTILS_BLEFtpAL_Connection_IsCanceled;
         manager->ftpConnectionReset = ARUTILS_BLEFtpAL_Connection_Reset;
@@ -217,6 +250,53 @@ Java_com_parrot_arsdk_arutils_ARUtilsManager_nativeCloseBLEFtp
     {
         ARUTILS_BLEFtp_Connection_Delete((ARUTILS_BLEFtp_Connection_t **)&manager->connectionObject);
 
+        ARSAL_Sem_Destroy(&manager->cancelSem);
+    }
+}
+
+/*
+ * Class:     com_parrot_arsdk_arutils_ARUtilsManager
+ * Method:    nativeInitRFCommFtp
+ */
+JNIEXPORT jint JNICALL
+Java_com_parrot_arsdk_arutils_ARUtilsManager_nativeInitRFCommFtp
+(JNIEnv *env, jobject obj, jlong jManager, jobject jRFCommFtp, jobject jCancelSem)
+{
+    ARUTILS_Manager_t *manager = (ARUTILS_Manager_t*) (intptr_t) jManager;
+    eARUTILS_ERROR error = ARUTILS_OK;
+    
+    if (error == ARUTILS_OK)
+    {
+        manager->connectionObject = ARUTILS_RFCommFtp_Connection_New(jRFCommFtp, jCancelSem, &error);
+    }
+    
+    if (manager)
+    {
+        manager->ftpConnectionDisconnect = ARUTILS_RFCommFtpAL_Connection_Disconnect;
+        manager->ftpConnectionReconnect = ARUTILS_RFCommFtpAL_Connection_Reconnect;
+        manager->ftpConnectionCancel = ARUTILS_RFCommFtpAL_Connection_Cancel;
+        manager->ftpConnectionIsCanceled = ARUTILS_RFCommFtpAL_Connection_IsCanceled;
+        manager->ftpConnectionReset = ARUTILS_RFCommFtpAL_Connection_Reset;
+        manager->ftpPut = ARUTILS_RFCommFtpAL_Put;
+    }
+    
+    return error;
+}
+
+/*
+ * Class:     com_parrot_arsdk_arutils_ARUtilsManager
+ * Method:    nativeCloseRFCommFtp
+ */
+JNIEXPORT jint JNICALL
+Java_com_parrot_arsdk_arutils_ARUtilsManager_nativeCloseRFCommFtp
+(JNIEnv *env, jobject obj, jlong jManager)
+{
+    ARUTILS_Manager_t *manager = (ARUTILS_Manager_t*) (intptr_t) jManager;
+    
+    if (manager != NULL)
+    {
+        ARUTILS_RFCommFtp_Connection_Delete((ARUTILS_RFCommFtp_Connection_t **)&manager->connectionObject);
+        
         ARSAL_Sem_Destroy(&manager->cancelSem);
     }
 }
@@ -516,6 +596,46 @@ Java_com_parrot_arsdk_arutils_ARUtilsManager_nativeBLEFtpGetWithBuffer
 
     return result;
 }
+
+JNIEXPORT jint JNICALL
+Java_com_parrot_arsdk_arutils_ARUtilsManager_nativeBLEFtpConnectionDisconnect
+  (JNIEnv *env, jobject obj, jlong jManager)
+ {
+    ARUTILS_Manager_t *manager = (ARUTILS_Manager_t*) (intptr_t) jManager;
+    eARUTILS_ERROR error = ARUTILS_OK;
+
+    if (manager == NULL)
+    {
+        ARSAL_PRINT(ARSAL_PRINT_ERROR, ARUTILS_JNI_MANAGER_TAG, "Wrong parameter: %x", manager);
+        error = ARUTILS_ERROR_BAD_PARAMETER;
+    }
+
+    if (error == ARUTILS_OK)
+    {
+        error = error = ARUTILS_BLEFtpAL_Connection_Disconnect(manager);
+    }
+    return error;
+ }
+
+JNIEXPORT jint JNICALL
+Java_com_parrot_arsdk_arutils_ARUtilsManager_nativeBLEFtpConnectionReconnect
+  (JNIEnv *env, jobject obj, jlong jManager)
+ {
+    ARUTILS_Manager_t *manager = (ARUTILS_Manager_t*) (intptr_t) jManager;
+    eARUTILS_ERROR error = ARUTILS_OK;
+
+    if (manager == NULL)
+    {
+        ARSAL_PRINT(ARSAL_PRINT_ERROR, ARUTILS_JNI_MANAGER_TAG, "Wrong parameter: %x", manager);
+        error = ARUTILS_ERROR_BAD_PARAMETER;
+    }
+
+    if (error == ARUTILS_OK)
+    {
+        error = error = ARUTILS_BLEFtpAL_Connection_Reconnect(manager);
+    }
+    return error;
+ }
 
 JNIEXPORT jint JNICALL
 Java_com_parrot_arsdk_arutils_ARUtilsManager_nativeBLEFtpConnectionCancel
