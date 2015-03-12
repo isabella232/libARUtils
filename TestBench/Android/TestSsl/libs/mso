@@ -1,0 +1,76 @@
+#!/bin/bash
+#-v
+
+rm -rf armeabi
+rm -rf armeabi-v7a
+rm -rf mips
+rm -rf x86
+
+rm libARSync.jar
+rm libARDataTransfer.jar
+rm libARDiscovery.jar
+rm libARUtils.jar
+rm libARNetworkAL.jar
+rm libARSAL.jar
+rm libcurl.jar
+rm libopenssl.jar
+
+rm libARSync_dbg.jar
+rm libARDataTransfer_dbg.jar
+rm libARDiscovery_dbg.jar
+rm libARUtils_dbg.jar
+rm libARNetworkAL_dbg.jar
+rm libARSAL_dbg.jar
+rm libcurl_dbg.jar
+rm libopenssl_dbg.jar
+
+if [ -z "$1" ]
+    then
+    	echo "release jars"
+    	#cp -v ../../../../../ARSDKBuildUtils/Targets/Android/Install/jars/release/libARSync.jar .
+        #cp -v ../../../../../ARSDKBuildUtils/Targets/Android/Install/jars/release/libARDataTransfer.jar .
+        #cp -v ../../../../../ARSDKBuildUtils/Targets/Android/Install/jars/release/libARDiscovery.jar .
+        #cp -v ../../../../../ARSDKBuildUtils/Targets/Android/Install/jars/release/libARUtils.jar .
+        #cp -v ../../../../../ARSDKBuildUtils/Targets/Android/Install/jars/release/libARSAL.jar .
+        #cp -v ../../../../../ARSDKBuildUtils/Targets/Android/Install/jars/release/libcurl.jar .
+        #cp -v ../../../../../ARSDKBuildUtils/Targets/Android/Install/jars/release/libopenssl.jar .
+    else if [[ "$1" -eq "d" ]]
+    then
+    	echo "debug jars"
+    	#cp -v ../../../../../ARSDKBuildUtils/Targets/Android/Install/jars/debug/libARSync_dbg.jar .
+        #cp -v ../../../../../ARSDKBuildUtils/Targets/Android/Install/jars/debug/libARDataTransfer_dbg.jar .
+        #cp -v ../../../../../ARSDKBuildUtils/Targets/Android/Install/jars/debug/libARDiscovery_dbg.jar .
+        #cp -v ../../../../../ARSDKBuildUtils/Targets/Android/Install/jars/debug/libARUtils_dbg.jar .
+        #cp -v ../../../../../ARSDKBuildUtils/Targets/Android/Install/jars/debug/libARSAL_dbg.jar .
+        #cp -v ../../../../../ARSDKBuildUtils/Targets/Android/Install/jars/debug/libcurl_dbg.jar .
+        #cp -v ../../../../../ARSDKBuildUtils/Targets/Android/Install/jars/debug/libopenssl_dbg.jar .
+    else
+         echo "-d for debug jars"
+    fi
+	fi
+
+echo "commun jars"
+cp -v ../../../../../ARSDKBuildUtils/Targets/Android/Install/jars/release/libARSync.jar .
+#cp -v ../../../../../ARSDKBuildUtils/Targets/Android/Install/jars/release/libARDataTransfer.jar .
+#cp -v ../../../../../ARSDKBuildUtils/Targets/Android/Install/jars/release/libARDiscovery.jar .
+cp -v ../../../../../ARSDKBuildUtils/Targets/Android/Install/jars/release/libARUtils.jar .
+cp -v ../../../../../ARSDKBuildUtils/Targets/Android/Install/jars/release/libARNetworkAL.jar .
+cp -v ../../../../../ARSDKBuildUtils/Targets/Android/Install/jars/release/libARSAL.jar .
+cp -v ../../../../../ARSDKBuildUtils/Targets/Android/Install/jars/release/libcurl.jar .
+cp -v ../../../../../ARSDKBuildUtils/Targets/Android/Install/jars/release/libopenssl.jar .
+#cp  -v ../../../../../ARSDKBuildUtils/Targets/Android/Install/jars/release//jmdns.jar . 
+
+./extractJars.bash
+
+echo "=================="
+echo "armeabi ->"
+ls armeabi
+echo "armeabi-v7a ->"
+ls armeabi-v7a
+echo "mips ->"
+ls mips
+echo "x86 ->"
+ls x86
+
+#rm libARSAL.jar
+#rm libARUtils.jar
