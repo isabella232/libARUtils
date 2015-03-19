@@ -398,7 +398,36 @@ eARUTILS_ERROR ARUTILS_Http_Get_Internal(ARUTILS_Http_Connection_t *connection, 
                 result = ARUTILS_ERROR_HTTP_SIZE;
             }
         }
-    }    
+    }
+    
+    if ((result == ARUTILS_OK) && (dstFile == NULL))
+    {
+        // -1 when no Content-Length available
+        if ((((uint32_t)remoteSize) > 0)
+            && (((uint32_t)remoteSize) != connection->cbdata.writeDataSize))
+        {
+            result = ARUTILS_ERROR_HTTP_SIZE;
+        }
+    }
+    
+    if ((result == ARUTILS_OK) && (dstFile == NULL) && (connection->cbdata.writeData != NULL))
+    {
+        // add trailing \0 to secure unchecked string used
+        if (connection->cbdata.writeData[connection->cbdata.writeDataSize - 1] != '\0')
+        {
+            uint8_t *oldData = connection->cbdata.writeData;
+            connection->cbdata.writeData = (uint8_t*)realloc(connection->cbdata.writeData, (connection->cbdata.writeDataSize + 1) * sizeof(uint8_t));
+            if (connection->cbdata.writeData == NULL)
+            {
+                connection->cbdata.writeData = oldData;
+                result = ARUTILS_ERROR_ALLOC;
+            }
+            else
+            {
+                connection->cbdata.writeData[connection->cbdata.writeDataSize] = '\0';
+            }
+        }
+    }
     
     if ((result == ARUTILS_OK) && (data != NULL) && (dataLen != NULL))
     {

@@ -55,7 +55,7 @@ void test_http_progress_callback(void* arg, float percent)
     printf("%s %02f%%\n", message ? message : "null", percent);
 }
 
-void test_http_connection_public(char *tmp)
+void test_http_connection_public(const char *tmp)
 {
     ARUTILS_Http_Connection_t *connection = NULL;
     eARUTILS_ERROR result;
@@ -80,7 +80,7 @@ void test_http_connection_public(char *tmp)
     ARSAL_Sem_Destroy(&cancelSem);
 }
 
-void test_http_connection_private(char *tmp)
+void test_http_connection_private(const char *tmp)
 {
     ARUTILS_Http_Connection_t *connection = NULL;
     eARUTILS_ERROR result;
@@ -105,9 +105,46 @@ void test_http_connection_private(char *tmp)
     ARSAL_Sem_Destroy(&cancelSem);
 }
 
-void test_http_connection(char *tmp)
+void test_http_connection_length(const char *tmp)
+{
+    ARUTILS_Http_Connection_t *connection = NULL;
+    eARUTILS_ERROR result;
+    ARSAL_Sem_t cancelSem;
+    
+    ARSAL_Sem_Init(&cancelSem, 0, 0);
+    
+    // //download.parrot.com/Drones/0902/update.php?product=0902&serialNo=0000&version=0.0.0&platform=iOS&appVersion=3.4.7
+    connection = ARUTILS_Http_Connection_New(&cancelSem, "download.parrot.com", 80, HTTPS_PROTOCOL_FALSE, NULL, NULL, &result);
+    printf("result %d\n", result);
+    
+    char localFilePath[512];
+    strcpy(localFilePath, tmp);
+    strcat(localFilePath, "photo_20131001_235901.jpg");
+    uint8_t *data = NULL;
+    uint32_t dataLen = 0;
+    
+    result = ARUTILS_Http_Get_WithBuffer(connection, "Drones/0902/update.php?product=0902&serialNo=0000&version=0.0.0&platform=iOS&appVersion=3.4.7", &data, &dataLen, test_http_progress_callback, "progress: ");
+    
+    if (data != NULL)
+    {
+        printf("data %s\n", (char*)data);
+    }
+    printf("result %d\n", result);
+    
+    result = ARUTILS_Http_Connection_Cancel(connection);
+    printf("result %d\n", result);
+    
+    ARUTILS_Http_Connection_Delete(&connection);
+    ARSAL_Sem_Destroy(&cancelSem);
+}
+
+
+
+void test_http_connection(const char *tmp)
 {
     test_http_connection_public(tmp);
 
     test_http_connection_private(tmp);
+    
+    test_http_connection_length(tmp);
 }
