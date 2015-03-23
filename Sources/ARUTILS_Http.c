@@ -403,8 +403,8 @@ eARUTILS_ERROR ARUTILS_Http_Get_Internal(ARUTILS_Http_Connection_t *connection, 
     if ((result == ARUTILS_OK) && (dstFile == NULL))
     {
         // -1 when no Content-Length available
-        if ((((uint32_t)remoteSize) > 0)
-            && (((uint32_t)remoteSize) != connection->cbdata.writeDataSize))
+        if ((((int32_t)remoteSize) > 0)
+            && (((int32_t)remoteSize) != connection->cbdata.writeDataSize))
         {
             result = ARUTILS_ERROR_HTTP_SIZE;
         }
