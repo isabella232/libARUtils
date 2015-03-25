@@ -758,7 +758,7 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(ARUtils_BLEFtp, initBLEFtp)
                     result = ARUTILS_ERROR_FTP_CONNECT;
                 }
 #if ARUTILS_BLEFTP_ENABLE_LOG
-                NSLog(@"packet %d, %d, %d", packetCount, packetLen, totalSize);
+                NSLog(@"packet %d, %d, %d", packetCount, (int)packetLen, totalSize);
 #endif
             }
             else
@@ -768,7 +768,8 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(ARUtils_BLEFtp, initBLEFtp)
 #endif
             }
             
-            if (progressCallback != NULL)
+            if ((progressCallback != NULL)
+                && ARUTILS_BLEFtp_Connection_IsCanceled(connection) == ARUTILS_OK)
             {
                 progressCallback(progressArg, ((float)totalSize / (float)fileSize) * 100.f);
             }
@@ -1138,8 +1139,7 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(ARUtils_BLEFtp, initBLEFtp)
                 //no data available
                 if (retBLE == ARSAL_ERROR_BLE_TIMEOUT)
                  {
-                     result = [self sendCommand:"CANCEL" param:NULL characteristic:_getting];
-                     result = ARUTILS_ERROR_FTP_CANCELED;
+                    blockMD5 = YES;
                     #if ARUTILS_BLEFTP_ENABLE_LOG
                          NSLog(@"ARSAL_ERROR_BLE_TIMEOUT result :%d",result);
                     #endif
@@ -1180,7 +1180,7 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(ARUtils_BLEFtp, initBLEFtp)
                             else
                             {
 #if ARUTILS_BLEFTP_ENABLE_LOG
-                                NSLog(@"md5 END Failed SIZE %d", packetLen);
+                                NSLog(@"md5 END Failed SIZE %d", (int)packetLen);
 #endif
                                 result = ARUTILS_ERROR_FTP_SIZE;
                             }
@@ -1198,7 +1198,7 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(ARUtils_BLEFtp, initBLEFtp)
                             else
                             {
 #if ARUTILS_BLEFTP_ENABLE_LOG
-                                NSLog(@"END Failed SIZE %d", packetLen);
+                                NSLog(@"END Failed SIZE %d", (int)packetLen);
 #endif
                                 result = ARUTILS_ERROR_FTP_SIZE;
                             }
@@ -1224,7 +1224,7 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(ARUtils_BLEFtp, initBLEFtp)
                             else
                             {
 #if ARUTILS_BLEFTP_ENABLE_LOG
-                                NSLog(@"md5 received Failed SIZE %d", packetLen);
+                                NSLog(@"md5 received Failed SIZE %d", (int)packetLen);
 #endif
                                 result = ARUTILS_ERROR_FTP_SIZE;
                             }
@@ -1263,12 +1263,13 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(ARUtils_BLEFtp, initBLEFtp)
                                 }
                             }
                             
-                            if (progressCallback != NULL)
+                            if ((progressCallback != NULL)
+                                && ARUTILS_BLEFtp_Connection_IsCanceled(connection) == ARUTILS_OK)
                             {
                                 progressCallback(progressArg, ((float)totalSize / (float)fileSize) * 100.f);
                             }
 #if ARUTILS_BLEFTP_ENABLE_LOG
-                            NSLog(@"packet %d, %d, %d", packetCount, packetLen, totalSize);
+                            NSLog(@"packet %d, %d, %d", packetCount, (int)packetLen, totalSize);
 #endif
                         }
                     }
