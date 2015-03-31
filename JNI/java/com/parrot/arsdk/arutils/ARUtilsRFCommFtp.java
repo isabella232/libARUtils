@@ -397,7 +397,7 @@ public class ARUtilsRFCommFtp
         // send plf file
         if (processIsOK) 
         {
-             sendFile(fileToUpload, nativeCallbackObject, cancelSem);
+            processIsOK = sendFile(fileToUpload, nativeCallbackObject, cancelSem);
         }
         
         // close the session
@@ -633,7 +633,7 @@ public class ARUtilsRFCommFtp
         }
     }
     
-    private void sendFile(File file, long nativeCallbackObject, Semaphore cancelSem) 
+    private boolean sendFile(File file, long nativeCallbackObject, Semaphore cancelSem) 
     {
         int nbSstoredBytes = 0;     // for now, send the entire file (=> no resume)
         boolean ret = true;
@@ -642,7 +642,7 @@ public class ARUtilsRFCommFtp
             f = new FileInputStream(file);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
-            return;
+            return false;
         }
 
         byte[] buffer = new byte[978];
@@ -673,7 +673,7 @@ public class ARUtilsRFCommFtp
                 if(!sendFirmwareOnDevice(request, id)){
                     ARSALPrint.e(LOG_TAG, "upload firmware, task was canceled");
                     f.close();
-                    return;
+                    return false;
                 }
                 /*if (System.currentTimeMillis() - time > 500) {
                     try {
@@ -718,7 +718,7 @@ public class ARUtilsRFCommFtp
             } catch (IOException e1) {
                 e1.printStackTrace();
             }
-            return;
+            return false;
         }
 
         try {
@@ -728,20 +728,25 @@ public class ARUtilsRFCommFtp
         }
         
         ARSALPrint.e(LOG_TAG, "Sending done. Sent " + total + " bytes");
+
+        return ret;
     }
     
-    public boolean sendFirmwareOnDevice(byte[] data, int id) {
-        if (mState != ST_CONNECTED) {
-            //Log.d(LOG_TAG, "sendFirmwareOnDevice ST_NOT_CONNECTED");
-            return false;
-        } else {
+    public boolean sendFirmwareOnDevice(byte[] data, int id) 
+    {
+        boolean success = (mState == ST_CONNECTED);
 
+        if(success)
+        {
             byte[] request = getUploadPacket(data, id);
             //long time = System.currentTimeMillis();
-            try {
-                write(request);
-            } catch (Exception e) {
-                return false;
+            try 
+            {
+                success = write(request);
+            } 
+            catch (Exception e) 
+            {
+                success = false;
             }
             /*if (System.currentTimeMillis() < time + 10000) {
                 try {
@@ -749,18 +754,19 @@ public class ARUtilsRFCommFtp
                 } catch (Exception e) {
                 }
             }*/
-
-            return true;
         }
+        return success;
     }
     
 
-    private synchronized void write(byte[] buffer) 
+    private synchronized boolean write(byte[] buffer) 
     {
+        boolean success = false;
         try 
         {
             mOutStream.write(buffer);
             Thread.sleep(40);
+            success = true;
         } 
         catch (IOException e) 
         {
@@ -770,6 +776,7 @@ public class ARUtilsRFCommFtp
         {
             ARSALPrint.e(LOG_TAG, "Exception during sleep" + e.getMessage());
         }
+        return success;
     }
 
     /**
