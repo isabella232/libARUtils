@@ -1044,7 +1044,7 @@ eARUTILS_ERROR ARUTILS_Http_ResetOptions(ARUTILS_Http_Connection_t *connection)
 #endif
     }
 
-    if ((result == ARUTILS_OK) && (connection->serverUrl != NULL))
+    if (result == ARUTILS_OK)
     {
         code = curl_easy_setopt(connection->curl, CURLOPT_URL, connection->serverUrl);
 
@@ -1054,7 +1054,7 @@ eARUTILS_ERROR ARUTILS_Http_ResetOptions(ARUTILS_Http_Connection_t *connection)
         }
     }
 
-    if ((result == ARUTILS_OK) && (connection->username != NULL) && (strlen(connection->username) != 0))
+    if ((result == ARUTILS_OK) && (strlen(connection->username) != 0))
     {
         code = curl_easy_setopt(connection->curl, CURLOPT_USERNAME, connection->username);
 
@@ -1064,7 +1064,7 @@ eARUTILS_ERROR ARUTILS_Http_ResetOptions(ARUTILS_Http_Connection_t *connection)
         }
     }
 
-    if ((result == ARUTILS_OK) && (connection->password != NULL) && (strlen(connection->password) != 0))
+    if ((result == ARUTILS_OK) && (strlen(connection->password) != 0))
     {
         code = curl_easy_setopt(connection->curl, CURLOPT_PASSWORD, connection->password);
 

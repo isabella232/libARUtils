@@ -1639,7 +1639,7 @@ eARUTILS_ERROR ARUTILS_WifiFtp_ResetOptions(ARUTILS_WifiFtp_Connection_t *connec
 #endif
     }
 
-    if ((result == ARUTILS_OK) && (connection->serverUrl != NULL))
+    if (result == ARUTILS_OK)
     {
         code = curl_easy_setopt(connection->curl, CURLOPT_URL, connection->serverUrl);
 
@@ -1649,7 +1649,7 @@ eARUTILS_ERROR ARUTILS_WifiFtp_ResetOptions(ARUTILS_WifiFtp_Connection_t *connec
         }
     }
 
-    if ((result == ARUTILS_OK) && (connection->username != NULL))
+    if (result == ARUTILS_OK)
     {
         code = curl_easy_setopt(connection->curl, CURLOPT_USERNAME, connection->username);
 
@@ -1659,7 +1659,7 @@ eARUTILS_ERROR ARUTILS_WifiFtp_ResetOptions(ARUTILS_WifiFtp_Connection_t *connec
         }
     }
 
-    if ((result == ARUTILS_OK) && (connection->password != NULL))
+    if (result == ARUTILS_OK)
     {
         code = curl_easy_setopt(connection->curl, CURLOPT_PASSWORD, connection->password);
 
