@@ -34,14 +34,16 @@
  * @date 19/12/2013
  * @author david.flattin.ext@parrot.com
  **/
-
+#include "config.h" 
 #include <inttypes.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
 
+#ifdef HAVE_UIKIT_UIKIT_H
 #import <UIKit/UIKit.h>
+#endif /* HAVE_UIKIT_UIKIT_H */
 #import <CoreBluetooth/CoreBluetooth.h>
 #import <libARSAL/ARSAL_CentralManager.h>
 #import <CommonCrypto/CommonDigest.h>
@@ -75,8 +77,11 @@ NSString* const kARUTILS_BLEFtp_Getting = @"kARUTILS_BLEFtp_Getting";
 #define BLE_PACKET_BLOCK_GETTING_COUNT     100
 #define BLE_PACKET_BLOCK_PUTTING_COUNT     500
 
-
+#ifdef HAVE_UIKIT_UIKIT_H
 #define SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(v)  ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] != NSOrderedAscending)
+#else
+#define SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(v)  0
+#endif /* HAVE_UIKIT_UIKIT_H */
 
 //#define BLE_PACKET_WRITE_SLEEP             18000000 /* 18ms */
 #define BLE_PACKET_WRITE_SLEEP               20000000

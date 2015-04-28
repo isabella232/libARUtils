@@ -101,8 +101,14 @@ if test x$ac_cv_objc_compiler_gnu = xyes; then
     AC_CHECK_HEADERS([CoreBluetooth/CoreBluetooth.h], ,
         AC_MSG_WARN(The CoreBluetooth headers are required to use bluetooth features ! ))
 fi
-
 AM_CONDITIONAL([HAVE_COREBLUETOOTH], [test x"$ac_cv_header_CoreBluetooth_CoreBluetooth_h" = x"yes"])
+
+if test x$ac_cv_objc_compiler_gnu = xyes; then
+    AC_CHECK_HEADERS([UIKit/UIKit.h], ,
+        AC_MSG_WARN(The UIKit headers are required to test device features ! ))
+fi
+AM_CONDITIONAL([HAVE_UIKITH], [test x"$ac_cv_header_UIKit_UIKit_h" = x"yes"])
+
 AC_LANG_POP([Objective C])
 
 # Checks for generic headers
