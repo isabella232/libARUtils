@@ -41,6 +41,7 @@
 #include <string.h>
 #include <errno.h>
 
+#import <UIKit/UIKit.h>
 #import <CoreBluetooth/CoreBluetooth.h>
 #import <libARSAL/ARSAL_CentralManager.h>
 #import <CommonCrypto/CommonDigest.h>
@@ -74,6 +75,8 @@ NSString* const kARUTILS_BLEFtp_Getting = @"kARUTILS_BLEFtp_Getting";
 #define BLE_PACKET_BLOCK_GETTING_COUNT     100
 #define BLE_PACKET_BLOCK_PUTTING_COUNT     500
 
+
+#define SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(v)  ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] != NSOrderedAscending)
 
 //#define BLE_PACKET_WRITE_SLEEP             18000000 /* 18ms */
 #define BLE_PACKET_WRITE_SLEEP               20000000
@@ -202,7 +205,7 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(ARUtils_BLEFtp, initBLEFtp)
 #endif
                     if ([characteristic.UUID.shortUUID hasPrefix:[NSString stringWithFormat:@"fd%02d", _port + 1]])
                     {
-                        if ((characteristic.properties & CBCharacteristicPropertyWriteWithoutResponse) == CBCharacteristicPropertyWriteWithoutResponse)
+                        if (((characteristic.properties & CBCharacteristicPropertyWriteWithoutResponse) == CBCharacteristicPropertyWriteWithoutResponse) && ((characteristic.properties & CBCharacteristicPropertyWrite) == CBCharacteristicPropertyWrite))
                         {
                             _transferring = characteristic;
                         }
@@ -715,6 +718,7 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(ARUtils_BLEFtp, initBLEFtp)
     ARSAL_Sem_t timeSem;
     struct timespec timeout;
     eARUTILS_ERROR result = ARUTILS_OK;
+    eARSAL_ERROR bleErr = ARSAL_OK;
     
 #if ARUTILS_BLEFTP_ENABLE_LOG
     NSLog(@"%s", __FUNCTION__);
@@ -750,9 +754,17 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(ARUtils_BLEFtp, initBLEFtp)
             {
                 CC_MD5_Update(&ctx, packet, packetLen);
                 
-                ARSAL_Sem_Timedwait(&timeSem, &timeout);
                 NSData *data = [NSData dataWithBytes:packet length:packetLen];
-                retBLE = [SINGLETON_FOR_CLASS(ARSAL_BLEManager) writeData:data toCharacteristic:_transferring];
+                if (SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"8.2"))
+                {
+                    bleErr = [SINGLETON_FOR_CLASS(ARSAL_BLEManager) writeDataWithResponse:data toCharacteristic:_transferring];
+                    retBLE = (bleErr == ARSAL_OK) ? YES : NO;
+                }
+                else
+                {
+                    ARSAL_Sem_Timedwait(&timeSem, &timeout);
+                    retBLE = [SINGLETON_FOR_CLASS(ARSAL_BLEManager) writeData:data toCharacteristic:_transferring];
+                }
                 if (retBLE == NO)
                 {
                     result = ARUTILS_ERROR_FTP_CONNECT;
@@ -811,9 +823,17 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(ARUtils_BLEFtp, initBLEFtp)
                 NSLog(@"sending md5: %s", md5Txt);
 #endif
                 
-                ARSAL_Sem_Timedwait(&timeSem, &timeout);
                 NSData *data = [NSData dataWithBytes:md5Txt length:strlen(md5Txt)];
-                retBLE = [SINGLETON_FOR_CLASS(ARSAL_BLEManager) writeData:data toCharacteristic:_transferring];
+                if (SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"8.2"))
+                {
+                    bleErr = [SINGLETON_FOR_CLASS(ARSAL_BLEManager) writeDataWithResponse:data toCharacteristic:_transferring];
+                    retBLE = (bleErr == ARSAL_OK) ? YES : NO;
+                }
+                else
+                {
+                    ARSAL_Sem_Timedwait(&timeSem, &timeout);
+                    retBLE = [SINGLETON_FOR_CLASS(ARSAL_BLEManager) writeData:data toCharacteristic:_transferring];
+                }
                 if (retBLE == NO)
                 {
                     result = ARUTILS_ERROR_FTP_CONNECT;
@@ -829,9 +849,17 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(ARUtils_BLEFtp, initBLEFtp)
     
     if ((result == ARUTILS_OK) && (endFile == YES))
     {
-        ARSAL_Sem_Timedwait(&timeSem, &timeout);
         NSData *data = [[NSData alloc] init];
-        retBLE = [SINGLETON_FOR_CLASS(ARSAL_BLEManager) writeData:data toCharacteristic:_transferring];
+        if (SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"8.2"))
+        {
+            bleErr = [SINGLETON_FOR_CLASS(ARSAL_BLEManager) writeDataWithResponse:data toCharacteristic:_transferring];
+            retBLE = (bleErr == ARSAL_OK) ? YES : NO;
+        }
+        else
+        {
+            ARSAL_Sem_Timedwait(&timeSem, &timeout);
+            retBLE = [SINGLETON_FOR_CLASS(ARSAL_BLEManager) writeData:data toCharacteristic:_transferring];
+        }
         if (retBLE == NO)
         {
             result = ARUTILS_ERROR_FTP_CONNECT;
