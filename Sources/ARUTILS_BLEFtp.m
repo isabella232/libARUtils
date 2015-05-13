@@ -321,7 +321,7 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(ARUtils_BLEFtp, initBLEFtp)
     
     if (result == ARUTILS_OK)
     {
-        result = [self readGetData:0 dstFile:NULL data:&data dataLen:&dataLen progressCallback:NULL progressArg:NULL forConnection:connection];
+        result = [self readGetData:0 dstFile:NULL data:&data dataLen:&dataLen progressCallback:NULL progressArg:NULL forConnection:connection listCommand:YES];
         
         if (result == ARUTILS_OK)
         {
@@ -436,7 +436,7 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(ARUtils_BLEFtp, initBLEFtp)
     
     if (result == ARUTILS_OK)
     {
-        result = [self readGetData:(uint32_t)totalSize dstFile:dstFile data:data dataLen:dataLen progressCallback:progressCallback progressArg:progressArg forConnection:connection];
+        result = [self readGetData:(uint32_t)totalSize dstFile:dstFile data:data dataLen:dataLen progressCallback:progressCallback progressArg:progressArg forConnection:connection listCommand:NO];
     }
     
     if (dstFile != NULL)
@@ -1131,7 +1131,7 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(ARUtils_BLEFtp, initBLEFtp)
     return result;
 }
 
-- (eARUTILS_ERROR)readGetData:(uint32_t)fileSize dstFile:(FILE*)dstFile data:(uint8_t**)data dataLen:(uint32_t*)dataLen progressCallback:(ARUTILS_Ftp_ProgressCallback_t)progressCallback progressArg:(void *)progressArg forConnection:(ARUTILS_BLEFtp_Connection_t*)connection
+- (eARUTILS_ERROR)readGetData:(uint32_t)fileSize dstFile:(FILE*)dstFile data:(uint8_t**)data dataLen:(uint32_t*)dataLen progressCallback:(ARUTILS_Ftp_ProgressCallback_t)progressCallback progressArg:(void *)progressArg forConnection:(ARUTILS_BLEFtp_Connection_t*)connection listCommand:(BOOL)listCommand
 {
     NSMutableArray *receivedNotifications = [NSMutableArray array];
     uint8_t md5[CC_MD5_DIGEST_LENGTH];
@@ -1356,7 +1356,13 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(ARUtils_BLEFtp, initBLEFtp)
 #endif
             }
         
-            if (result == ARUTILS_ERROR_FTP_CANCELED)
+
+            if ((result == ARUTILS_ERROR_FTP_CANCELED) && listCommand)
+            {
+                endFile = YES;
+                endMD5 = YES;
+            }
+            else if (result == ARUTILS_ERROR_FTP_CANCELED)
             {
                 result = [self sendCommand:"CANCEL" param:NULL characteristic:_getting];
             }
