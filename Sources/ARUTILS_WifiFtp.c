@@ -1478,6 +1478,8 @@ const char * ARUTILS_Ftp_List_GetNextItem(const char *list, const char **nextIte
     const char *fileIdx;
     const char *endLine = NULL;
     const char *ptr;
+    size_t prefixLen;
+    size_t len;
 
     if ((list != NULL) && (nextItem != NULL))
     {
@@ -1508,6 +1510,8 @@ const char * ARUTILS_Ftp_List_GetNextItem(const char *list, const char **nextIte
                 ptr++;
                 *nextItem = ptr;
                 fileIdx = line;
+                prefixLen = 0;
+                len = 0;
                 if (*line == ((isDirectory  == 1) ? 'd' : '-'))
                 {
                     int varSpace = 0;
@@ -1520,10 +1524,17 @@ const char * ARUTILS_Ftp_List_GetNextItem(const char *list, const char **nextIte
 
                         fileIdx = ++ptr;
                     }
+                    
+                    if (fileIdx != NULL)
+                    {
+                        len = ((endLine - fileIdx) < ARUTILS_FTP_MAX_LIST_LINE_SIZE) ? (endLine - fileIdx) : (ARUTILS_FTP_MAX_LIST_LINE_SIZE - 1);
+                    }
 
                     if ((prefix != NULL) && (*prefix != '\0'))
                     {
-                        if (strncmp(fileIdx, prefix, strlen(prefix)) != 0)
+                        prefixLen = strlen(prefix);
+                        
+                        if ((prefixLen != len) || (strncmp(fileIdx, prefix, strlen(prefix)) != 0))
                         {
                             fileIdx = NULL;
                         }
@@ -1531,7 +1542,6 @@ const char * ARUTILS_Ftp_List_GetNextItem(const char *list, const char **nextIte
 
                     if (fileIdx != NULL)
                     {
-                        size_t len = ((endLine - fileIdx) < ARUTILS_FTP_MAX_LIST_LINE_SIZE) ? (endLine - fileIdx) : (ARUTILS_FTP_MAX_LIST_LINE_SIZE - 1);
                         if ((lineData != NULL) && (len < (lineDataLen + 1)))
                         {
                             strncpy(lineData, fileIdx, len);
