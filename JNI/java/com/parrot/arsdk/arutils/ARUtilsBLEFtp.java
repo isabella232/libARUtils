@@ -1373,6 +1373,11 @@ public class ARUtilsBLEFtp
 									ARSALPrint.d("DBG", APP_TAG + "md5 failed size " + packetLen);
 								}
 							}
+							else if (compareToString(packet, packetLen, "error"))
+							{
+								ARSALPrint.e("DBG", APP_TAG + "Error received");
+								ret = false;
+							}
 							else
 							{
 								totalSize += packetLen;
