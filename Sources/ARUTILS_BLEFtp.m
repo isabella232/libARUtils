@@ -1262,6 +1262,11 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(ARUtils_BLEFtp, initBLEFtp)
                                 result = ARUTILS_ERROR_FTP_SIZE;
                             }
                         }
+                        else if (strncmp((char*)packet, "error", 5) == 0)
+                        {
+                            result = ARUTILS_ERROR_FTP_CODE;
+                            NSLog(@"ERROR received SIZE %d", (int)packetLen);
+                        }
                         else
                         {
                             totalSize += packetLen;
