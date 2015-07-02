@@ -89,7 +89,7 @@ NSString* const kARUTILS_BLEFtp_Getting = @"kARUTILS_BLEFtp_Getting";
 #define ARUTILS_BLEFTP_TAG      "BLEFtp"
 
 //#define ARUTILS_BLEFTP_ENABLE_LOG (1)
-#define ARUTILS_BLEFTP_ENABLE_LOG (1)
+#define ARUTILS_BLEFTP_ENABLE_LOG (0)
 
 
 @interface ARUtils_BLEFtp ()
@@ -1550,6 +1550,8 @@ eARUTILS_ERROR ARUTILS_BLEFtp_Connection_Reset(ARUTILS_BLEFtp_Connection_t *conn
     if (result == ARUTILS_OK)
     {
         bleFtpObject = SINGLETON_FOR_CLASS(ARUtils_BLEFtp);
+        ARSAL_Mutex_Lock([bleFtpObject getConnectionLock]);
+        
         ARSAL_Sem_t *cancelSem = &connection->manager->cancelSem;
         
         if (cancelSem != NULL)
@@ -1559,13 +1561,12 @@ eARUTILS_ERROR ARUTILS_BLEFtp_Connection_Reset(ARUTILS_BLEFtp_Connection_t *conn
                 /* Do Nothing */
             }
         }
-    }
-    
-    if (result == ARUTILS_OK)
-    {
+        
         [SINGLETON_FOR_CLASS(ARSAL_BLEManager) resetReadNotification:kARUTILS_BLEFtp_Getting];
+        
+        ARSAL_Mutex_Unlock([bleFtpObject getConnectionLock]);
     }
-    
+        
     return result;
 }
 
