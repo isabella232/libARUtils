@@ -89,7 +89,7 @@ NSString* const kARUTILS_BLEFtp_Getting = @"kARUTILS_BLEFtp_Getting";
 #define ARUTILS_BLEFTP_TAG      "BLEFtp"
 
 //#define ARUTILS_BLEFTP_ENABLE_LOG (1)
-#define ARUTILS_BLEFTP_ENABLE_LOG (0)
+#define ARUTILS_BLEFTP_ENABLE_LOG (1)
 
 
 @interface ARUtils_BLEFtp ()
@@ -581,7 +581,7 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(ARUtils_BLEFtp, initBLEFtp)
     eARUTILS_ERROR result = ARUTILS_OK;
     
 #if ARUTILS_BLEFTP_ENABLE_LOG
-    NSLog(@"%s", __FUNCTION__);
+    NSLog(@"%s, %@", __FUNCTION__, remoteFile);
 #endif
     
     result = [self sendCommand:"DEL" param:[remoteFile UTF8String] characteristic:_handling];
@@ -1559,6 +1559,11 @@ eARUTILS_ERROR ARUTILS_BLEFtp_Connection_Reset(ARUTILS_BLEFtp_Connection_t *conn
                 /* Do Nothing */
             }
         }
+    }
+    
+    if (result == ARUTILS_OK)
+    {
+        [SINGLETON_FOR_CLASS(ARSAL_BLEManager) resetReadNotification:kARUTILS_BLEFtp_Getting];
     }
     
     return result;
