@@ -292,7 +292,7 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(ARUtils_BLEFtp, initBLEFtp)
     NSLog(@"%s", __FUNCTION__);
 #endif
     
-    if (connection != NULL && connection->manager->cancelSem != NULL)
+    if ((connection != NULL) && (connection->manager != NULL) && (connection->manager->cancelSem != NULL))
     {
         resutlSys = ARSAL_Sem_Post(&connection->manager->cancelSem);
         
@@ -1165,18 +1165,23 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(ARUtils_BLEFtp, initBLEFtp)
             if ([receivedNotifications count] == 0)
             {
                 retBLE = [SINGLETON_FOR_CLASS(ARSAL_BLEManager) readNotificationData:receivedNotifications maxCount:1 timeout:[NSNumber numberWithFloat:BLE_READ_NOTIFICATION_TIMEOUT] toKey:kARUTILS_BLEFtp_Getting];
-
+#if ARUTILS_BLEFTP_ENABLE_LOG
+                if (retBLE != ARSAL_OK)
+                {
+                    NSLog(@"readNotificationData result :%d",retBLE);
+                }
+#endif
             }
             if (retBLE != ARSAL_OK)
             {
                 //no data available
                 if (retBLE == ARSAL_ERROR_BLE_TIMEOUT)
-                 {
+                {
                     blockMD5 = YES;
-                    #if ARUTILS_BLEFTP_ENABLE_LOG
-                         NSLog(@"ARSAL_ERROR_BLE_TIMEOUT result :%d",result);
-                    #endif
-                 }
+#if ARUTILS_BLEFTP_ENABLE_LOG
+                    NSLog(@"ARSAL_ERROR_BLE_TIMEOUT result :%d",result);
+#endif
+                }
                 else
                 {
                     if ([SINGLETON_FOR_CLASS(ARSAL_BLEManager) isPeripheralConnected] == NO)
@@ -1314,6 +1319,16 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(ARUtils_BLEFtp, initBLEFtp)
                     else
                     {
                         //empty packet autorized
+#if ARUTILS_BLEFTP_ENABLE_LOG
+                        NSLog(@"empty packet (autorized)");
+#endif
+                        if (ARUTILS_BLEFtp_Connection_IsCanceled(connection) != ARUTILS_OK)
+                        {
+#if ARUTILS_BLEFTP_ENABLE_LOG
+                            NSLog(@"cancel received");
+#endif
+                            blockMD5 = YES;
+                        }
                     }
                 }
             }
@@ -1506,7 +1521,7 @@ eARUTILS_ERROR ARUTILS_BLEFtp_Connection_IsCanceled(ARUTILS_BLEFtp_Connection_t 
     ARUtils_BLEFtp *bleFtpObject = nil;
     eARUTILS_ERROR result = ARUTILS_OK;
     
-    if (connection == NULL)
+    if (connection == NULL || connection->manager == NULL)
     {
         result = ARUTILS_ERROR_BAD_PARAMETER;
     }
@@ -1542,7 +1557,7 @@ eARUTILS_ERROR ARUTILS_BLEFtp_Connection_Reset(ARUTILS_BLEFtp_Connection_t *conn
     ARUtils_BLEFtp *bleFtpObject = nil;
     eARUTILS_ERROR result = ARUTILS_OK;
     
-    if (connection == NULL)
+    if (connection == NULL || connection->manager == NULL)
     {
         result = ARUTILS_ERROR_BAD_PARAMETER;
     }
@@ -1569,8 +1584,6 @@ eARUTILS_ERROR ARUTILS_BLEFtp_Connection_Reset(ARUTILS_BLEFtp_Connection_t *conn
         
     return result;
 }
-
-
 
 eARUTILS_ERROR ARUTILS_BLEFtp_List(ARUTILS_BLEFtp_Connection_t *connection, const char *remotePath, char **resultList, uint32_t *resultListLen)
 {
