@@ -554,12 +554,26 @@ eARUTILS_ERROR ARUTILS_BLEFtp_List(ARUTILS_BLEFtp_Connection_t *connection, cons
             {
                 (*env)->ReleaseStringUTFChars(env, jList, dataList);
             }
+            if (jList != NULL)
+            {
+                (*env)->DeleteLocalRef(env, jList);
+            }
         }
 
         /* Cleanup */
         if (jRemotePath != NULL)
         {
             (*env)->DeleteLocalRef(env, jRemotePath);
+        }
+
+        if (objectList != NULL)
+        {
+            (*env)->DeleteLocalRef(env, objectList);
+        }
+
+        if (objectClass != NULL)
+        {
+            (*env)->DeleteLocalRef(env, objectClass);
         }
 
     }
@@ -752,7 +766,7 @@ eARUTILS_ERROR ARUTILS_BLEFtp_Get_WithBuffer(ARUTILS_BLEFtp_Connection_t *connec
                     (*env)->ReleaseByteArrayElements(env, javaByteArray, javaData, JNI_ABORT);
                 }
                 *dataLen = size;
-
+                (*env)->DeleteLocalRef(env, javaByteArray);
             }
 
         }
