@@ -172,6 +172,20 @@ eARUTILS_ERROR ARUTILS_Manager_Ftp_List(ARUTILS_Manager_t *manager, const char *
     return result;
 }
 
+eARUTILS_ERROR ARUTILS_Manager_Ftp_Size(ARUTILS_Manager_t *manager, const char *namePath, double *fileSize)
+{
+    eARUTILS_ERROR result = ARUTILS_OK;
+    if ((manager == NULL) || (manager->ftpSize == NULL))
+    {
+        result = ARUTILS_ERROR_BAD_PARAMETER;
+    }
+    else
+    {
+        result = manager->ftpSize(manager, namePath, fileSize);
+    }
+    return result;
+}
+
 eARUTILS_ERROR ARUTILS_Manager_Ftp_Get_WithBuffer(ARUTILS_Manager_t *manager, const char *namePath, uint8_t **data, uint32_t *dataLen,  ARUTILS_Ftp_ProgressCallback_t progressCallback, void* progressArg)
 {
     eARUTILS_ERROR result = ARUTILS_OK;

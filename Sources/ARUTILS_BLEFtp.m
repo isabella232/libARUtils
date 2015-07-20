@@ -89,7 +89,7 @@ NSString* const kARUTILS_BLEFtp_Getting = @"kARUTILS_BLEFtp_Getting";
 #define ARUTILS_BLEFTP_TAG      "BLEFtp"
 
 //#define ARUTILS_BLEFTP_ENABLE_LOG (1)
-#define ARUTILS_BLEFTP_ENABLE_LOG (0)
+#define ARUTILS_BLEFTP_ENABLE_LOG (1)
 
 
 @interface ARUtils_BLEFtp ()
@@ -350,6 +350,10 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(ARUtils_BLEFtp, initBLEFtp)
         *resultListLen = 0;
     }
     
+#if ARUTILS_BLEFTP_ENABLE_LOG
+    NSLog(@"%s %s", __FUNCTION__, (*resultList == NULL) ? "" : *resultList);
+#endif
+    
     return result;
 }
 
@@ -403,6 +407,10 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(ARUtils_BLEFtp, initBLEFtp)
     {
         result = ARUTILS_ERROR_FTP_SIZE;
     }
+    
+#if ARUTILS_BLEFTP_ENABLE_LOG
+    NSLog(@"%s size %d", __FUNCTION__, (fileSize == NULL) ? 0 : (int)(*fileSize));
+#endif
     
     return result;
 }
@@ -543,6 +551,10 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(ARUtils_BLEFtp, initBLEFtp)
     }
     
     result = ARUTILS_FileSystem_GetFileSize([localFile UTF8String], &totalSize);
+    
+#if ARUTILS_BLEFTP_ENABLE_LOG
+    NSLog(@"%s file size %d, remote size %d", __FUNCTION__, (int)totalSize, (int)resumeIndex);
+#endif
     
     if (result == ARUTILS_OK)
     {
@@ -1611,6 +1623,31 @@ eARUTILS_ERROR ARUTILS_BLEFtp_List(ARUTILS_BLEFtp_Connection_t *connection, cons
     return result;
 }
 
+eARUTILS_ERROR ARUTILS_BLEFtp_Size(ARUTILS_BLEFtp_Connection_t *connection, const char *remotePath, double *fileSize)
+{
+    ARUtils_BLEFtp *bleFtpObject = nil;
+    eARUTILS_ERROR result = ARUTILS_OK;
+    
+    if ((connection == NULL) || (fileSize == NULL))
+    {
+        result = ARUTILS_ERROR_BAD_PARAMETER;
+    }
+    
+    if (result == ARUTILS_OK)
+    {
+        *fileSize = 0.f;
+        
+        bleFtpObject = SINGLETON_FOR_CLASS(ARUtils_BLEFtp);
+        ARSAL_Mutex_Lock([bleFtpObject getConnectionLock]);
+        
+        result = [bleFtpObject sizeFile:[NSString stringWithUTF8String:remotePath] fileSize:fileSize forConnection:connection];
+        
+        ARSAL_Mutex_Unlock([bleFtpObject getConnectionLock]);
+    }
+    
+    return result;
+}
+
 eARUTILS_ERROR ARUTILS_BLEFtp_Delete(ARUTILS_BLEFtp_Connection_t *connection, const char *remotePath)
 {
     ARUtils_BLEFtp *bleFtpObject = nil;
@@ -1762,6 +1799,7 @@ eARUTILS_ERROR ARUTILS_Manager_InitBLEFtp(ARUTILS_Manager_t *manager, ARUTILS_BL
         manager->ftpConnectionIsCanceled = ARUTILS_BLEFtpAL_Connection_IsCanceled;
         manager->ftpConnectionReset = ARUTILS_BLEFtpAL_Connection_Reset;
         manager->ftpList = ARUTILS_BLEFtpAL_List;
+        manager->ftpSize = ARUTILS_BLEFtpAL_Size;
         manager->ftpGetWithBuffer = ARUTILS_BLEFtpAL_Get_WithBuffer;
         manager->ftpGet = ARUTILS_BLEFtpAL_Get;
         manager->ftpPut = ARUTILS_BLEFtpAL_Put;
@@ -1830,6 +1868,20 @@ eARUTILS_ERROR ARUTILS_BLEFtpAL_List(ARUTILS_Manager_t *manager, const char *nam
     NSLog(@"%s", __FUNCTION__);
 #endif
     result = ARUTILS_BLEFtp_List((ARUTILS_BLEFtp_Connection_t *)manager->connectionObject, namePath, resultList, resultListLen);
+#if ARUTILS_BLEFTP_ENABLE_LOG
+    NSLog(@"%s exit", __FUNCTION__);
+#endif
+    return result;
+}
+
+eARUTILS_ERROR ARUTILS_BLEFtpAL_Size(ARUTILS_Manager_t *manager, const char *namePath, double *fileSize)
+{
+    eARUTILS_ERROR result = ARUTILS_OK;
+    
+#if ARUTILS_BLEFTP_ENABLE_LOG
+    NSLog(@"%s", __FUNCTION__);
+#endif
+    result = ARUTILS_BLEFtp_Size((ARUTILS_BLEFtp_Connection_t *)manager->connectionObject, namePath, fileSize);
 #if ARUTILS_BLEFTP_ENABLE_LOG
     NSLog(@"%s exit", __FUNCTION__);
 #endif

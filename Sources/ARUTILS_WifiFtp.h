@@ -421,6 +421,17 @@ eARUTILS_ERROR ARUTILS_WifiFtpAL_Connection_Reset(ARUTILS_Manager_t *manager);
 eARUTILS_ERROR ARUTILS_WifiFtpAL_List(ARUTILS_Manager_t *manager, const char *namePath, char **resultList, uint32_t *resultListLen);
 
 /**
+ * @brief Execute Ftp Size command to retrieve file size
+ * @warning This function allocates memory
+ * @param manager The address of the pointer on the Ftp Connection
+ * @param namePath The string of the directory path on the remote Ftp server
+ * @param fileSize The returned file size
+ * @retval On success, returns ARUTILS_OK. Otherwise, it returns an error number of eARUTILS_ERROR.
+ * @see ARUTILS_Manager_NewWifiFtp ()
+ */
+eARUTILS_ERROR ARUTILS_WifiFtpAL_Size(ARUTILS_Manager_t *manager, const char *namePath, double *fileSize);
+
+/**
  * @brief Get an remote Ftp server file
  * @warning This function allocates memory
  * @param manager The address of the pointer on the Ftp Connection

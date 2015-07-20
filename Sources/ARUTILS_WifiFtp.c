@@ -2043,6 +2043,7 @@ eARUTILS_ERROR ARUTILS_Manager_InitWifiFtp(ARUTILS_Manager_t *manager, const cha
         manager->ftpConnectionReset = ARUTILS_WifiFtpAL_Connection_Reset;
 
         manager->ftpList = ARUTILS_WifiFtpAL_List;
+        manager->ftpSize = ARUTILS_WifiFtpAL_Size;
         manager->ftpGetWithBuffer = ARUTILS_WifiFtpAL_Get_WithBuffer;
         manager->ftpGet = ARUTILS_WifiFtpAL_Get;
         manager->ftpPut = ARUTILS_WifiFtpAL_Put;
@@ -2092,6 +2093,11 @@ eARUTILS_ERROR ARUTILS_WifiFtpAL_Connection_Reset(ARUTILS_Manager_t *manager)
 eARUTILS_ERROR ARUTILS_WifiFtpAL_List(ARUTILS_Manager_t *manager, const char *namePath, char **resultList, uint32_t *resultListLen)
 {
     return ARUTILS_WifiFtp_List((ARUTILS_WifiFtp_Connection_t *)manager->connectionObject, namePath, resultList, resultListLen);
+}
+
+eARUTILS_ERROR ARUTILS_WifiFtpAL_Size(ARUTILS_Manager_t *manager, const char *namePath, double *fileSize)
+{
+    return ARUTILS_WifiFtp_Size((ARUTILS_WifiFtp_Connection_t *)manager->connectionObject, namePath, fileSize);
 }
 
 eARUTILS_ERROR ARUTILS_WifiFtpAL_Get_WithBuffer(ARUTILS_Manager_t *manager, const char *namePath, uint8_t **data, uint32_t *dataLen,  ARUTILS_Ftp_ProgressCallback_t progressCallback, void* progressArg)

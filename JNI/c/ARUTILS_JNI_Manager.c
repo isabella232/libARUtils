@@ -226,6 +226,7 @@ Java_com_parrot_arsdk_arutils_ARUtilsManager_nativeInitBLEFtp
         manager->ftpConnectionIsCanceled = ARUTILS_BLEFtpAL_Connection_IsCanceled;
         manager->ftpConnectionReset = ARUTILS_BLEFtpAL_Connection_Reset;
         manager->ftpList = ARUTILS_BLEFtpAL_List;
+        manager->ftpSize = ARUTILS_BLEFtpAL_Size;
         manager->ftpGetWithBuffer = ARUTILS_BLEFtpAL_Get_WithBuffer;
         manager->ftpGet = ARUTILS_BLEFtpAL_Get;
         manager->ftpPut = ARUTILS_BLEFtpAL_Put;
@@ -374,13 +375,59 @@ Java_com_parrot_arsdk_arutils_ARUtilsManager_nativeBLEFtpList
         else
         {
             ARSAL_PRINT(ARSAL_PRINT_ERROR, ARUTILS_JNI_MANAGER_TAG, "ARUTILS_BLEFtpAL_List failed: %d", error);
+            ARUTILS_JNI_ThrowARUtilsException(env, error);
         }
 
         (*env)->ReleaseStringUTFChars( env, jRemotePath, namePath);
     }
+    else
+    {
+        ARSAL_PRINT(ARSAL_PRINT_ERROR, ARUTILS_JNI_MANAGER_TAG, "ARUTILS_BLEFtpAL_List failed: %d", error);
+        ARUTILS_JNI_ThrowARUtilsException(env, error);
+    }
     return result;
 }
 
+JNIEXPORT jdouble JNICALL
+Java_com_parrot_arsdk_arutils_ARUtilsManager_nativeBLEFtpSize
+  (JNIEnv *env, jobject obj, jlong jManager, jstring jRemotePath)
+{
+    ARUTILS_Manager_t *manager = (ARUTILS_Manager_t*) (intptr_t) jManager;
+    eARUTILS_ERROR error = ARUTILS_OK;
+    jdouble result = 0.f;
+    
+    if (manager == NULL || jRemotePath == NULL)
+    {
+        ARSAL_PRINT(ARSAL_PRINT_ERROR, ARUTILS_JNI_MANAGER_TAG, "Wrong parameter: %d %d", manager, jRemotePath);
+        error = ARUTILS_ERROR_BAD_PARAMETER;
+    }
+
+    if (error == ARUTILS_OK)
+    {
+        const char *namePath = (*env)->GetStringUTFChars(env, jRemotePath, 0);
+
+        double fileSize = 0.f;
+
+        error = ARUTILS_BLEFtpAL_Size(manager, namePath, &fileSize);
+        if (error == ARUTILS_OK)
+        {
+            result = (jdouble)fileSize;
+        }
+        else
+        {
+            ARSAL_PRINT(ARSAL_PRINT_ERROR, ARUTILS_JNI_MANAGER_TAG, "ARUTILS_BLEFtpAL_Size failed: %d", error);
+            ARUTILS_JNI_ThrowARUtilsException(env, error);
+        }
+
+        (*env)->ReleaseStringUTFChars( env, jRemotePath, namePath);
+    }
+    else
+    {
+        ARSAL_PRINT(ARSAL_PRINT_ERROR, ARUTILS_JNI_MANAGER_TAG, "ARUTILS_BLEFtpAL_Size failed: %d", error);
+        ARUTILS_JNI_ThrowARUtilsException(env, error);
+    }
+    return result;
+}
 
 JNIEXPORT jint JNICALL
 Java_com_parrot_arsdk_arutils_ARUtilsManager_nativeBLEFtpDelete

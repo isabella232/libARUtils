@@ -195,6 +195,17 @@ eARUTILS_ERROR ARUTILS_Manager_Ftp_Connection_Reset(ARUTILS_Manager_t *manager);
 eARUTILS_ERROR ARUTILS_Manager_Ftp_List(ARUTILS_Manager_t *manager, const char *namePath, char **resultList, uint32_t *resultListLen);
 
 /**
+ * @brief Execute Ftp Size command to retrieve file size
+ * @warning This function allocates memory
+ * @param manager The address of the pointer on the Ftp Manager
+ * @param namePath The string of the directory path on the remote Ftp server
+ * @param fileSize The returned file size
+ * @retval On success, returns ARUTILS_OK. Otherwise, it returns an error number of eARUTILS_ERROR.
+ * @see ARUTILS_Manager_InitWifiFtp (), ARUTILS_Manager_InitBLEFtp ()
+ */
+eARUTILS_ERROR ARUTILS_Manager_Ftp_Size(ARUTILS_Manager_t *manager, const char *namePath, double *fileSize);
+
+/**
  * @brief Get an remote Ftp server file
  * @warning This function allocates memory
  * @param manager The address of the pointer on the Ftp Manager
@@ -315,6 +326,17 @@ typedef eARUTILS_ERROR (*ARUTILS_Manager_Ftp_Connection_Reset_t) (ARUTILS_Manage
 typedef eARUTILS_ERROR (*ARUTILS_Manager_Ftp_List_t) (ARUTILS_Manager_t *manager, const char *namePath, char **resultList, uint32_t *resultListLen);
 
 /**
+ * @brief Execute Ftp Size command to retrieve file size
+ * @warning This function allocates memory
+ * @param manager The address of the pointer on the Ftp Manager
+ * @param namePath The string of the directory path on the remote Ftp server
+ * @param fileSize The returned file size
+ * @retval On success, returns ARUTILS_OK. Otherwise, it returns an error number of eARUTILS_ERROR.
+ * @see ARUTILS_Manager_InitWifiFtp (), ARUTILS_Manager_InitBLEFtp ()
+ */
+typedef eARUTILS_ERROR (*ARUTILS_Manager_Ftp_Size_t)(ARUTILS_Manager_t *manager, const char *namePath, double *fileSize);
+
+/**
  * @brief Get an remote Ftp server file
  * @warning This function allocates memory
  * @param manager The address of the pointer on the Ftp Manager
@@ -400,6 +422,7 @@ struct ARUTILS_Manager_t
     ARUTILS_Manager_Ftp_Connection_IsCanceled_t ftpConnectionIsCanceled;
     ARUTILS_Manager_Ftp_Connection_Reset_t ftpConnectionReset;
     ARUTILS_Manager_Ftp_List_t ftpList;
+    ARUTILS_Manager_Ftp_Size_t ftpSize;
     ARUTILS_Manager_Get_WithBuffer_t ftpGetWithBuffer;
     ARUTILS_Manager_Ftp_Get_t ftpGet;
     ARUTILS_Manager_Ftp_Put_t ftpPut;

@@ -61,7 +61,8 @@ public class ARUtilsManager
     private native int nativeBLEFtpConnectionCancel(long jManager);
     private native int nativeBLEFtpIsConnectionCanceled(long jManager);
     private native int nativeBLEFtpConnectionReset(long jManager);
-    private native String nativeBLEFtpList(long jManager, String remotePath);
+    private native String nativeBLEFtpList(long jManager, String remotePath) throws ARUtilsException;
+    private native double nativeBLEFtpSize(long jManager, String remotePath) throws ARUtilsException;
     private native byte[] nativeBLEFtpGetWithBuffer(long jManager, String remotePath, ARUtilsFtpProgressListener progressListener, Object progressArg);
     private native int nativeBLEFtpGet(long jManager, String remotePath, String destFile, ARUtilsFtpProgressListener progressListener, Object progressArg, boolean resume);
     private native int nativeBLEFtpPut(long jManager, String remotePath, String srcFile, ARUtilsFtpProgressListener progressListener, Object progressArg, boolean resume);
@@ -309,9 +310,14 @@ public class ARUtilsManager
         return ARUTILS_ERROR_ENUM.getFromValue(nativeBLEFtpConnectionReset(m_managerPtr));
     }
 
-    public String BLEFtpListFile(String remotePath)
+    public String BLEFtpListFile(String remotePath) throws ARUtilsException
     {
         return nativeBLEFtpList(m_managerPtr, remotePath);
+    }
+    
+    public double BLEFtpSize(String remotePath) throws ARUtilsException
+    {
+        return nativeBLEFtpSize(m_managerPtr, remotePath);
     }
 
     public ARUTILS_ERROR_ENUM BLEFtpPut(String remotePath, String srcFile, ARUtilsFtpProgressListener progressListener, Object progressArg, boolean resume)

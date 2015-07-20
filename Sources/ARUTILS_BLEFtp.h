@@ -148,6 +148,17 @@ eARUTILS_ERROR ARUTILS_BLEFtp_Connection_Reset(ARUTILS_BLEFtp_Connection_t *conn
 eARUTILS_ERROR ARUTILS_BLEFtp_List(ARUTILS_BLEFtp_Connection_t *connection, const char *remotePath, char **resultList, uint32_t *resultListLen);
 
 /**
+ * @brief Execute Ftp Size command to retrieve file size
+ * @warning This function allocates memory
+ * @param connection The address of the pointer on the Ftp Connection
+ * @param namePath The string of the directory path on the remote Ftp server
+ * @param fileSize The returned file size
+ * @retval On success, returns ARUTILS_OK. Otherwise, it returns an error number of eARUTILS_ERROR.
+ * @see ARUTILS_BLEFtp_NewConnection ()
+ */
+eARUTILS_ERROR ARUTILS_BLEFtp_Size(ARUTILS_BLEFtp_Connection_t *connection, const char *remotePath, double *fileSize);
+
+/**
  * @brief Delete an remote Ftp server file
  * @param connection The address of the pointer on the Ftp Connection
  * @param namePath The string of the file name path on the remote Ftp server
@@ -203,8 +214,23 @@ eARUTILS_ERROR ARUTILS_BLEFtp_Put(ARUTILS_BLEFtp_Connection_t *connection, const
  * @see ARUTILS_Manager_NewBLEFtp ()
  */
 eARUTILS_ERROR ARUTILS_BLEFtpAL_Connection_Cancel(ARUTILS_Manager_t *manager);
+
+/**
+ * @brief Test canceled status of Ftp Connection command in progress (get, put, list etc)
+ * @param connection The address of the pointer on the Ftp Connection
+ * @retval On success, returns ARUTILS_OK. Otherwise, it returns an error number of eARUTILS_ERROR.
+ * @see ARUTILS_Manager_NewBLEFtp ()
+ */
 eARUTILS_ERROR ARUTILS_BLEFtpAL_Connection_IsCanceled(ARUTILS_Manager_t *manager);
+
+/**
+ * @brief Reset an Ftp Connection
+ * @param connection The address of the pointer on the Ftp Connection
+ * @retval On success, returns ARUTILS_OK. Otherwise, it returns an error number of eARUTILS_ERROR.
+ * @see ARUTILS_Manager_NewBLEFtp ()
+ */
 eARUTILS_ERROR ARUTILS_BLEFtpAL_Connection_Reset(ARUTILS_Manager_t *manager);
+
 /**
  * @brief Execute Ftp List command to retrieve directory content
  * @warning This function allocates memory
@@ -216,6 +242,17 @@ eARUTILS_ERROR ARUTILS_BLEFtpAL_Connection_Reset(ARUTILS_Manager_t *manager);
  * @see ARUTILS_Manager_NewBLEFtp ()
  */
 eARUTILS_ERROR ARUTILS_BLEFtpAL_List(ARUTILS_Manager_t *manager, const char *namePath, char **resultList, uint32_t *resultListLen);
+
+/**
+ * @brief Execute Ftp Size command to retrieve file size
+ * @warning This function allocates memory
+ * @param manager The address of the pointer on the Ftp Connection
+ * @param namePath The string of the directory path on the remote Ftp server
+ * @param fileSize The returned file size
+ * @retval On success, returns ARUTILS_OK. Otherwise, it returns an error number of eARUTILS_ERROR.
+ * @see ARUTILS_Manager_NewBLEFtp ()
+ */
+eARUTILS_ERROR ARUTILS_BLEFtpAL_Size(ARUTILS_Manager_t *manager, const char *namePath, double *fileSize);
 
 /**
  * @brief Get an remote Ftp server file

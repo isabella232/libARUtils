@@ -66,6 +66,7 @@ static jmethodID ARUTILS_JNI_BLEFTP_METHOD_CONNECTION_CANCEL;
 static jmethodID ARUTILS_JNI_BLEFTP_METHOD_IS_CANCELED;
 static jmethodID ARUTILS_JNI_BLEFTP_METHOD_CONNECTION_RESET;
 static jmethodID ARUTILS_JNI_BLEFTP_METHOD_FTP_LIST;
+static jmethodID ARUTILS_JNI_BLEFTP_METHOD_FTP_SIZE;
 static jmethodID ARUTILS_JNI_BLEFTP_METHOD_GET_WITH_BUFFER;
 static jmethodID ARUTILS_JNI_BLEFTP_METHOD_GET;
 static jmethodID ARUTILS_JNI_BLEFTP_METHOD_PUT;
@@ -93,6 +94,7 @@ Java_com_parrot_arsdk_arutils_ARUtilsBLEFtp_nativeJNIInit(JNIEnv *env, jobject o
     ARUTILS_JNI_BLEFTP_METHOD_IS_CANCELED = (*env)->GetMethodID(env, jBLEFtpCls, "isConnectionCanceledAL", "(Ljava/util/concurrent/Semaphore;)Z");
     ARUTILS_JNI_BLEFTP_METHOD_CONNECTION_RESET = (*env)->GetMethodID(env, jBLEFtpCls, "resetConnectionAL", "(Ljava/util/concurrent/Semaphore;)Z");
     ARUTILS_JNI_BLEFTP_METHOD_FTP_LIST = (*env)->GetMethodID(env, jBLEFtpCls, "listFilesAL", "(Ljava/lang/String;[Ljava/lang/String;)Z");
+    ARUTILS_JNI_BLEFTP_METHOD_FTP_SIZE = (*env)->GetMethodID(env, jBLEFtpCls, "sizeFileAL", "(Ljava/lang/String;[D)Z");
     ARUTILS_JNI_BLEFTP_METHOD_GET_WITH_BUFFER = (*env)->GetMethodID(env, jBLEFtpCls, "getFileWithBufferAL", "(Ljava/lang/String;[[BJLjava/util/concurrent/Semaphore;)Z");
     ARUTILS_JNI_BLEFTP_METHOD_GET = (*env)->GetMethodID(env, jBLEFtpCls, "getFileAL", "(Ljava/lang/String;Ljava/lang/String;JLjava/util/concurrent/Semaphore;)Z");
     ARUTILS_JNI_BLEFTP_METHOD_PUT = (*env)->GetMethodID(env, jBLEFtpCls, "putFileAL", "(Ljava/lang/String;Ljava/lang/String;JZLjava/util/concurrent/Semaphore;)Z");
@@ -576,6 +578,111 @@ eARUTILS_ERROR ARUTILS_BLEFtp_List(ARUTILS_BLEFtp_Connection_t *connection, cons
             (*env)->DeleteLocalRef(env, objectClass);
         }
 
+    }
+
+    /* if the thread has been attached then detach the thread from the virtual machine */
+    if ((getEnvResult == JNI_EDETACHED) && (env != NULL))
+    {
+        (*ARUTILS_JNI_Manager_VM)->DetachCurrentThread(ARUTILS_JNI_Manager_VM);
+    }
+
+    return error;
+}
+
+/**
+ * @brief Execute Ftp Size command to retrieve file size
+ * @warning This function allocates memory
+ * @param connection The address of the pointer on the Ftp Connection
+ * @param namePath The string of the directory path on the remote Ftp server
+ * @param fileSize The retuned file size
+ * @retval On success, returns ARUTILS_OK. Otherwise, it returns an error number of eARUTILS_ERROR.
+ * @see ARUTILS_BLEFtp_NewConnection ()
+ */
+eARUTILS_ERROR ARUTILS_BLEFtp_Size(ARUTILS_BLEFtp_Connection_t *connection, const char *remotePath, double *fileSize)
+{
+    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_JNI_BLEFTP_TAG, " BLEFtp_size ");
+
+    /* local declarations */
+    JNIEnv *env = NULL;
+    jint getEnvResult = JNI_OK;
+    eARUTILS_ERROR error = ARUTILS_OK;
+    jboolean ret = 0;
+
+    /* Check parameters */
+    if ((connection == NULL) || (remotePath == NULL) || (fileSize == NULL) || (connection->bleFtpObject == NULL) )
+    {
+        error = ARUTILS_ERROR_BAD_PARAMETER;
+    }
+
+    if (error == ARUTILS_OK)
+    {
+        /* get the environment */
+        if (ARUTILS_JNI_Manager_VM != NULL)
+        {
+            getEnvResult = (*ARUTILS_JNI_Manager_VM)->GetEnv(ARUTILS_JNI_Manager_VM, (void **) &env, JNI_VERSION_1_6);
+        }
+        /* if no environment then attach the thread to the virtual machine */
+        if (getEnvResult == JNI_EDETACHED)
+        {
+            ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_JNI_BLEFTP_TAG, "attach the thread to the virtual machine ...");
+            (*ARUTILS_JNI_Manager_VM)->AttachCurrentThread(ARUTILS_JNI_Manager_VM, &env, NULL);
+        }
+        /* check the environment  */
+        if (env == NULL)
+        {
+            error = ARUTILS_ERROR;
+        }
+    }
+
+    if (error == ARUTILS_OK)
+    {
+        jobject bleFtpObject = connection->bleFtpObject;
+        jstring jRemotePath = (*env)->NewStringUTF(env, remotePath);
+        jdoubleArray objectSizeArray = (*env)->NewDoubleArray(env, 1);
+        
+        ret = (*env)->CallBooleanMethod(env, bleFtpObject, ARUTILS_JNI_BLEFTP_METHOD_FTP_SIZE, jRemotePath, objectSizeArray);
+
+        if ((*env)->ExceptionOccurred(env))
+        {
+            ARSAL_PRINT(ARSAL_PRINT_ERROR, ARUTILS_JNI_BLEFTP_TAG, "EXCEPTION Details:");
+            (*env)->ExceptionDescribe(env);
+            (*env)->ExceptionClear(env);
+            ret = JNI_FALSE;
+        }
+
+        if (ret == 0)
+        {
+            error = ARUTILS_ERROR_BLE_FAILED;
+        }
+        else
+        {
+            jdouble *jDoubleArray = (jdouble*) (*env)->GetDoubleArrayElements(env, objectSizeArray, JNI_FALSE);
+            
+            if (jDoubleArray != NULL)
+            {
+                *fileSize = (double)*jDoubleArray;
+            }
+            else
+            {
+                error = ARUTILS_ERROR_BLE_FAILED;
+            }
+            
+            if (jDoubleArray != NULL)
+            {
+                (*env)->ReleaseDoubleArrayElements(env, objectSizeArray, jDoubleArray, JNI_ABORT);
+            }
+        }
+
+        /* Cleanup */
+        if (jRemotePath != NULL)
+        {
+            (*env)->DeleteLocalRef(env, jRemotePath);
+        }
+
+        if (objectSizeArray != NULL)
+        {
+            (*env)->DeleteLocalRef(env, objectSizeArray);
+        }
     }
 
     /* if the thread has been attached then detach the thread from the virtual machine */
@@ -1129,6 +1236,11 @@ eARUTILS_ERROR ARUTILS_BLEFtpAL_Connection_Reset(ARUTILS_Manager_t *manager)
 eARUTILS_ERROR ARUTILS_BLEFtpAL_List(ARUTILS_Manager_t *manager, const char *namePath, char **resultList, uint32_t *resultListLen)
 {
     return ARUTILS_BLEFtp_List((ARUTILS_BLEFtp_Connection_t *)manager->connectionObject, namePath, resultList, resultListLen);
+}
+
+eARUTILS_ERROR ARUTILS_BLEFtpAL_Size(ARUTILS_Manager_t *manager, const char *namePath, double *fileSize)
+{
+    return ARUTILS_BLEFtp_Size((ARUTILS_BLEFtp_Connection_t *)manager->connectionObject, namePath, fileSize);
 }
 
 eARUTILS_ERROR ARUTILS_BLEFtpAL_Get_WithBuffer(ARUTILS_Manager_t *manager, const char *namePath, uint8_t **data, uint32_t *dataLen,  ARUTILS_Ftp_ProgressCallback_t progressCallback, void* progressArg)
