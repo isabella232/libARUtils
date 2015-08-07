@@ -13,7 +13,7 @@ HEADER_FILES                                                =   ../Includes/libA
                                 
 # The sources to add to the library and to add to the source distribution
 SOURCE_FILES                                                =   $(HEADER_FILES)\
-                                                                ../Sources/ARUTILS_Error.c \
+                                                                ../gen/Sources/ARUTILS_Error.c \
                                                                 ../Sources/ARUTILS_Manager.c \
                                                                 ../Sources/ARUTILS_Manager.h \
                                                                 ../Sources/ARUTILS_FileSystem.c \
