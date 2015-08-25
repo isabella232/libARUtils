@@ -106,6 +106,8 @@ typedef struct _ARUTILS_WifiFtp_CallbackData_t_
     int isUploading;
     uint8_t *data;
     uint32_t dataSize;
+    double resumeSize;
+    double totalSize;
     FILE *file;
     eARUTILS_ERROR error;
     ARUTILS_Ftp_ProgressCallback_t progressCallback;

@@ -1165,7 +1165,7 @@ size_t ARUTILS_Http_ReadDataCallback(void *ptr, size_t size, size_t nmemb, void 
     size_t readSize = 0;
     size_t retSize = 0;
 
-    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_HTTP_TAG, "%d, %d", (int)size, (int)nmemb);
+    //ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_HTTP_TAG, "%d, %d", (int)size, (int)nmemb);
 
     if (connection != NULL)
     {
@@ -1225,7 +1225,7 @@ size_t ARUTILS_Http_WriteDataCallback(void *ptr, size_t size, size_t nmemb, void
     u_char *olddata = NULL;
     size_t retSize = 0;
 
-    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_HTTP_TAG, "%d, %d", (int)size, (int)nmemb);
+    //ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_HTTP_TAG, "%d, %d", (int)size, (int)nmemb);
 
     if (connection != NULL)
     {

@@ -1102,6 +1102,11 @@ eARUTILS_ERROR ARUTILS_WifiFtp_GetInternal(ARUTILS_WifiFtp_Connection_t *connect
     {
         connection->cbdata.progressCallback = progressCallback;
         connection->cbdata.progressArg = progressArg;
+        connection->cbdata.totalSize = remoteSize;
+        if (resume == FTP_RESUME_TRUE)
+        {
+            connection->cbdata.resumeSize = (double)localSize;
+        }
 
         code = curl_easy_setopt(connection->curl, CURLOPT_PROGRESSDATA, connection);
 
@@ -1363,6 +1368,11 @@ eARUTILS_ERROR ARUTILS_WifiFtp_Put(ARUTILS_WifiFtp_Connection_t *connection, con
     {
         connection->cbdata.progressCallback = progressCallback;
         connection->cbdata.progressArg = progressArg;
+        connection->cbdata.totalSize = (double)localSize;
+        if (resume == FTP_RESUME_TRUE)
+        {
+            connection->cbdata.resumeSize = remoteSize;
+        }
 
         code = curl_easy_setopt(connection->curl, CURLOPT_PROGRESSDATA, connection);
 
@@ -1855,6 +1865,7 @@ int ARUTILS_WifiFtp_ProgressCallback(void *userData, double dltotal, double dlno
 {
     ARUTILS_WifiFtp_Connection_t *connection = (ARUTILS_WifiFtp_Connection_t *)userData;
     float percent;
+    double currentSize = 0.f;
     int retval = 0;
 
     //ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_WIFIFTP_TAG, "%.0f, %.0f, %.0f, %.0f", dltotal, dlnow, ultotal, ulnow);
@@ -1868,7 +1879,9 @@ int ARUTILS_WifiFtp_ProgressCallback(void *userData, double dltotal, double dlno
                 // when 0, uploading isn't started
                 if (dltotal != 0.f)
                 {
-                    percent = (dlnow / dltotal) * 100.f;
+                    currentSize = connection->cbdata.resumeSize + dlnow;
+                    percent = (currentSize / connection->cbdata.totalSize) * 100.f;
+                    //ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_WIFIFTP_TAG, "%.0f, %.0f, %.0f", connection->cbdata.totalSize, currentSize);
                     connection->cbdata.progressCallback(connection->cbdata.progressArg, percent);
                 }
             }
@@ -1877,7 +1890,9 @@ int ARUTILS_WifiFtp_ProgressCallback(void *userData, double dltotal, double dlno
                 // when 0, downloading isn't started
                 if (ultotal != 0.f)
                 {
-                    percent = (ulnow / ultotal) * 100.f;
+                    currentSize = connection->cbdata.resumeSize + ulnow;
+                    percent = (currentSize / connection->cbdata.totalSize) * 100.f;
+                    //ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_WIFIFTP_TAG, "%.0f, %.0f, %.0f", connection->cbdata.totalSize, currentSize);
                     connection->cbdata.progressCallback(connection->cbdata.progressArg, percent);
                 }
             }
