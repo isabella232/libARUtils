@@ -768,6 +768,8 @@ eARUTILS_ERROR ARUTILS_WifiFtp_Size(ARUTILS_WifiFtp_Connection_t *connection, co
         {
             result = ARUTILS_ERROR_FTP_CODE;
         }
+        
+        ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_WIFIFTP_TAG, "SIZE: %.0lf", *fileSize);
     }
 
     //cleanup
@@ -984,7 +986,7 @@ eARUTILS_ERROR ARUTILS_WifiFtp_GetInternal(ARUTILS_WifiFtp_Connection_t *connect
     CURLcode code = CURLE_OK;
     long ftpCode = 0L;
     double remoteSize = 0.f;
-    uint32_t localSize = 0;
+    int64_t localSize = 0;
 
     ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_WIFIFTP_TAG, "%s, %s, %d", namePath ? namePath : "null", dstFile ? dstFile : "null", resume);
 
@@ -1030,9 +1032,9 @@ eARUTILS_ERROR ARUTILS_WifiFtp_GetInternal(ARUTILS_WifiFtp_Connection_t *connect
         if ((resultResume == ARUTILS_OK)
             || (resultResume == ARUTILS_ERROR_FILE_NOT_FOUND))
         {
-            if (localSize <= (uint32_t)remoteSize)
+            if (localSize <= (int64_t)remoteSize)
             {
-                code = curl_easy_setopt(connection->curl, CURLOPT_RESUME_FROM, (long)localSize);
+                code = curl_easy_setopt(connection->curl, CURLOPT_RESUME_FROM_LARGE, (curl_off_t)localSize);
 
                 if (code != CURLE_OK)
                 {
@@ -1174,7 +1176,7 @@ eARUTILS_ERROR ARUTILS_WifiFtp_GetInternal(ARUTILS_WifiFtp_Connection_t *connect
             }
         }
         else if ((resultResume == ARUTILS_OK)
-                 && (resume == FTP_RESUME_TRUE) && (localSize == (uint32_t)remoteSize)
+                 && (resume == FTP_RESUME_TRUE) && (localSize == (int64_t)remoteSize)
                  && (ftpCode == 213))
         {
             //resume ok
@@ -1195,7 +1197,7 @@ eARUTILS_ERROR ARUTILS_WifiFtp_GetInternal(ARUTILS_WifiFtp_Connection_t *connect
 
         if (result == ARUTILS_OK)
         {
-            if (localSize != (uint32_t)remoteSize)
+            if (localSize != (int64_t)remoteSize)
             {
                 result = ARUTILS_ERROR_FTP_SIZE;
             }
@@ -1237,7 +1239,7 @@ eARUTILS_ERROR ARUTILS_WifiFtp_Put(ARUTILS_WifiFtp_Connection_t *connection, con
     CURLcode code = CURLE_OK;
     long ftpCode = 0L;
     double remoteSize = 0.f;
-    uint32_t localSize = 0;
+    int64_t localSize = 0;
 
     ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_WIFIFTP_TAG, "%s, %s, %d", namePath ? namePath : "null", srcFile ? srcFile : "null", resume);
 
@@ -1272,9 +1274,9 @@ eARUTILS_ERROR ARUTILS_WifiFtp_Put(ARUTILS_WifiFtp_Connection_t *connection, con
 
         if (resultResume == ARUTILS_OK)
         {
-            if (localSize >= (uint32_t)remoteSize)
+            if (localSize >= (int64_t)remoteSize)
             {
-                code = curl_easy_setopt(connection->curl, CURLOPT_RESUME_FROM, (long)remoteSize);
+                code = curl_easy_setopt(connection->curl, CURLOPT_RESUME_FROM_LARGE, (curl_off_t)remoteSize);
 
                 if (code != CURLE_OK)
                 {
@@ -1313,7 +1315,7 @@ eARUTILS_ERROR ARUTILS_WifiFtp_Put(ARUTILS_WifiFtp_Connection_t *connection, con
 
         if ((result == ARUTILS_OK) && (resultResume == ARUTILS_OK) && (resume == FTP_RESUME_TRUE))
         {
-            int fileResult = fseek(connection->cbdata.file, (long)remoteSize, SEEK_SET);
+            int fileResult = fseeko(connection->cbdata.file, (off_t)remoteSize, SEEK_SET);
 
             if (fileResult != 0)
             {
@@ -1324,7 +1326,7 @@ eARUTILS_ERROR ARUTILS_WifiFtp_Put(ARUTILS_WifiFtp_Connection_t *connection, con
 
     if (result == ARUTILS_OK)
     {
-        code = curl_easy_setopt(connection->curl, CURLOPT_INFILESIZE, (long)localSize);
+        code = curl_easy_setopt(connection->curl, CURLOPT_INFILESIZE_LARGE, (curl_off_t)localSize);
 
         if (code != CURLE_OK)
         {
@@ -1437,7 +1439,7 @@ eARUTILS_ERROR ARUTILS_WifiFtp_Put(ARUTILS_WifiFtp_Connection_t *connection, con
             //ok
         }
         else if ((resultResume == ARUTILS_OK)
-                 && (resume == FTP_RESUME_TRUE) && (localSize == (uint32_t)remoteSize)
+                 && (resume == FTP_RESUME_TRUE) && (localSize == (int64_t)remoteSize)
                  && (ftpCode == 229))
         {
             //ok
@@ -1461,7 +1463,7 @@ eARUTILS_ERROR ARUTILS_WifiFtp_Put(ARUTILS_WifiFtp_Connection_t *connection, con
 
     if (result == ARUTILS_OK)
     {
-        if (localSize != (uint32_t)remoteSize)
+        if (localSize != (int64_t)remoteSize)
         {
             result = ARUTILS_ERROR_FTP_SIZE;
         }

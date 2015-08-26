@@ -62,7 +62,7 @@ eARUTILS_ERROR ARUTILS_FileSystem_IsExist(const char *namePath);
  * @retval On success, returns ARUTILS_OK. Otherwise, it returns an error number of eARUTILS_ERROR.
  * @see 
  */
-eARUTILS_ERROR ARUTILS_FileSystem_GetFileSize(const char *namePath, uint32_t *size);
+eARUTILS_ERROR ARUTILS_FileSystem_GetFileSize(const char *namePath, int64_t *size);
 
 /**
  * @brief Rename local file system file

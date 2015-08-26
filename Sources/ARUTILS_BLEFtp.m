@@ -520,7 +520,7 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(ARUtils_BLEFtp, initBLEFtp)
 {
     FILE *srcFile = NULL;
     int resumeIndex = 0;
-    uint32_t totalSize = 0;
+    int64_t totalSize = 0;
     eARUTILS_ERROR result = ARUTILS_OK;
     
 #if ARUTILS_BLEFTP_ENABLE_LOG
@@ -571,7 +571,7 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(ARUtils_BLEFtp, initBLEFtp)
     
     if (result == ARUTILS_OK)
     {
-        result = [self sendPutData:totalSize srcFile:srcFile resumeIndex:resumeIndex resume:resume abort:NO progressCallback:progressCallback progressArg:progressArg forConnection:connection];
+        result = [self sendPutData:(uint32_t)totalSize srcFile:srcFile resumeIndex:resumeIndex resume:resume abort:NO progressCallback:progressCallback progressArg:progressArg forConnection:connection];
     }
     
     if (srcFile != NULL)

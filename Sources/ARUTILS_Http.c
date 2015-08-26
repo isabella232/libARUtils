@@ -212,7 +212,7 @@ eARUTILS_ERROR ARUTILS_Http_Get_Internal(ARUTILS_Http_Connection_t *connection, 
     CURLcode code = CURLE_OK;
     long httpCode = 0L;
     double remoteSize = 0.f;
-    uint32_t localSize = 0;
+    int64_t localSize = 0;
 
     ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_HTTP_TAG, "%s, %s", namePath ? namePath : "null", dstFile ? dstFile : "null");
 
@@ -393,7 +393,7 @@ eARUTILS_ERROR ARUTILS_Http_Get_Internal(ARUTILS_Http_Connection_t *connection, 
 
         if (result == ARUTILS_OK)
         {
-            if (localSize != (uint32_t)remoteSize)
+            if (localSize != (int64_t)remoteSize)
             {
                 result = ARUTILS_ERROR_HTTP_SIZE;
             }
@@ -404,7 +404,7 @@ eARUTILS_ERROR ARUTILS_Http_Get_Internal(ARUTILS_Http_Connection_t *connection, 
     {
         // -1 when no Content-Length available
         if ((((int32_t)remoteSize) > 0)
-            && (((int32_t)remoteSize) != connection->cbdata.writeDataSize))
+            && (((uint32_t)remoteSize) != connection->cbdata.writeDataSize))
         {
             result = ARUTILS_ERROR_HTTP_SIZE;
         }
@@ -682,7 +682,7 @@ eARUTILS_ERROR ARUTILS_Http_Post_WithRange(ARUTILS_Http_Connection_t *connection
     CURLFORMcode formCode = CURL_FORMADD_OK;
     CURLcode code = CURLE_OK;
     long httpCode = 0L;
-    uint32_t localSize = 0;
+    int64_t localSize = 0;
     
     ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_HTTP_TAG, "%s, %s", namePath ? namePath : "null", srcFile ? srcFile : "null");
     
@@ -708,7 +708,7 @@ eARUTILS_ERROR ARUTILS_Http_Post_WithRange(ARUTILS_Http_Connection_t *connection
     
     if (result == ARUTILS_OK)
     {
-        if (endRange > (localSize - 1))
+        if (endRange > (((uint32_t)localSize) - 1))
         {
             result =  ARUTILS_ERROR_BAD_PARAMETER;
         }
@@ -805,7 +805,7 @@ eARUTILS_ERROR ARUTILS_Http_Post_WithRange(ARUTILS_Http_Connection_t *connection
     if (result == ARUTILS_OK)
     {
         //Content-Range: bytes 0-6000/7913
-        sprintf(contentRange, "Content-Range: bytes %d-%d/%d", startRange, endRange, localSize - 1);
+        sprintf(contentRange, "Content-Range: bytes %d-%d/%d", startRange, endRange, ((uint32_t)localSize) - 1);
         headers = curl_slist_append(headers, contentRange);
         if (headers == NULL)
         {

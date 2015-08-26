@@ -91,7 +91,7 @@ JNIEXPORT jboolean JNICALL Java_com_parrot_arsdk_arutils_ARUtilsFileSystem_nativ
 JNIEXPORT jlong JNICALL Java_com_parrot_arsdk_arutils_ARUtilsFileSystem_nativeGetFileSize(JNIEnv *env, jobject jThis, jstring jNamePath)
 {
     const char *nativeNamePath = (*env)->GetStringUTFChars(env, jNamePath, 0);
-    uint32_t nativeSize = 0;
+    int64_t nativeSize = 0;
     jlong jSize = 0;
     eARUTILS_ERROR result = ARUTILS_OK;
 

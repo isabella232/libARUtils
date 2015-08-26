@@ -122,7 +122,7 @@ void test_ftp_commands(char *tmp)
     //CURLINFO_NEW_DIRECTORY_PERMS
     
     char localFilePath[512];
-    //uint32_t localSize;
+    //int64_t localSize = 0;
     strcpy(localFilePath, tmp);
     strcat(localFilePath, "text0.txt");
     

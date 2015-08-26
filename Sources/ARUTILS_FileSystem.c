@@ -90,10 +90,10 @@ eARUTILS_ERROR ARUTILS_FileSystem_IsExist(const char *namePath)
     return result;
 }
 
-eARUTILS_ERROR ARUTILS_FileSystem_GetFileSize(const char *namePath, uint32_t *size)
+eARUTILS_ERROR ARUTILS_FileSystem_GetFileSize(const char *namePath, int64_t *size)
 {
     struct stat statbuf = { 0 };
-    uint32_t fileSize = 0;
+    int64_t fileSize = 0;
     eARUTILS_ERROR result = ARUTILS_OK;
     int resultSys = 0;
 
@@ -110,7 +110,7 @@ eARUTILS_ERROR ARUTILS_FileSystem_GetFileSize(const char *namePath, uint32_t *si
     {
         if (S_ISREG(statbuf.st_mode))
         {
-            fileSize = (uint32_t)statbuf.st_size;
+            fileSize = (int64_t)statbuf.st_size;
         }
     }
     else
