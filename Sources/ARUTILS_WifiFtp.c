@@ -40,6 +40,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
+#include <fcntl.h>
+#include <sys/stat.h>
 #include <sys/socket.h>
 
 #include <libARSAL/ARSAL_Sem.h>
@@ -107,6 +109,7 @@ ARUTILS_WifiFtp_Connection_t * ARUTILS_WifiFtp_Connection_New(ARSAL_Sem_t *cance
     {
         newConnection->curlSocket = -1;
         newConnection->cancelSem = cancelSem;
+        newConnection->cbdata.fileFd = -1;
     }
 
     if (result == ARUTILS_OK)
@@ -1064,16 +1067,20 @@ eARUTILS_ERROR ARUTILS_WifiFtp_GetInternal(ARUTILS_WifiFtp_Connection_t *connect
 
     if ((result == ARUTILS_OK) && (dstFile != NULL))
     {
+        int flags = 0;
+#ifdef O_LARGEFILE
+        flags = O_LARGEFILE;
+#endif
         if ((resultResume == ARUTILS_OK) && (resume == FTP_RESUME_TRUE))
         {
-            connection->cbdata.file = fopen(dstFile, "ab");
+            connection->cbdata.fileFd = open(dstFile, flags | O_APPEND | O_RDWR);
         }
         else
         {
-            connection->cbdata.file = fopen(dstFile, "wb");
+            connection->cbdata.fileFd = open(dstFile, flags | O_CREAT | O_TRUNC | O_RDWR,  S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH);
         }
 
-        if (connection->cbdata.file == NULL)
+        if (connection->cbdata.fileFd == -1)
         {
             result = ARUTILS_ERROR_SYSTEM;
         }
@@ -1170,20 +1177,13 @@ eARUTILS_ERROR ARUTILS_WifiFtp_GetInternal(ARUTILS_WifiFtp_Connection_t *connect
         // GET OK (226)
         if (ftpCode == 226)
         {
-            if (dstFile != NULL)
-            {
-                fflush(connection->cbdata.file);
-            }
+            //ok
         }
         else if ((resultResume == ARUTILS_OK)
                  && (resume == FTP_RESUME_TRUE) && (localSize == (int64_t)remoteSize)
                  && (ftpCode == 213))
         {
             //resume ok
-            if (dstFile != NULL)
-            {
-                fflush(connection->cbdata.file);
-            }
         }
         else
         {
@@ -1306,18 +1306,26 @@ eARUTILS_ERROR ARUTILS_WifiFtp_Put(ARUTILS_WifiFtp_Connection_t *connection, con
 
     if (result == ARUTILS_OK)
     {
-        connection->cbdata.file = fopen(srcFile, "rb");
+        int flags = 0;
+#ifdef O_LARGEFILE
+        flags = O_LARGEFILE;
+#endif
+        connection->cbdata.fileFd = open(srcFile, flags | O_RDONLY);
 
-        if (connection->cbdata.file == NULL)
+        if (connection->cbdata.fileFd == -1)
         {
             result = ARUTILS_ERROR_SYSTEM;
         }
 
         if ((result == ARUTILS_OK) && (resultResume == ARUTILS_OK) && (resume == FTP_RESUME_TRUE))
         {
-            int fileResult = fseeko(connection->cbdata.file, (off_t)remoteSize, SEEK_SET);
+#ifdef O_LARGEFILE
+            off64_t fileResult = lseek64(connection->cbdata.fileFd, (off64_t)remoteSize, SEEK_SET);
+#else
+            off_t fileResult = lseek(connection->cbdata.fileFd, (off_t)remoteSize, SEEK_SET);
+#endif
 
-            if (fileResult != 0)
+            if (fileResult == -1)
             {
                 result = ARUTILS_ERROR_SYSTEM;
             }
@@ -1757,7 +1765,7 @@ eARUTILS_ERROR ARUTILS_WifiFtp_ResetOptions(ARUTILS_WifiFtp_Connection_t *connec
 size_t ARUTILS_WifiFtp_ReadDataCallback(void *ptr, size_t size, size_t nmemb, void *userData)
 {
     ARUTILS_WifiFtp_Connection_t *connection = (ARUTILS_WifiFtp_Connection_t *)userData;
-    size_t readSize = 0;
+    ssize_t readSize = 0;
     size_t retSize = 0;
 
     //ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_WIFIFTP_TAG, "%d, %d", (int)size, (int)nmemb);
@@ -1768,26 +1776,18 @@ size_t ARUTILS_WifiFtp_ReadDataCallback(void *ptr, size_t size, size_t nmemb, vo
 
         if (connection->cbdata.error == ARUTILS_OK)
         {
-            if (connection->cbdata.file != NULL)
+            if (connection->cbdata.fileFd != -1)
             {
-                do
-                {
-                    readSize = fread(ptr, size, nmemb, connection->cbdata.file);
+                readSize = read(connection->cbdata.fileFd, ptr, size * nmemb);
 
-                    if (readSize == 0)
-                    {
-                        int err = ferror(connection->cbdata.file);
-                        if (err != 0)
-                        {
-                            connection->cbdata.error = ARUTILS_ERROR_SYSTEM;
-                        }
-                    }
-                    else
-                    {
-                        retSize = readSize;
-                    }
+                if (readSize == -1)
+                {
+                    connection->cbdata.error = ARUTILS_ERROR_SYSTEM;
                 }
-                while ((connection->cbdata.error == ARUTILS_OK) && (readSize == 0) && !feof(connection->cbdata.file));
+                else
+                {
+                    retSize = readSize;
+                }
             }
         }
 
@@ -1818,7 +1818,7 @@ size_t ARUTILS_WifiFtp_WriteDataCallback(void *ptr, size_t size, size_t nmemb, v
 
         if (connection->cbdata.error == ARUTILS_OK)
         {
-            if (connection->cbdata.file == NULL)
+            if (connection->cbdata.fileFd == -1)
             {
                 olddata = connection->cbdata.data;
                 connection->cbdata.data = (u_char *)realloc(connection->cbdata.data, connection->cbdata.dataSize + (size * nmemb));
@@ -1830,8 +1830,8 @@ size_t ARUTILS_WifiFtp_WriteDataCallback(void *ptr, size_t size, size_t nmemb, v
             }
             else
             {
-                size_t len = fwrite(ptr, size, nmemb, connection->cbdata.file);
-                if (len != size * nmemb)
+                ssize_t len = write(connection->cbdata.fileFd, ptr, size * nmemb);
+                if ((len == -1) || (len != size * nmemb))
                 {
                     connection->cbdata.error = ARUTILS_ERROR_SYSTEM;
                 }
@@ -1843,7 +1843,7 @@ size_t ARUTILS_WifiFtp_WriteDataCallback(void *ptr, size_t size, size_t nmemb, v
             }
         }
 
-        if ((connection->cbdata.error == ARUTILS_OK) && (connection->cbdata.file == NULL) && (connection->cbdata.data != NULL))
+        if ((connection->cbdata.error == ARUTILS_OK) && (connection->cbdata.fileFd == -1) && (connection->cbdata.data != NULL))
         {
             memcpy(&connection->cbdata.data[connection->cbdata.dataSize], ptr, size * nmemb);
             connection->cbdata.dataSize += size * nmemb;
@@ -1932,13 +1932,10 @@ void ARUTILS_WifiFtp_FreeCallbackData(ARUTILS_WifiFtp_CallbackData_t *cbdata)
 
     if (cbdata != NULL)
     {
-        if (cbdata->file != NULL)
+        if (cbdata->fileFd != -1)
         {
-            if (cbdata->file != NULL)
-            {
-                fclose(cbdata->file);
-                cbdata->file = NULL;
-            }
+            close(cbdata->fileFd);
+            cbdata->fileFd = -1;
         }
 
         if (cbdata->data != NULL)
@@ -1948,6 +1945,7 @@ void ARUTILS_WifiFtp_FreeCallbackData(ARUTILS_WifiFtp_CallbackData_t *cbdata)
         }
 
         memset(cbdata, 0, sizeof(ARUTILS_WifiFtp_CallbackData_t));
+        cbdata->fileFd = -1;
     }
 }
 

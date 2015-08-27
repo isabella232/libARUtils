@@ -92,7 +92,11 @@ eARUTILS_ERROR ARUTILS_FileSystem_IsExist(const char *namePath)
 
 eARUTILS_ERROR ARUTILS_FileSystem_GetFileSize(const char *namePath, int64_t *size)
 {
+#ifdef stat64
+    struct stat64 statbuf = { 0 };
+#else
     struct stat statbuf = { 0 };
+#endif
     int64_t fileSize = 0;
     eARUTILS_ERROR result = ARUTILS_OK;
     int resultSys = 0;
@@ -103,8 +107,12 @@ eARUTILS_ERROR ARUTILS_FileSystem_GetFileSize(const char *namePath, int64_t *siz
     {
         result = ARUTILS_ERROR_BAD_PARAMETER;
     }
-
+    
+#ifdef stat64
+    resultSys = stat64(namePath, &statbuf);
+#else
     resultSys = stat(namePath, &statbuf);
+#endif
 
     if (resultSys == 0)
     {
