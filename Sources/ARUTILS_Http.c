@@ -1123,7 +1123,27 @@ eARUTILS_ERROR ARUTILS_Http_ResetOptions(ARUTILS_Http_Connection_t *connection)
             result = ARUTILS_ERROR_CURL_SETOPT;
         }
     }
-    
+
+    if (result == ARUTILS_OK)
+    {
+        code = curl_easy_setopt(connection->curl, CURLOPT_CLOSESOCKETFUNCTION,ARUTILS_Http_ClosesocketCallback);
+
+        if (code != CURLE_OK)
+        {
+            result = ARUTILS_ERROR_CURL_SETOPT;
+        }
+    }
+
+    if (result == ARUTILS_OK)
+    {
+        code = curl_easy_setopt(connection->curl, CURLOPT_CLOSESOCKETDATA, &connection->curlSocket);
+
+        if (code != CURLE_OK)
+        {
+            result = ARUTILS_ERROR_CURL_SETOPT;
+        }
+    }
+
     if (result == ARUTILS_OK)
     {
         code = curl_easy_setopt(connection->curl, CURLOPT_CONNECTTIMEOUT, ARUTILS_HTTP_TIMEOUT);
@@ -1329,6 +1349,15 @@ curl_socket_t ARUTILS_Http_OpensocketCallback(void *clientp, curlsocktype purpos
     }
     
     return sock;
+}
+
+void ARUTILS_Http_ClosesocketCallback(void *clientp, curl_socket_t sock)
+{
+    close(sock);
+    if (clientp != NULL)
+    {
+        *((int*)clientp) = -1;
+    }
 }
 
 void ARUTILS_Http_FreeCallbackData(ARUTILS_Http_CallbackData_t *cbdata)

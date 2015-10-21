@@ -310,6 +310,14 @@ int ARUTILS_WifiFtp_ProgressCallback(void *userData, double dltotal, double dlno
 curl_socket_t ARUTILS_WifiFtp_OpensocketCallback(void *clientp, curlsocktype purpose, struct curl_sockaddr *address);
 
 /**
+ * @brief Closesocket callback of cURL connection
+ * @param clientp
+ * @param sock
+ * @see cURL
+ */
+void ARUTILS_WifiFtp_ClosesocketCallback(void *clientp, curl_socket_t sock);
+
+/**
  * @brief Execute a command on remote Ftp server file
  * @param connection The address of the pointer on the Ftp Connection
  * @param namePath The string of the file name path

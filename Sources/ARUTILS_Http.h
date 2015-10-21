@@ -140,6 +140,14 @@ int ARUTILS_Http_ProgressCallback(void *userData, double dltotal, double dlnow, 
 curl_socket_t ARUTILS_Http_OpensocketCallback(void *clientp, curlsocktype purpose, struct curl_sockaddr *address);
 
 /**
+ * @brief Closesocket callback of cURL connection
+ * @param clientp
+ * @param sock
+ * @see cURL
+ */
+void ARUTILS_Http_ClosesocketCallback(void *clientp, curl_socket_t sock);
+
+/**
  * @brief Reset the Http connection values
  * @param connection The address of the pointer on the Http Connection
  * @retval On success, returns ARUTILS_OK. Otherwise, it returns an error number of eARUTILS_ERROR.

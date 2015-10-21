@@ -1749,6 +1749,27 @@ eARUTILS_ERROR ARUTILS_WifiFtp_ResetOptions(ARUTILS_WifiFtp_Connection_t *connec
         }
     }
     
+
+    if (result == ARUTILS_OK)
+    {
+        code = curl_easy_setopt(connection->curl, CURLOPT_CLOSESOCKETFUNCTION, ARUTILS_WifiFtp_ClosesocketCallback);
+
+        if (code != CURLE_OK)
+        {
+            result = ARUTILS_ERROR_CURL_SETOPT;
+        }
+    }
+
+    if (result == ARUTILS_OK)
+    {
+        code = curl_easy_setopt(connection->curl, CURLOPT_CLOSESOCKETDATA, &connection->curlSocket);
+
+        if (code != CURLE_OK)
+        {
+            result = ARUTILS_ERROR_CURL_SETOPT;
+        }
+    }
+
     if (result == ARUTILS_OK)
     {
         code = curl_easy_setopt(connection->curl,CURLOPT_CONNECTTIMEOUT, ARUTILS_WIFIFTP_TIMEOUT);
@@ -1924,6 +1945,15 @@ curl_socket_t ARUTILS_WifiFtp_OpensocketCallback(void *clientp, curlsocktype pur
     }
     
     return sock;
+}
+
+void ARUTILS_WifiFtp_ClosesocketCallback(void *clientp, curl_socket_t sock)
+{
+    close(sock);
+    if (clientp != NULL)
+    {
+        *((int*)clientp) = -1;
+    }
 }
 
 void ARUTILS_WifiFtp_FreeCallbackData(ARUTILS_WifiFtp_CallbackData_t *cbdata)
