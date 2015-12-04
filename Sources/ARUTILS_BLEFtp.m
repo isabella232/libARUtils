@@ -79,6 +79,7 @@ NSString* const kARUTILS_BLEFtp_Getting = @"kARUTILS_BLEFtp_Getting";
 
 #ifdef HAVE_UIKIT_UIKIT_H
 #define SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(v)  ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] != NSOrderedAscending)
+#define SYSTEM_VERSION_LESSER_THAN(v)  (([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] != NSOrderedDescending) && ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] != NSOrderedSame))
 #else
 #define SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(v)  0
 #endif /* HAVE_UIKIT_UIKIT_H */
@@ -771,7 +772,7 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(ARUtils_BLEFtp, initBLEFtp)
                 CC_MD5_Update(&ctx, packet, packetLen);
                 
                 NSData *data = [NSData dataWithBytes:packet length:packetLen];
-                if (SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"8.2"))
+                if (SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"8.2") && SYSTEM_VERSION_LESSER_THAN(@"9.0"))
                 {
                     bleErr = [SINGLETON_FOR_CLASS(ARSAL_BLEManager) writeDataWithResponse:data toCharacteristic:_transferring];
                     retBLE = (bleErr == ARSAL_OK) ? YES : NO;
@@ -840,7 +841,7 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(ARUtils_BLEFtp, initBLEFtp)
 #endif
                 
                 NSData *data = [NSData dataWithBytes:md5Txt length:strlen(md5Txt)];
-                if (SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"8.2"))
+                if (SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"8.2") && SYSTEM_VERSION_LESSER_THAN(@"9.0"))
                 {
                     bleErr = [SINGLETON_FOR_CLASS(ARSAL_BLEManager) writeDataWithResponse:data toCharacteristic:_transferring];
                     retBLE = (bleErr == ARSAL_OK) ? YES : NO;
@@ -866,7 +867,7 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(ARUtils_BLEFtp, initBLEFtp)
     if ((result == ARUTILS_OK) && (endFile == YES))
     {
         NSData *data = [[NSData alloc] init];
-        if (SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"8.2"))
+        if (SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"8.2") && SYSTEM_VERSION_LESSER_THAN(@"9.0"))
         {
             bleErr = [SINGLETON_FOR_CLASS(ARSAL_BLEManager) writeDataWithResponse:data toCharacteristic:_transferring];
             retBLE = (bleErr == ARSAL_OK) ? YES : NO;
