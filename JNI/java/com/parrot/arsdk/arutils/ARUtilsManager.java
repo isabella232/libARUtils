@@ -32,11 +32,11 @@
 package com.parrot.arsdk.arutils;
 
 import android.bluetooth.BluetoothGatt;
-import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.content.pm.PackageManager;
-import com.parrot.arsdk.arsal.ARSALBLEManager;
-import com.parrot.arsdk.arsal.ARSAL_ERROR_ENUM;
+import android.text.TextUtils;
+import android.util.Log;
+
 import java.util.concurrent.Semaphore;
 
 /**
@@ -44,6 +44,7 @@ import java.util.concurrent.Semaphore;
  */
 public class ARUtilsManager
 {
+    private static final String TAG = "ARUtilsManager";
     /* Native Functions */
     private native static boolean nativeStaticInit();
     private native long nativeNew() throws ARUtilsException;
@@ -79,6 +80,10 @@ public class ARUtilsManager
     private long m_managerPtr;
     private boolean m_initOk;
 
+    private boolean mIsWifiFtpInited = false;
+    private boolean mIsBLEFtpInited = false;
+    private boolean mIsRFCommFtpInited = false;
+
     static
     {
         nativeStaticInit();
@@ -105,7 +110,7 @@ public class ARUtilsManager
      */
     public void dispose()
     {
-        if(m_initOk == true)
+        if(m_initOk)
         {
             nativeDelete(m_managerPtr);
             m_managerPtr = 0;
@@ -154,10 +159,20 @@ public class ARUtilsManager
     {
         ARUTILS_ERROR_ENUM error = ARUTILS_ERROR_ENUM.ARUTILS_ERROR;
 
-        if(addr != null)
+        if(TextUtils.isEmpty(addr))
+        {
+            error = ARUTILS_ERROR_ENUM.ARUTILS_ERROR_BAD_PARAMETER;
+        }
+        else if(! mIsWifiFtpInited)
         {
             int intError = nativeInitWifiFtp(m_managerPtr, addr, port, username, password);
             error =  ARUTILS_ERROR_ENUM.getFromValue(intError);
+
+            mIsWifiFtpInited = (error == ARUTILS_ERROR_ENUM.ARUTILS_OK);
+        }
+        else
+        {
+            Log.e(TAG, "wifi FTP is already inited");
         }
 
         return error;
@@ -169,8 +184,17 @@ public class ARUtilsManager
     public ARUTILS_ERROR_ENUM closeWifiFtp()
     {
         ARUTILS_ERROR_ENUM error = ARUTILS_ERROR_ENUM.ARUTILS_ERROR;
-        int intError = nativeCloseWifiFtp(m_managerPtr);
-        error = ARUTILS_ERROR_ENUM.getFromValue(intError);
+        if(mIsWifiFtpInited)
+        {
+            int intError = nativeCloseWifiFtp(m_managerPtr);
+            error = ARUTILS_ERROR_ENUM.getFromValue(intError);
+            mIsWifiFtpInited = false;
+        }
+        else
+        {
+            Log.e(TAG, "we haven't successfully initWifiFtp");
+        }
+
         return error;
     }
 
@@ -179,6 +203,12 @@ public class ARUtilsManager
      */
     public ARUTILS_ERROR_ENUM initBLEFtp(Context context, BluetoothGatt deviceGatt, int port)
     {
+        if(mIsBLEFtpInited)
+        {
+            Log.e(TAG, "BLE FTP is already inited");
+            return ARUTILS_ERROR_ENUM.ARUTILS_ERROR;
+        }
+
         ARUTILS_ERROR_ENUM error = ARUTILS_ERROR_ENUM.ARUTILS_OK;
         
         ARUtilsBLEFtp bleFtp = null;
@@ -202,7 +232,7 @@ public class ARUtilsManager
         if (error == ARUTILS_ERROR_ENUM.ARUTILS_OK)
         {
             /* check if the BLE is available*/
-            if (context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE) != true)
+            if (! context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE))
             {
                 error = ARUTILS_ERROR_ENUM.ARUTILS_ERROR_NETWORK_TYPE;
             }
@@ -223,8 +253,10 @@ public class ARUtilsManager
                 error = ARUTILS_ERROR_ENUM.ARUTILS_ERROR_BLE_FAILED;
             }
         }
+
+        mIsBLEFtpInited = (error == ARUTILS_ERROR_ENUM.ARUTILS_OK);
         
-        if (error == ARUTILS_ERROR_ENUM.ARUTILS_OK)
+        if (mIsBLEFtpInited)
         {
             Semaphore cancelSem = new Semaphore(0);
             nativeInitBLEFtp(m_managerPtr, bleFtp, cancelSem);
@@ -259,29 +291,28 @@ public class ARUtilsManager
      */
     public ARUTILS_ERROR_ENUM closeBLEFtp(Context context)
     {
-        ARUTILS_ERROR_ENUM error = ARUTILS_ERROR_ENUM.ARUTILS_OK;
+        ARUTILS_ERROR_ENUM error = ARUTILS_ERROR_ENUM.ARUTILS_ERROR;
 
-        /* check parameters */
-        if (context == null)
+        if(context == null)
         {
             error = ARUTILS_ERROR_ENUM.ARUTILS_ERROR_BAD_PARAMETER;
         }
-
-        if (error == ARUTILS_ERROR_ENUM.ARUTILS_OK)
-        {
-            /* check if the BLE is available*/
-            if (context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE) != true)
-            {
-                error = ARUTILS_ERROR_ENUM.ARUTILS_ERROR_NETWORK_TYPE;
-            }
-        }
-
-        if (error == ARUTILS_ERROR_ENUM.ARUTILS_OK)
+        else if(mIsBLEFtpInited)
         {
             ARUtilsBLEFtp bleFtp = ARUtilsBLEFtp.getInstance(context);
-            bleFtp.unregisterDevice();
+            //we unregister Device only when the BLE FTP is correctly initialised
+            if(bleFtp.unregisterDevice())
+            {
+                error = ARUTILS_ERROR_ENUM.ARUTILS_OK;
+            }
             nativeCloseBLEFtp(m_managerPtr);
+            mIsBLEFtpInited = false;
         }
+        else
+        {
+            Log.e(TAG, "we haven't successfully initBLEFtp");
+        }
+
         return error;
     }
 
@@ -351,6 +382,12 @@ public class ARUtilsManager
      */
     public ARUTILS_ERROR_ENUM initRFCommFtp(Context context, BluetoothGatt deviceGatt, int port)
     {
+        if(mIsRFCommFtpInited)
+        {
+            Log.e(TAG, "RFComm FTP is already inited");
+            return ARUTILS_ERROR_ENUM.ARUTILS_ERROR;
+        }
+
         ARUTILS_ERROR_ENUM error = ARUTILS_ERROR_ENUM.ARUTILS_OK;
         ARUtilsRFCommFtp rfcommFtp = null;
         /* check parameters */
@@ -372,7 +409,7 @@ public class ARUtilsManager
         if (error == ARUTILS_ERROR_ENUM.ARUTILS_OK)
         {
             /* check if the RFComm is available*/
-            if (context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH) != true)
+            if (! context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH))
             {
                 error = ARUTILS_ERROR_ENUM.ARUTILS_ERROR_NETWORK_TYPE;
             }
@@ -393,8 +430,10 @@ public class ARUtilsManager
                 error = ARUTILS_ERROR_ENUM.ARUTILS_ERROR_RFCOMM_FAILED;
             }
         }
+
+        mIsRFCommFtpInited = (error == ARUTILS_ERROR_ENUM.ARUTILS_OK);
         
-        if (error == ARUTILS_ERROR_ENUM.ARUTILS_OK)
+        if (mIsRFCommFtpInited)
         {
             Semaphore cancelSem = new Semaphore(0);
             nativeInitRFCommFtp(m_managerPtr, rfcommFtp, cancelSem);
@@ -408,29 +447,27 @@ public class ARUtilsManager
      */
     public ARUTILS_ERROR_ENUM closeRFCommFtp(Context context)
     {
-        ARUTILS_ERROR_ENUM error = ARUTILS_ERROR_ENUM.ARUTILS_OK;
-        
-        /* check parameters */
-        if (context == null)
+        ARUTILS_ERROR_ENUM error = ARUTILS_ERROR_ENUM.ARUTILS_ERROR;
+
+        if(context == null)
         {
             error = ARUTILS_ERROR_ENUM.ARUTILS_ERROR_BAD_PARAMETER;
         }
-        
-        if (error == ARUTILS_ERROR_ENUM.ARUTILS_OK)
-        {
-            /* check if the BLE is available*/
-            if (context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH) != true)
-            {
-                error = ARUTILS_ERROR_ENUM.ARUTILS_ERROR_NETWORK_TYPE;
-            }
-        }
-        
-        if (error == ARUTILS_ERROR_ENUM.ARUTILS_OK)
+        else if(mIsRFCommFtpInited)
         {
             ARUtilsRFCommFtp rfcommFtp = ARUtilsRFCommFtp.getInstance(context);
-            rfcommFtp.unregisterDevice();
+            if (rfcommFtp.unregisterDevice())
+            {
+                error = ARUTILS_ERROR_ENUM.ARUTILS_OK;
+            }
             nativeCloseRFCommFtp(m_managerPtr);
+            mIsRFCommFtpInited = false;
         }
+        else
+        {
+            Log.e(TAG, "we haven't successfully initRFCommFtp");
+        }
+
         return error;
     }
     
