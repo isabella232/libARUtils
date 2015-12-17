@@ -107,7 +107,11 @@ ARUTILS_WifiFtp_Connection_t * ARUTILS_WifiFtp_Connection_New(ARSAL_Sem_t *cance
 
     if (result == ARUTILS_OK)
     {
-        newConnection->curlSocket = -1;
+        int index;
+        for(index = 0; index < ARUTILS_FTP_MAX_SOCKET_SIZE; index ++)
+        {
+            newConnection->curlSocket[index] = -1;
+        }
         newConnection->cancelSem = cancelSem;
         newConnection->cbdata.fileFd = -1;
     }
@@ -247,10 +251,13 @@ eARUTILS_ERROR ARUTILS_WifiFtp_Connection_Cancel(ARUTILS_WifiFtp_Connection_t *c
     
     if (result == ARUTILS_OK)
     {
-        if (connection->curlSocket != -1)
+        int index;
+        for(index = 0; index < ARUTILS_FTP_MAX_SOCKET_SIZE; index ++)
         {
-            shutdown(connection->curlSocket, SHUT_RDWR);
-            connection->curlSocket = -1;
+            if(connection->curlSocket[index] != -1)
+            {
+                shutdown(connection->curlSocket[index], SHUT_RDWR);
+            }
         }
     }
 
@@ -1741,7 +1748,7 @@ eARUTILS_ERROR ARUTILS_WifiFtp_ResetOptions(ARUTILS_WifiFtp_Connection_t *connec
     
     if (result == ARUTILS_OK)
     {
-        code = curl_easy_setopt(connection->curl, CURLOPT_OPENSOCKETDATA, &connection->curlSocket);
+        code = curl_easy_setopt(connection->curl, CURLOPT_OPENSOCKETDATA, connection);
         
         if (code != CURLE_OK)
         {
@@ -1762,7 +1769,7 @@ eARUTILS_ERROR ARUTILS_WifiFtp_ResetOptions(ARUTILS_WifiFtp_Connection_t *connec
 
     if (result == ARUTILS_OK)
     {
-        code = curl_easy_setopt(connection->curl, CURLOPT_CLOSESOCKETDATA, &connection->curlSocket);
+        code = curl_easy_setopt(connection->curl, CURLOPT_CLOSESOCKETDATA, connection);
 
         if (code != CURLE_OK)
         {
@@ -1933,14 +1940,20 @@ curl_socket_t ARUTILS_WifiFtp_OpensocketCallback(void *clientp, curlsocktype pur
 {
     curl_socket_t sock = 0;
     //ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_WIFIFTP_TAG, "%x", clientp);
+    ARUTILS_WifiFtp_Connection_t *connection = (ARUTILS_WifiFtp_Connection_t *)clientp;
     
     if ((address != NULL) && (purpose == CURLSOCKTYPE_IPCXN))
     {
         sock = socket(address->family, address->socktype, address->protocol);
         
-        if (clientp != NULL)
+        int index;
+        for(index = 0; index < ARUTILS_FTP_MAX_SOCKET_SIZE; index ++)
         {
-            *((int*)clientp) = sock;
+            if(connection->curlSocket[index] == -1)
+            {
+                connection->curlSocket[index] = sock;
+                break;
+            }
         }
     }
     
@@ -1950,9 +1963,17 @@ curl_socket_t ARUTILS_WifiFtp_OpensocketCallback(void *clientp, curlsocktype pur
 void ARUTILS_WifiFtp_ClosesocketCallback(void *clientp, curl_socket_t sock)
 {
     close(sock);
-    if (clientp != NULL)
+
+    ARUTILS_WifiFtp_Connection_t *connection = (ARUTILS_WifiFtp_Connection_t *)clientp;
+    
+    int index;
+    for(index = 0; index < ARUTILS_FTP_MAX_SOCKET_SIZE; index ++)
     {
-        *((int*)clientp) = -1;
+        if(connection->curlSocket[index] == (int)sock)
+        {
+            connection->curlSocket[index] = -1;
+            break;
+        }
     }
 }
 

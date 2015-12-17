@@ -91,6 +91,11 @@
 #define ARUTILS_FTP_MAX_USER_SIZE     64
 
 /**
+ * @brief Ftp max socket opened
+ */
+#define ARUTILS_FTP_MAX_SOCKET_SIZE    4
+
+/**
  * @brief Ftp CallbackData structure
  * @param isUploading Is set to 1 if upploading else 0 of downloading
  * @param data The byte buffer data if data mode else null
@@ -130,7 +135,7 @@ struct ARUTILS_WifiFtp_Connection_t
 {
     ARSAL_Sem_t *cancelSem;
     CURL *curl;
-    int curlSocket;
+    int curlSocket[ARUTILS_FTP_MAX_SOCKET_SIZE];
     char serverUrl[ARUTILS_FTP_MAX_URL_SIZE];
     char username[ARUTILS_FTP_MAX_USER_SIZE];
     char password[ARUTILS_FTP_MAX_USER_SIZE];
