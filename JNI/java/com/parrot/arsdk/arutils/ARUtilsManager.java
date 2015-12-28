@@ -37,6 +37,8 @@ import android.content.pm.PackageManager;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.parrot.mux.Mux;
+
 import java.util.concurrent.Semaphore;
 
 /**
@@ -45,11 +47,14 @@ import java.util.concurrent.Semaphore;
 public class ARUtilsManager
 {
     private static final String TAG = "ARUtilsManager";
+    public final static String FTP_ANONYMOUS = "anonymous";
+
     /* Native Functions */
     private native static boolean nativeStaticInit();
     private native long nativeNew() throws ARUtilsException;
     private native int nativeDelete(long jManager);
     private native int nativeInitWifiFtp(long jManager, String jserver, int port, String jusername, String jpassword);
+    private native int nativeInitWifiFtpOverMux(long jManager, String jserver, int port, long muxCtxCPtr, String jusername, String jpassword);
     private native int nativeCloseWifiFtp(long jManager);
     private native int nativeInitBLEFtp(long jManager, ARUtilsBLEFtp bleFtp, Semaphore cancelSem);
     private native void nativeCloseBLEFtp(long jManager);
@@ -157,6 +162,7 @@ public class ARUtilsManager
      */
     public ARUTILS_ERROR_ENUM initWifiFtp(String addr, int port, String username, String password)
     {
+        Log.i(TAG, "initWifiFtp on ip:port " + addr+":" +port);
         ARUTILS_ERROR_ENUM error = ARUTILS_ERROR_ENUM.ARUTILS_ERROR;
 
         if(TextUtils.isEmpty(addr))
@@ -175,6 +181,28 @@ public class ARUtilsManager
             Log.e(TAG, "wifi FTP is already inited");
         }
 
+        return error;
+    }
+
+    /**
+     * Initialize Wifi network to send and receive data
+     */
+    public ARUTILS_ERROR_ENUM initWifiFtp(Mux.Ref muxRef, int port, String username, String password)
+    {
+        Log.i(TAG, "initWifiFtp on mux, port " + port);
+        ARUTILS_ERROR_ENUM error = ARUTILS_ERROR_ENUM.ARUTILS_ERROR;
+
+        if(! mIsWifiFtpInited) {
+            muxRef.getCPtr();
+            int intError = nativeInitWifiFtpOverMux(m_managerPtr, "", port, muxRef.getCPtr(), username, password);
+            error = ARUTILS_ERROR_ENUM.getFromValue(intError);
+            muxRef.release();
+            mIsWifiFtpInited = (error == ARUTILS_ERROR_ENUM.ARUTILS_OK);
+        }
+        else
+        {
+            Log.e(TAG, "wifi FTP is already inited");
+        }
         return error;
     }
 

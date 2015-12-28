@@ -163,8 +163,6 @@ JNIEXPORT jint JNICALL
 Java_com_parrot_arsdk_arutils_ARUtilsManager_nativeInitWifiFtp
   (JNIEnv *env, jobject obj, jlong jManager, jstring jserver, jint port, jstring jusername, jstring jpassword)
 {
-    /** -- initialize UDP sockets of sending and receiving the data. -- */
-
     /** local declarations */
     ARUTILS_Manager_t *manager = (ARUTILS_Manager_t*) (intptr_t) jManager;
     const char *nativeStrServer = (*env)->GetStringUTFChars(env, jserver, 0);
@@ -173,6 +171,30 @@ Java_com_parrot_arsdk_arutils_ARUtilsManager_nativeInitWifiFtp
     eARUTILS_ERROR error = ARUTILS_OK;
 
     error = ARUTILS_Manager_InitWifiFtp(manager, nativeStrServer, port, nativeStrUsername, nativeStrPassword);
+    (*env)->ReleaseStringUTFChars( env, jserver, nativeStrServer );
+    (*env)->ReleaseStringUTFChars( env, jusername, nativeStrUsername );
+    (*env)->ReleaseStringUTFChars( env, jpassword, nativeStrPassword );
+
+    return error;
+}
+
+/*
+ * Class:     com_parrot_arsdk_arutils_ARUtilsManager
+ * Method:    nativeInitWifiFtpOverMux
+ * Signature: (JLjava/lang/String;IJLjava/lang/String;Ljava/lang/String;)I
+ */
+JNIEXPORT jint JNICALL
+Java_com_parrot_arsdk_arutils_ARUtilsManager_nativeInitWifiFtpOverMux
+  (JNIEnv *env, jobject obj, jlong jManager, jstring jserver, jint port, jlong muxctx, jstring jusername, jstring jpassword)
+{
+    /** local declarations */
+    ARUTILS_Manager_t *manager = (ARUTILS_Manager_t*) (intptr_t) jManager;
+    const char *nativeStrServer = (*env)->GetStringUTFChars(env, jserver, 0);
+    const char *nativeStrUsername = (*env)->GetStringUTFChars(env, jusername, 0);
+    const char *nativeStrPassword = (*env)->GetStringUTFChars(env, jpassword, 0);
+    eARUTILS_ERROR error = ARUTILS_OK;
+
+    error = ARUTILS_Manager_InitWifiFtpOverMux(manager, nativeStrServer, port, (struct mux_ctx *)(intptr_t)muxctx,  nativeStrUsername, nativeStrPassword);
     (*env)->ReleaseStringUTFChars( env, jserver, nativeStrServer );
     (*env)->ReleaseStringUTFChars( env, jusername, nativeStrUsername );
     (*env)->ReleaseStringUTFChars( env, jpassword, nativeStrPassword );
@@ -201,6 +223,7 @@ Java_com_parrot_arsdk_arutils_ARUtilsManager_nativeCloseWifiFtp
 
     return error;
 }
+
 
 /*
  * Class:     com_parrot_arsdk_arutils_ARUtilsManager

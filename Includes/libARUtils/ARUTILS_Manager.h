@@ -40,7 +40,9 @@
 
 
 #include "libARUtils/ARUTILS_Ftp.h"
+#include "libARUtils/ARUTILS_Ftp.h"
 
+struct mux_ctx;
 
 /**
  * @brief Ftp MANAGER structure
@@ -93,6 +95,20 @@ void ARUTILS_Manager_Delete(ARUTILS_Manager_t **managerAddr);
  * @see ARUTILS_Manager_CloseWifiFtp ()
  */
 eARUTILS_ERROR ARUTILS_Manager_InitWifiFtp(ARUTILS_Manager_t *manager, const char *server, int port, const char *username, const char* password);
+/**
+ * @brief Create a new WifiFtp Connection
+ * @warning This function allocates memory
+ * @param manager The Manager
+ * @param cancelSem The pointer of the Ftp get/put cancel semaphore or null
+ * @param server The Ftp server IP address
+ * @param port The Ftp server port
+ * @param mux The Mux instance to use
+ * @param username The Ftp server account name
+ * @param password The Ftp server account password
+ * @retval On success, returns an ARUTILS_OK. Otherwise an error number of eARUTILS_ERROR
+ * @see ARUTILS_Manager_CloseWifiFtp ()
+ */
+eARUTILS_ERROR ARUTILS_Manager_InitWifiFtpOverMux(ARUTILS_Manager_t *manager, const char *server, int port, struct mux_ctx *mux, const char *username, const char* password);
 
 /**
  * @brief Delete an WifiFtp Connection
@@ -101,6 +117,7 @@ eARUTILS_ERROR ARUTILS_Manager_InitWifiFtp(ARUTILS_Manager_t *manager, const cha
  * @see ARUTILS_Manager_InitWifiFtp ()
  */
 void ARUTILS_Manager_CloseWifiFtp(ARUTILS_Manager_t *manager);
+
 
 /**
  * @brief Create a new BLEFtp Connection

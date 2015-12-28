@@ -19,5 +19,6 @@ android {
 
 dependencies {
     compile project(':libARNetworkAL')
+    compile project(':libmux')
     compile project(':libARSAL')
 }

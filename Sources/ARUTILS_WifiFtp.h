@@ -136,6 +136,8 @@ struct ARUTILS_WifiFtp_Connection_t
     ARSAL_Sem_t *cancelSem;
     CURL *curl;
     int curlSocket[ARUTILS_FTP_MAX_SOCKET_SIZE];
+    struct mux_ctx *mux; //<< set when the ftp is using the mux
+    uint32_t mux_channel;    //<< set when the ftp is using the mux
     char serverUrl[ARUTILS_FTP_MAX_URL_SIZE];
     char username[ARUTILS_FTP_MAX_USER_SIZE];
     char password[ARUTILS_FTP_MAX_USER_SIZE];
@@ -143,19 +145,24 @@ struct ARUTILS_WifiFtp_Connection_t
 };
 //} ARUTILS_WifiFtp_Connection_t;
 
+typedef struct ARUTILS_WifiFtp_Connection_t ARUTILS_WifiFtp_Connection_t;
+
+
 /**
  * @brief Create a new Ftp Connection
  * @warning This function allocates memory
  * @param cancelSem The pointer of the Ftp get/put cancel semaphore or null
  * @param server The Ftp server IP address
  * @param port The Ftp server port
+ * @param mux the mux if connected on a mux channel, null else
  * @param username The Ftp server account name
  * @param password The Ftp server account password
  * @param[out] error The pointer of the error code: if success ARUTILS_OK, otherwise an error number of eARUTILS_ERROR
  * @retval On success, returns an ARUTILS_WifiFtp_Connection_t. Otherwise, it returns null.
  * @see ARUTILS_WifiFtp_DeleteConnection ()
  */
-ARUTILS_WifiFtp_Connection_t * ARUTILS_WifiFtp_Connection_New(ARSAL_Sem_t *cancelSem, const char *server, int port, const char *username, const char* password, eARUTILS_ERROR *error);
+ARUTILS_WifiFtp_Connection_t * ARUTILS_WifiFtp_Connection_New(ARSAL_Sem_t *cancelSem, const char *server, int port,
+		struct mux_ctx* mux, const char *username, const char* password, eARUTILS_ERROR *error);
 
 /**
  * @brief Delete an Ftp Connection
