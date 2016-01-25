@@ -2,51 +2,38 @@ LOCAL_PATH := $(call my-dir)
 
 include $(CLEAR_VARS)
 
-LOCAL_CATEGORY_PATH := dragon/libs
 LOCAL_MODULE := libARUtils
 LOCAL_DESCRIPTION := ARSDK Utils
+LOCAL_CATEGORY_PATH := dragon/libs
 
-LOCAL_LIBRARIES := ARSDKBuildUtils libARSAL libARDiscovery libARCommands curl
+LOCAL_MODULE_FILENAME := libarutils.so
 
-# Copy in build dir so bootstrap files are generated in build dir
-LOCAL_AUTOTOOLS_COPY_TO_BUILD_DIR := 1
+LOCAL_LIBRARIES := libARSAL libARDiscovery libARCommands curl
 
-# Configure script is not at the root
-LOCAL_AUTOTOOLS_CONFIGURE_SCRIPT := Build/configure
+LOCAL_C_INCLUDES := \
+	$(LOCAL_PATH)/Includes \
+	$(LOCAL_PATH)/Sources
 
-# Autotools variable
-LOCAL_AUTOTOOLS_CONFIGURE_ARGS := \
-	--with-libARSALInstallDir="" \
-	--with-libCurlInstallDir="" \
-	LIBS=" -lm"
+LOCAL_SRC_FILES := \
+	Sources/ARUTILS_FileSystem.c \
+	Sources/ARUTILS_Http.c \
+	Sources/ARUTILS_Manager.c \
+	Sources/ARUTILS_WifiFtp.c \
+	gen/Sources/ARUTILS_Error.c
 
-ifeq ("$(TARGET_OS_FLAVOUR)","android")
+LOCAL_INSTALL_HEADERS := \
+	Includes/libARUtils/ARUtils.h:usr/include/libARUtils/ \
+	Includes/libARUtils/ARUTILS_Error.h:usr/include/libARUtils/ \
+	Includes/libARUtils/ARUTILS_FileSystem.h:usr/include/libARUtils/ \
+	Includes/libARUtils/ARUTILS_Ftp.h:usr/include/libARUtils/ \
+	Includes/libARUtils/ARUTILS_Http.h:usr/include/libARUtils/ \
+	Includes/libARUtils/ARUTILS_Manager.h:usr/include/libARUtils/
 
-LOCAL_AUTOTOOLS_CONFIGURE_ARGS += \
-	--disable-static \
-	--enable-shared \
-	--disable-so-version
-
-# Temporary fix to Android build on Mac
-LOCAL_AUTOTOOLS_CONFIGURE_ENV := \
-	ac_cv_objc_compiler_gnu=no
-
-else ifneq ($(filter iphoneos iphonesimulator, $(TARGET_OS_FLAVOUR)),)
-
-LOCAL_AUTOTOOLS_CONFIGURE_ARGS += \
-	--enable-static \
-	--disable-shared \
-	OBJCFLAGS=" -x objective-c -fobjc-arc -std=gnu99 $(TARGET_GLOBAL_CFLAGS)" \
-	OBJC="$(TARGET_CC)" \
-	CFLAGS=" -std=gnu99 -x c $(TARGET_GLOBAL_CFLAGS)"
-
+ifeq ("$(TARGET_OS)","darwin")
+ifneq ("$(TARGET_OS_FLAVOUR)","native")
+LOCAL_SRC_FILES += \
+	Sources/ARUTILS_BLEFtp.m
+endif
 endif
 
-define LOCAL_AUTOTOOLS_CMD_POST_UNPACK
-	$(Q) cd $(PRIVATE_SRC_DIR)/Build && ./bootstrap
-endef
-
-LOCAL_EXPORT_C_INCLUDES := $(LOCAL_PATH)/Includes
-LOCAL_EXPORT_LDLIBS := -larutils
-
-include $(BUILD_AUTOTOOLS)
+include $(BUILD_LIBRARY)
