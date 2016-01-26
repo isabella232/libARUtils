@@ -67,7 +67,7 @@ DECLARE_SINGLETON_FOR_CLASS(ARUtils_BLEFtp)
 - (eARUTILS_ERROR)getFile:(NSString*)remoteFile localFile:(NSString*)localFile progressCallback:(ARUTILS_Ftp_ProgressCallback_t)progressCallback progressArg:(void *)progressArg forConnection:(ARUTILS_BLEFtp_Connection_t*)connection;
 - (eARUTILS_ERROR)getFileWithBuffer:(NSString*)remoteFile data:(uint8_t**)data dataLen:(uint32_t*)dataLen progressCallback:(ARUTILS_Ftp_ProgressCallback_t)progressCallback progressArg:(void *)progressArg forConnection:(ARUTILS_BLEFtp_Connection_t*)connection;
 - (eARUTILS_ERROR)putFile:(NSString*)remoteFile localFile:(NSString*)localFile progressCallback:(ARUTILS_Ftp_ProgressCallback_t)progressCallback progressArg:(void *)progressArg resume:(BOOL)resume forConnection:(ARUTILS_BLEFtp_Connection_t*)connection;
-- (eARUTILS_ERROR)abortPutFile:(NSString*)remoteFile forConnection:(ARUTILS_BLEFtp_Connection_t*)connection;
+- (eARUTILS_ERROR)abortPutFileResume:(NSString*)remoteFile forConnection:(ARUTILS_BLEFtp_Connection_t*)connection;
 - (eARUTILS_ERROR)deleteFile:(NSString*)remoteFile forConnection:(ARUTILS_BLEFtp_Connection_t*)connection;
 - (eARUTILS_ERROR)renameFile:(NSString*)oldNamePath newNamePath:(NSString*)newNamePath forConnection:(ARUTILS_BLEFtp_Connection_t*)connection;
 

@@ -101,6 +101,7 @@ typedef enum
 } eARUTILS_BLEFTP_STATE;
 
 #define ARUTILS_BLEFTP_ENABLE_LOG (0)
+#define ARUTILS_BLEFTP_ENABLE_LOG_ERROR (1)
 
 
 @interface ARUtils_BLEFtp ()
@@ -142,6 +143,15 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(ARUtils_BLEFtp, initBLEFtp)
 - (ARSAL_Mutex_t*)getConnectionLock
 {
     return &connectionLock;
+}
+
+- (BOOL)isConnected:(ARUTILS_BLEFtp_Connection_t*)connection
+{
+    if ([SINGLETON_FOR_CLASS(ARSAL_BLEManager) isPeripheralConnected] && (_connectionCount > 0))
+    {
+        return YES;
+    }
+    return NO;
 }
 
 - (eARUTILS_ERROR)registerConnection:(ARUTILS_BLEFtp_Connection_t*)connection withPeripheral:(CBPeripheral *)peripheral port:(int)port
@@ -341,7 +351,7 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(ARUtils_BLEFtp, initBLEFtp)
     eARUTILS_ERROR result = ARUTILS_OK;
     
 #if ARUTILS_BLEFTP_ENABLE_LOG
-    NSLog(@"%s", __FUNCTION__);
+    NSLog(@"%s, %@", __FUNCTION__, remotePath);
 #endif
     
     _commandState = ARUTILS_BLEFTP_STATE_LIST;
@@ -494,7 +504,7 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(ARUtils_BLEFtp, initBLEFtp)
     }
     
 #if ARUTILS_BLEFTP_ENABLE_LOG
-    NSLog(@"getFileInternal: result %d, size %d", result, totalSize);
+    NSLog(@"getFileInternal: result %d, size %d", result, (int)totalSize);
 #endif
     
     _commandState = ARUTILS_BLEFTP_STATE_NONE;
@@ -892,7 +902,7 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(ARUtils_BLEFtp, initBLEFtp)
             result = ARUTILS_BLEFtp_Connection_IsCanceled(connection);
             if (result != ARUTILS_OK)
             {
-#if ARUTILS_BLEFTP_ENABLE_LOG
+#if ARUTILS_BLEFTP_ENABLE_LOG_ERROR
                 NSLog(@"canceled received");
 #endif
             }
@@ -938,7 +948,7 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(ARUtils_BLEFtp, initBLEFtp)
             }
         }
     }
-    while ((result == ARUTILS_OK) && (endFile == NO));
+    while ((result == ARUTILS_OK) && (endFile == NO) && [self isConnected:connection]);
     
     if ((result == ARUTILS_OK) && (endFile == YES))
     {
@@ -976,7 +986,7 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(ARUtils_BLEFtp, initBLEFtp)
 #endif
             if (strncmp(md5Msg, md5Txt, CC_MD5_DIGEST_LENGTH * 2) != 0)
             {
-#if ARUTILS_BLEFTP_ENABLE_LOG
+#if ARUTILS_BLEFTP_ENABLE_LOG_ERROR
                 NSLog(@"MD5 End Failed");
 #endif
                 result = ARUTILS_ERROR_FTP_MD5;
@@ -1008,7 +1018,7 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(ARUtils_BLEFtp, initBLEFtp)
     retBLE = [SINGLETON_FOR_CLASS(ARSAL_BLEManager) readNotificationData:receivedNotifications maxCount:1 timeout:[NSNumber numberWithFloat:BLE_READ_NOTIFICATION_TIMEOUT] toKey:kARUTILS_BLEFtp_Getting];
     if (retBLE != ARSAL_OK)
     {
-#if ARUTILS_BLEFTP_ENABLE_LOG
+#if ARUTILS_BLEFTP_ENABLE_LOG_ERROR
         NSLog(@"readNotificationData retBLE: %d",retBLE);
 #endif
         result = ARUTILS_ERROR_FTP_CONNECT;
@@ -1062,8 +1072,8 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(ARUtils_BLEFtp, initBLEFtp)
     retBLE = [SINGLETON_FOR_CLASS(ARSAL_BLEManager) readNotificationData:receivedNotifications maxCount:1 timeout:[NSNumber numberWithFloat:BLE_READ_NOTIFICATION_TIMEOUT] toKey:kARUTILS_BLEFtp_Getting];
     if (retBLE != ARSAL_OK)
     {
-#if ARUTILS_BLEFTP_ENABLE_LOG
-        NSLog(@"readNotificationData retBLE: %d",retBLE);
+#if ARUTILS_BLEFTP_ENABLE_LOG_ERROR
+        NSLog(@"%s: Error readNotificationData retBLE: %d", __FUNCTION__, retBLE);
 #endif
         result = ARUTILS_ERROR_FTP_CONNECT;
     }
@@ -1133,8 +1143,8 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(ARUtils_BLEFtp, initBLEFtp)
     retBLE = [SINGLETON_FOR_CLASS(ARSAL_BLEManager) readNotificationData:receivedNotifications maxCount:1 timeout:[NSNumber numberWithFloat:BLE_READ_NOTIFICATION_TIMEOUT] toKey:kARUTILS_BLEFtp_Getting];
     if (retBLE != ARSAL_OK)
     {
-#if ARUTILS_BLEFTP_ENABLE_LOG
-        NSLog(@"readNotificationData retBLE: %d",retBLE);
+#if ARUTILS_BLEFTP_ENABLE_LOG_ERROR
+        NSLog(@"%s: Error readNotificationData retBLE: %d", __FUNCTION__, retBLE);
 #endif
         result = ARUTILS_ERROR_FTP_CONNECT;
     }
@@ -1158,7 +1168,7 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(ARUtils_BLEFtp, initBLEFtp)
                 else
                 {
                     result = ARUTILS_ERROR_FTP_CODE;
-#if ARUTILS_BLEFTP_ENABLE_LOG
+#if ARUTILS_BLEFTP_ENABLE_LOG_ERROR
                     NSLog(@"UNKNOWN written");
 #endif
                 }
@@ -1192,8 +1202,8 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(ARUtils_BLEFtp, initBLEFtp)
     retBLE = [SINGLETON_FOR_CLASS(ARSAL_BLEManager) readNotificationData:receivedNotifications maxCount:1 timeout:[NSNumber numberWithFloat:BLE_READ_NOTIFICATION_TIMEOUT] toKey:kARUTILS_BLEFtp_Getting];
     if (retBLE != ARSAL_OK)
     {
-#if ARUTILS_BLEFTP_ENABLE_LOG
-        NSLog(@"readNotificationData retBLE: %d",retBLE);
+#if ARUTILS_BLEFTP_ENABLE_LOG_ERROR
+        NSLog(@"%s: Error readNotificationData retBLE: %d", __FUNCTION__, retBLE);
 #endif
         result = ARUTILS_ERROR_FTP_CONNECT;
     }
@@ -1249,6 +1259,7 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(ARUtils_BLEFtp, initBLEFtp)
     eARSAL_ERROR retBLE = ARSAL_OK;
     BOOL endFile = NO;
     BOOL endMD5 = NO;
+    BOOL cancelSent = NO;
     int failedMd5 = 0;
     size_t count;
     uint8_t *oldData;
@@ -1259,7 +1270,7 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(ARUtils_BLEFtp, initBLEFtp)
 #endif
         
     CC_MD5_Init(&ctxEnd);
-    while ((result == ARUTILS_OK) && (endMD5 == NO))
+    while ((result == ARUTILS_OK) && (endMD5 == NO) && [self isConnected:connection])
     {
         BOOL blockMD5 = NO;
         CC_MD5_Init(&ctx);
@@ -1269,10 +1280,10 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(ARUtils_BLEFtp, initBLEFtp)
             if ([receivedNotifications count] == 0)
             {
                 retBLE = [SINGLETON_FOR_CLASS(ARSAL_BLEManager) readNotificationData:receivedNotifications maxCount:1 timeout:[NSNumber numberWithFloat:BLE_READ_NOTIFICATION_TIMEOUT] toKey:kARUTILS_BLEFtp_Getting];
-#if ARUTILS_BLEFTP_ENABLE_LOG
+#if ARUTILS_BLEFTP_ENABLE_LOG_ERROR
                 if (retBLE != ARSAL_OK)
                 {
-                    NSLog(@"readNotificationData retBLE: %d",retBLE);
+                    NSLog(@"%s: Error readNotificationData retBLE: %d", __FUNCTION__, retBLE);
                 }
 #endif
             }
@@ -1286,13 +1297,18 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(ARUtils_BLEFtp, initBLEFtp)
                     {
                         endMD5 = YES;
                     }
-#if ARUTILS_BLEFTP_ENABLE_LOG
+                    if (cancelSent)
+                    {
+                        // fix firmware unresponsive after cancel
+                        result = ARUTILS_ERROR_FTP_CONNECT;
+                    }
+#if ARUTILS_BLEFTP_ENABLE_LOG_ERROR
                     NSLog(@"ARSAL_ERROR_BLE_TIMEOUT result :%d",result);
 #endif
                 }
                 else
                 {
-                    if ([SINGLETON_FOR_CLASS(ARSAL_BLEManager) isPeripheralConnected] == NO)
+                    if ([self isConnected:connection] == NO)
                     {
                         result = ARUTILS_ERROR_FTP_CONNECT;
                     }
@@ -1325,7 +1341,7 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(ARUtils_BLEFtp, initBLEFtp)
                             }
                             else
                             {
-#if ARUTILS_BLEFTP_ENABLE_LOG
+#if ARUTILS_BLEFTP_ENABLE_LOG_ERROR
                                 NSLog(@"md5 END Failed SIZE %d", (int)packetLen);
 #endif
                                 result = ARUTILS_ERROR_FTP_SIZE;
@@ -1343,7 +1359,7 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(ARUtils_BLEFtp, initBLEFtp)
                             }
                             else
                             {
-#if ARUTILS_BLEFTP_ENABLE_LOG
+#if ARUTILS_BLEFTP_ENABLE_LOG_ERROR
                                 NSLog(@"END Failed SIZE %d", (int)packetLen);
 #endif
                                 result = ARUTILS_ERROR_FTP_SIZE;
@@ -1353,8 +1369,8 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(ARUtils_BLEFtp, initBLEFtp)
                         {
                             if (packetCount > (BLE_PACKET_BLOCK_GETTING_COUNT + 1))
                             {
-#if ARUTILS_BLEFTP_ENABLE_LOG
-                                NSLog(@"md5 FAILD packet COUNT %s", packet);
+#if ARUTILS_BLEFTP_ENABLE_LOG_ERROR
+                                NSLog(@"md5 FAILED packet COUNT %s", packet);
 #endif
                             }
                             
@@ -1369,7 +1385,7 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(ARUtils_BLEFtp, initBLEFtp)
                             }
                             else
                             {
-#if ARUTILS_BLEFTP_ENABLE_LOG
+#if ARUTILS_BLEFTP_ENABLE_LOG_ERROR
                                 NSLog(@"md5 received Failed SIZE %d", (int)packetLen);
 #endif
                                 result = ARUTILS_ERROR_FTP_SIZE;
@@ -1392,8 +1408,8 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(ARUtils_BLEFtp, initBLEFtp)
                             
                                 if (count != packetLen)
                                 {
-#if ARUTILS_BLEFTP_ENABLE_LOG
-                                    NSLog(@"failed writting file");
+#if ARUTILS_BLEFTP_ENABLE_LOG_ERROR
+                                    NSLog(@"Failed writting file");
 #endif
                                     result = ARUTILS_ERROR_FTP_FILE;
                                 }
@@ -1433,7 +1449,7 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(ARUtils_BLEFtp, initBLEFtp)
 #endif
                         if ((listCommand == NO) && (ARUTILS_BLEFtp_Connection_IsCanceled(connection) != ARUTILS_OK))
                         {
-#if ARUTILS_BLEFTP_ENABLE_LOG
+#if ARUTILS_BLEFTP_ENABLE_LOG_ERROR
                             NSLog(@"cancel received");
 #endif
                             blockMD5 = YES;
@@ -1444,7 +1460,7 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(ARUtils_BLEFtp, initBLEFtp)
             
             [receivedNotifications removeAllObjects];
         }
-        while ((result == ARUTILS_OK) && (blockMD5 == NO) && (endMD5 == NO));
+        while ((result == ARUTILS_OK) && (blockMD5 == NO) && (endMD5 == NO) && [self isConnected:connection]);
         
         if ((result == ARUTILS_OK) && (blockMD5 == YES))
         {
@@ -1463,7 +1479,7 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(ARUtils_BLEFtp, initBLEFtp)
             if (strncmp(md5Txt, md5Msg, CC_MD5_DIGEST_LENGTH * 2) != 0)
             {
                 failedMd5++;
-#if ARUTILS_BLEFTP_ENABLE_LOG
+#if ARUTILS_BLEFTP_ENABLE_LOG_ERROR
                 NSLog(@"MD5 block Failed");
 #endif
                 //TOFIX in firmware some 1st md5 are failed !!!!!!!!!!!
@@ -1482,7 +1498,7 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(ARUtils_BLEFtp, initBLEFtp)
                 result = ARUTILS_BLEFtp_Connection_IsCanceled(connection);
                 if (result != ARUTILS_OK)
                 {
-#if ARUTILS_BLEFTP_ENABLE_LOG
+#if ARUTILS_BLEFTP_ENABLE_LOG_ERROR
                     NSLog(@"canceled received");
 #endif
                 }
@@ -1491,6 +1507,7 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(ARUtils_BLEFtp, initBLEFtp)
             if (result == ARUTILS_ERROR_FTP_CANCELED)
             {
                 result = [self sendCommand:"CANCEL" param:NULL characteristic:_getting];
+                cancelSent = YES;
             }
             else
             {
@@ -1526,7 +1543,7 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(ARUtils_BLEFtp, initBLEFtp)
 #endif
         }
       
-#if ARUTILS_BLEFTP_ENABLE_LOG
+#if ARUTILS_BLEFTP_ENABLE_LOG_ERROR
         NSLog(@"Failed block MD5 %d", failedMd5);
 #endif
     }
@@ -1534,7 +1551,7 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(ARUtils_BLEFtp, initBLEFtp)
     result = ARUTILS_BLEFtp_Connection_IsCanceled(connection);
     if (result != ARUTILS_OK)
     {
-#if ARUTILS_BLEFTP_ENABLE_LOG
+#if ARUTILS_BLEFTP_ENABLE_LOG_ERROR
         NSLog(@"canceled received");
 #endif
     }
