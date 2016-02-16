@@ -1500,7 +1500,7 @@ drwxr-xr-x    2 0        0             160 Jan  1  2000 data
 drwxr-xr-x    4 122      128          4096 Jan 24 14:34 AR.Drone
 drwxr-xr-x    4 122      128          4096 Jan 24 14:34 Jumping Sumo
 */
-const char * ARUTILS_Ftp_List_GetNextItem(const char *list, const char **nextItem, const char *prefix, int isDirectory, const char **indexItem, int *itemLen, char *lineData, int lineDataLen)
+const char * ARUTILS_Ftp_List_GetNextItem(const char *list, const char **nextItem, const char *prefix, int isDirectory, const char **indexItem, int *itemLen, char *lineData, size_t lineDataLen)
 {
     char *item = NULL;
     const char *line = NULL;
@@ -1861,7 +1861,7 @@ size_t ARUTILS_WifiFtp_WriteDataCallback(void *ptr, size_t size, size_t nmemb, v
             else
             {
                 ssize_t len = write(connection->cbdata.fileFd, ptr, size * nmemb);
-                if ((len == -1) || (len != size * nmemb))
+                if ((len < 0) || ((size_t)len != size * nmemb))
                 {
                     connection->cbdata.error = ARUTILS_ERROR_SYSTEM;
                 }

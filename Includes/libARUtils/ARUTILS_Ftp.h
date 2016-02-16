@@ -94,7 +94,7 @@ typedef void (*ARUTILS_Ftp_ProgressCallback_t)(void* arg, float percent);
  * @retval On success, returns the file name of the found item, Otherwise, it returns null
  * @see ARUTILS_Ftp_List ()
  */
-const char * ARUTILS_Ftp_List_GetNextItem(const char *list, const char **nextItem, const char *prefix, int isDirectory, const char **indexItem, int *itemLen, char *lineData, int lineDataLen);
+const char * ARUTILS_Ftp_List_GetNextItem(const char *list, const char **nextItem, const char *prefix, int isDirectory, const char **indexItem, int *itemLen, char *lineData, size_t lineDataLen);
 
 /**
  * @brief File size accessor function from a file of a File list
