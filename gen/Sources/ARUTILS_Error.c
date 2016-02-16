@@ -40,7 +40,7 @@
 
 #include <libARUtils/ARUTILS_Error.h>
 
-char* ARUTILS_Error_ToString (eARUTILS_ERROR error)
+const char* ARUTILS_Error_ToString (eARUTILS_ERROR error)
 {
     switch (error)
     {

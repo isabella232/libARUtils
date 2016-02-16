@@ -88,6 +88,6 @@ typedef enum
  *
  * @note User should NEVER try to modify a returned string
  */
-char* ARUTILS_Error_ToString (eARUTILS_ERROR error);
+const char* ARUTILS_Error_ToString (eARUTILS_ERROR error);
 
 #endif /* _LIBARUTILS_ERROR_H_ */
