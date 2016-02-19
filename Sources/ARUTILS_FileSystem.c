@@ -105,7 +105,7 @@ eARUTILS_ERROR ARUTILS_FileSystem_GetFileSize(const char *namePath, int64_t *siz
 
     if (namePath == NULL)
     {
-        result = ARUTILS_ERROR_BAD_PARAMETER;
+        return ARUTILS_ERROR_BAD_PARAMETER;
     }
     
 #ifdef stat64
