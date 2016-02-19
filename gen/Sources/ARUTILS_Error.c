@@ -126,7 +126,6 @@ const char* ARUTILS_Error_ToString (eARUTILS_ERROR error)
         return "RFComm ftp failed error";
         break;
     default:
-        return "Unknown value";
         break;
     }
     return "Unknown value";
