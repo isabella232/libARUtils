@@ -71,7 +71,7 @@ eARUTILS_ERROR ARUTILS_FileSystem_IsExist(const char *namePath)
     
     if (namePath == NULL)
     {
-        result = ARUTILS_ERROR_BAD_PARAMETER;
+        return ARUTILS_ERROR_BAD_PARAMETER;
     }
     
     resultSys = stat(namePath, &statbuf);
