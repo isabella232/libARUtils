@@ -134,7 +134,6 @@ eARUTILS_ERROR ARUTILS_Manager_Ftp_Connection_IsCanceled(ARUTILS_Manager_t *mana
 
     if ((manager == NULL) || (manager->ftpConnectionIsCanceled == NULL))
     {
-        ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_MANAGER_TAG, "%p, %p", manager, manager->ftpConnectionIsCanceled);
         result = ARUTILS_ERROR_BAD_PARAMETER;
     }
     else
