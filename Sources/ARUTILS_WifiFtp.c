@@ -316,7 +316,7 @@ eARUTILS_ERROR ARUTILS_WifiFtp_List(ARUTILS_WifiFtp_Connection_t *connection, co
     // check that the given folder exist on the server
     if (result == ARUTILS_OK)
     {
-        if (*namePath == '\0')
+        if (!namePath || (namePath[0] == '\0'))
         {
             strncpy(fileUrl, "/", ARUTILS_FTP_MAX_URL_SIZE);
             fileUrl[ARUTILS_FTP_MAX_URL_SIZE - 1] = '\0';
@@ -344,8 +344,10 @@ eARUTILS_ERROR ARUTILS_WifiFtp_List(ARUTILS_WifiFtp_Connection_t *connection, co
     {
         strncpy(fileUrl, connection->serverUrl, ARUTILS_FTP_MAX_URL_SIZE);
         fileUrl[ARUTILS_FTP_MAX_URL_SIZE - 1] = '\0';
-        strncat(fileUrl, namePath, ARUTILS_FTP_MAX_URL_SIZE - strlen(fileUrl) - 1);
-        if ((namePath != NULL) && (strlen(namePath) > 0))
+        if (namePath)
+            strncat(fileUrl, namePath, ARUTILS_FTP_MAX_URL_SIZE - strlen(fileUrl) - 1);
+
+        if (namePath && namePath[0] != '\0')
         {
             strncat(fileUrl, "/", ARUTILS_FTP_MAX_URL_SIZE - strlen(fileUrl) - 1);
         }
