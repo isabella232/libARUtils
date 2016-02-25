@@ -171,9 +171,12 @@ eARUTILS_ERROR ARUTILS_FileSystem_RemoveFile(const char *localPath)
 
 static int ARUTILS_FileSystem_RemoveDirCallback(const char* fpath, const struct stat *sb, eARSAL_FTW_TYPE typeflag, ARSAL_FTW_t *ftwbuf)
 {
-	if(typeflag == ARSAL_FTW_F)
+    int ret;
+     if(typeflag == ARSAL_FTW_F)
     {
-		remove(fpath);
+       ret = remove(fpath);
+       if (ret < 0 && errno != ENOENT)
+            ARSAL_PRINT(ARSAL_PRINT_ERROR, ARUTILS_FILE_SYSTEM_TAG, "remove '%s' error: %s", fpath, strerror(errno));
     }
     else if(typeflag == ARSAL_FTW_D)
     {
