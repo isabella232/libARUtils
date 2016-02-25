@@ -1136,7 +1136,7 @@ eARUTILS_ERROR ARUTILS_Http_ResetOptions(ARUTILS_Http_Connection_t *connection)
 
     if (result == ARUTILS_OK)
     {
-        code = curl_easy_setopt(connection->curl, CURLOPT_CLOSESOCKETDATA, &connection->curlSocket);
+        code = curl_easy_setopt(connection->curl, CURLOPT_CLOSESOCKETDATA, connection);
 
         if (code != CURLE_OK)
         {
@@ -1353,10 +1353,12 @@ curl_socket_t ARUTILS_Http_OpensocketCallback(void *clientp, curlsocktype purpos
 
 void ARUTILS_Http_ClosesocketCallback(void *clientp, curl_socket_t sock)
 {
+    ARUTILS_Http_Connection_t *connection = clientp;
+
     close(sock);
-    if (clientp != NULL)
+    if (connection != NULL)
     {
-        *((int*)clientp) = -1;
+        connection->curlSocket = -1;
     }
 }
 
