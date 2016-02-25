@@ -85,8 +85,8 @@ NSString* const kARUTILS_BLEFtp_Getting = @"kARUTILS_BLEFtp_Getting";
 #endif /* HAVE_UIKIT_UIKIT_H */
 
 //#define BLE_PACKET_WRITE_SLEEP             18000000 /* 18ms */
-#define BLE_PACKET_WRITE_SLEEP               20000000
-#define BLE_READ_NOTIFICATION_TIMEOUT        5.0f
+#define BLE_PACKET_WRITE_SLEEP               22000000
+#define BLE_READ_NOTIFICATION_TIMEOUT        20.0f
 #define ARUTILS_BLEFTP_TAG      "BLEFtp"
 
 typedef enum
