@@ -1290,7 +1290,14 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(ARUtils_BLEFtp, initBLEFtp)
             if (retBLE != ARSAL_OK)
             {
                 //no data available
-                if (retBLE == ARSAL_ERROR_BLE_TIMEOUT)
+                if (retBLE == ARSAL_ERROR_BLE_CONNECTION)
+                {
+                    result = ARUTILS_ERROR_FTP_CONNECT;
+#if ARUTILS_BLEFTP_ENABLE_LOG_ERROR
+                    NSLog(@"ARSAL_ERROR_BLE_CONNECTION result :%d",result);
+#endif
+                }
+                else if (retBLE == ARSAL_ERROR_BLE_TIMEOUT)
                 {
                     blockMD5 = YES;
                     if (listCommand == YES)
