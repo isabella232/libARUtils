@@ -92,6 +92,7 @@ ARUTILS_WifiFtp_Connection_t * ARUTILS_WifiFtp_Connection_New(ARSAL_Sem_t *cance
 {
     ARUTILS_WifiFtp_Connection_t *newConnection = NULL;
     eARUTILS_ERROR result = ARUTILS_OK;
+    int ret;
 
     ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_WIFIFTP_TAG, "%s, %d, %s", server ? server : "null", port, username ? username : "null");
 
@@ -128,12 +129,13 @@ ARUTILS_WifiFtp_Connection_t * ARUTILS_WifiFtp_Connection_New(ARSAL_Sem_t *cance
      if (mux != NULL)
      {
         /* Allocate mux channel */
-		int status = mux_channel_open_ftp(mux, ntohl(inet_addr("192.168.42.1")), port, &ftp_port, &newConnection->mux_channel);
-        if (status < 0) {
-    	    ARSAL_PRINT(ARSAL_PRINT_ERROR, ARUTILS_WIFIFTP_TAG, " Error opening mux ftp %d", status);
-    	    result = ARUTILS_ERROR_SYSTEM;
-    	}
-    	// use local mux server
+        ret = mux_channel_open_ftp(mux, ntohl(inet_addr("192.168.42.1")), port, &ftp_port, &newConnection->mux_channel);
+        if (ret < 0) {
+            ARSAL_PRINT(ARSAL_PRINT_ERROR, ARUTILS_WIFIFTP_TAG, " Error opening mux ftp %d", ret);
+            result = ARUTILS_ERROR_SYSTEM;
+        }
+
+        // use local mux server
         ftp_server = "127.0.0.1";
     }
     else
