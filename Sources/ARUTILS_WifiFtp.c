@@ -92,6 +92,7 @@ ARUTILS_WifiFtp_Connection_t * ARUTILS_WifiFtp_Connection_New(ARSAL_Sem_t *cance
 {
     ARUTILS_WifiFtp_Connection_t *newConnection = NULL;
     eARUTILS_ERROR result = ARUTILS_OK;
+    const char *host;
     int ret;
 
     ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_WIFIFTP_TAG, "%s, %d, %s", server ? server : "null", port, username ? username : "null");
@@ -128,8 +129,14 @@ ARUTILS_WifiFtp_Connection_t * ARUTILS_WifiFtp_Connection_New(ARSAL_Sem_t *cance
      uint16_t ftp_port;
      if (mux != NULL)
      {
-        /* Allocate mux channel */
-        ret = mux_channel_open_ftp(mux, ntohl(inet_addr("192.168.42.1")), port, &ftp_port, &newConnection->mux_channel);
+        /* assume we want start ftp connection on drone if no server given */
+        if (server && server[0] != '\0')
+            host = server;
+        else
+            host = "drone";
+
+        /* open mux ftp channel */
+        ret = mux_channel_open_ftp(mux, host, port, &ftp_port, &newConnection->mux_channel);
         if (ret < 0) {
             ARSAL_PRINT(ARSAL_PRINT_ERROR, ARUTILS_WIFIFTP_TAG, " Error opening mux ftp %d", ret);
             result = ARUTILS_ERROR_SYSTEM;
