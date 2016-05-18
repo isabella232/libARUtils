@@ -1555,12 +1555,15 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(ARUtils_BLEFtp, initBLEFtp)
 #endif
     }
 
-    result = ARUTILS_BLEFtp_Connection_IsCanceled(connection);
-    if (result != ARUTILS_OK)
+    if (result == ARUTILS_OK)
     {
+        result = ARUTILS_BLEFtp_Connection_IsCanceled(connection);
+        if (result != ARUTILS_OK)
+        {
 #if ARUTILS_BLEFTP_ENABLE_LOG_ERROR
-        NSLog(@"canceled received");
+            NSLog(@"canceled received");
 #endif
+        }
     }
 
     return result;
