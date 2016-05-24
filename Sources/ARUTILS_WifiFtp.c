@@ -95,7 +95,7 @@ ARUTILS_WifiFtp_Connection_t * ARUTILS_WifiFtp_Connection_New(ARSAL_Sem_t *cance
     const char *host;
     int ret;
 
-    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_WIFIFTP_TAG, "%s, %d, %s", server ? server : "null", port, username ? username : "null");
+    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_WIFIFTP_TAG, "server=%s, port=%d, mux=%p, user=%s", server ? server : "null", port, mux, username ? username : "null");
 
     if (server == NULL && mux == NULL)
     {
