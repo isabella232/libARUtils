@@ -130,7 +130,7 @@ ARUTILS_WifiFtp_Connection_t * ARUTILS_WifiFtp_Connection_New(ARSAL_Sem_t *cance
      if (mux != NULL)
      {
         /* assume we want start ftp connection on drone if no server given */
-        if (server && server[0] != '\0')
+        if (server && server[0] != '\0' && (strcmp(server, "0.0.0.0") != 0))
             host = server;
         else
             host = "drone";
