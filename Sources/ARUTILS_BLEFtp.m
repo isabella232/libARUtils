@@ -86,7 +86,10 @@ NSString* const kARUTILS_BLEFtp_Getting = @"kARUTILS_BLEFtp_Getting";
 
 //#define BLE_PACKET_WRITE_SLEEP             18000000 /* 18ms */
 #define BLE_PACKET_WRITE_SLEEP               22000000
-#define BLE_READ_NOTIFICATION_TIMEOUT        20.0f
+
+#define BLE_READ_NOTIFICATION_TIMEOUT        1.0f
+#define BLE_PUT_READ_NOTIFICATION_TIMEOUT    20.0f
+
 #define ARUTILS_BLEFTP_TAG      "BLEFtp"
 
 typedef enum
@@ -157,6 +160,10 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(ARUtils_BLEFtp, initBLEFtp)
 - (eARUTILS_ERROR)registerConnection:(ARUTILS_BLEFtp_Connection_t*)connection withPeripheral:(CBPeripheral *)peripheral port:(int)port
 {
     eARUTILS_ERROR result = ARUTILS_OK;
+
+#if ARUTILS_BLEFTP_ENABLE_LOG
+    NSLog(@"%s Peripheral %p, connection count %d", __FUNCTION__, peripheral, _connectionCount);
+#endif
 
     if (_connectionCount == 0)
     {
@@ -1198,8 +1205,8 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(ARUtils_BLEFtp, initBLEFtp)
 #endif
 
     *md5Txt = '\0';
-
-    retBLE = [SINGLETON_FOR_CLASS(ARSAL_BLEManager) readNotificationData:receivedNotifications maxCount:1 timeout:[NSNumber numberWithFloat:BLE_READ_NOTIFICATION_TIMEOUT] toKey:kARUTILS_BLEFtp_Getting];
+    
+    retBLE = [SINGLETON_FOR_CLASS(ARSAL_BLEManager) readNotificationData:receivedNotifications maxCount:1 timeout:[NSNumber numberWithFloat:BLE_PUT_READ_NOTIFICATION_TIMEOUT] toKey:kARUTILS_BLEFtp_Getting];
     if (retBLE != ARSAL_OK)
     {
 #if ARUTILS_BLEFTP_ENABLE_LOG_ERROR
@@ -1651,7 +1658,6 @@ eARUTILS_ERROR ARUTILS_BLEFtp_Connection_Cancel(ARUTILS_BLEFtp_Connection_t *con
 
 eARUTILS_ERROR ARUTILS_BLEFtp_Connection_IsCanceled(ARUTILS_BLEFtp_Connection_t *connection)
 {
-    ARUtils_BLEFtp *bleFtpObject = nil;
     eARUTILS_ERROR result = ARUTILS_OK;
 
     if (connection == NULL || connection->manager == NULL)
@@ -1661,7 +1667,6 @@ eARUTILS_ERROR ARUTILS_BLEFtp_Connection_IsCanceled(ARUTILS_BLEFtp_Connection_t 
 
     if (result == ARUTILS_OK)
     {
-        bleFtpObject = SINGLETON_FOR_CLASS(ARUtils_BLEFtp);
         ARSAL_Sem_t *cancelSem = &connection->manager->cancelSem;
 
         if (cancelSem != NULL)
@@ -1680,6 +1685,13 @@ eARUTILS_ERROR ARUTILS_BLEFtp_Connection_IsCanceled(ARUTILS_BLEFtp_Connection_t 
                 result = ARUTILS_ERROR_SYSTEM;
             }
         }
+    }
+
+    if (result == ARUTILS_ERROR_FTP_CANCELED)
+    {
+#if ARUTILS_BLEFTP_ENABLE_LOG
+        NSLog(@"%s result:%s", __FUNCTION__, "ARUTILS_ERROR_FTP_CANCELED");
+#endif
     }
 
     return result;
@@ -1730,6 +1742,11 @@ eARUTILS_ERROR ARUTILS_BLEFtp_List(ARUTILS_BLEFtp_Connection_t *connection, cons
 
     if (result == ARUTILS_OK)
     {
+        result = ARUTILS_BLEFtp_Connection_IsCanceled(connection);
+    }
+
+    if (result == ARUTILS_OK)
+    {
         *resultList = NULL;
         *resultListLen = 0;
 
@@ -1752,6 +1769,11 @@ eARUTILS_ERROR ARUTILS_BLEFtp_Size(ARUTILS_BLEFtp_Connection_t *connection, cons
     if ((connection == NULL) || (fileSize == NULL))
     {
         result = ARUTILS_ERROR_BAD_PARAMETER;
+    }
+
+    if (result == ARUTILS_OK)
+    {
+        result = ARUTILS_BLEFtp_Connection_IsCanceled(connection);
     }
 
     if (result == ARUTILS_OK)
@@ -1781,6 +1803,11 @@ eARUTILS_ERROR ARUTILS_BLEFtp_Delete(ARUTILS_BLEFtp_Connection_t *connection, co
 
     if (result == ARUTILS_OK)
     {
+        result = ARUTILS_BLEFtp_Connection_IsCanceled(connection);
+    }
+
+    if (result == ARUTILS_OK)
+    {
         bleFtpObject = SINGLETON_FOR_CLASS(ARUtils_BLEFtp);
         ARSAL_Mutex_Lock([bleFtpObject getConnectionLock]);
 
@@ -1804,6 +1831,11 @@ eARUTILS_ERROR ARUTILS_BLEFtp_Rename(ARUTILS_BLEFtp_Connection_t *connection, co
 
     if (result == ARUTILS_OK)
     {
+        result = ARUTILS_BLEFtp_Connection_IsCanceled(connection);
+    }
+
+    if (result == ARUTILS_OK)
+    {
         bleFtpObject = SINGLETON_FOR_CLASS(ARUtils_BLEFtp);
         ARSAL_Mutex_Lock([bleFtpObject getConnectionLock]);
 
@@ -1822,6 +1854,11 @@ eARUTILS_ERROR ARUTILS_BLEFtp_Get_WithBuffer(ARUTILS_BLEFtp_Connection_t *connec
     if (connection == NULL)
     {
         result = ARUTILS_ERROR_BAD_PARAMETER;
+    }
+
+    if (result == ARUTILS_OK)
+    {
+        result = ARUTILS_BLEFtp_Connection_IsCanceled(connection);
     }
 
     if (result == ARUTILS_OK)
@@ -1849,6 +1886,11 @@ eARUTILS_ERROR ARUTILS_BLEFtp_Get(ARUTILS_BLEFtp_Connection_t *connection, const
 
     if (result == ARUTILS_OK)
     {
+        result = ARUTILS_BLEFtp_Connection_IsCanceled(connection);
+    }
+
+    if (result == ARUTILS_OK)
+    {
         bleFtpObject = SINGLETON_FOR_CLASS(ARUtils_BLEFtp);
         ARSAL_Mutex_Lock([bleFtpObject getConnectionLock]);
 
@@ -1868,6 +1910,11 @@ eARUTILS_ERROR ARUTILS_BLEFtp_Put(ARUTILS_BLEFtp_Connection_t *connection, const
     if (connection == NULL)
     {
         result = ARUTILS_ERROR_BAD_PARAMETER;
+    }
+
+    if (result == ARUTILS_OK)
+    {
+        result = ARUTILS_BLEFtp_Connection_IsCanceled(connection);
     }
 
     if (result == ARUTILS_OK)
