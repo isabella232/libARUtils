@@ -87,7 +87,7 @@ NSString* const kARUTILS_BLEFtp_Getting = @"kARUTILS_BLEFtp_Getting";
 #define BLE_FTP_PUT_RETRY_COUNT              3
 #define BLE_FTP_PUT_RETRY_BLOCK_COUNT        3
 //#define BLE_PACKET_WRITE_SLEEP             18000000 /* 18ms */
-#define BLE_PACKET_WRITE_SLEEP               22000000
+#define BLE_PACKET_WRITE_SLEEP               24000000
 
 #define BLE_READ_NOTIFICATION_TIMEOUT        1.0f
 #define BLE_PUT_WRITTEN_NOTIFICATION_TIMEOUT 5.0f
@@ -894,7 +894,10 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(ARUtils_BLEFtp, initBLEFtp)
 #endif
     }
 
-    fseek(srcFile, 0, SEEK_SET);
+    if (srcFile)
+    {
+        fseek(srcFile, 0, SEEK_SET);
+    }
 
     return result;
 }
@@ -905,6 +908,7 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(ARUtils_BLEFtp, initBLEFtp)
     char md5Msg[(CC_MD5_DIGEST_LENGTH * 2) + 1];
     char md5Txt[(CC_MD5_DIGEST_LENGTH * 2) + 3 + 1];
     char md5End[(CC_MD5_DIGEST_LENGTH * 2) + 1];
+    char md5Zero[(CC_MD5_DIGEST_LENGTH * 2) + 1];
     uint8_t packet[BLE_PACKET_MAX_SIZE];
     CC_MD5_CTX ctx;
     BOOL retBLE = YES;
@@ -913,7 +917,6 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(ARUtils_BLEFtp, initBLEFtp)
     int totalPacket = 0;
     int packetLen = BLE_PACKET_MAX_SIZE;
     BOOL endFile = NO;
-    int tryBlockCount = 0;
     ARSAL_Sem_t timeSem;
     struct timespec timeout;
     eARUTILS_ERROR result = ARUTILS_OK;
@@ -928,6 +931,7 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(ARUtils_BLEFtp, initBLEFtp)
     timeout.tv_nsec = BLE_PACKET_WRITE_SLEEP;
     ARSAL_Sem_Init(&timeSem, 0, 0);
     CC_MD5_Init(&ctx);
+    memset(md5Zero, 0, (CC_MD5_DIGEST_LENGTH * 2) + 1);
 
     if (abort == YES)
     {
@@ -938,7 +942,7 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(ARUtils_BLEFtp, initBLEFtp)
 
     if (abort == NO)
     {
-        result = [self computeFileMd5:srcFile md5Txt:md5End md5TxtLen:sizeof(md5Txt) forConnection:connection];
+        result = [self computeFileMd5:srcFile md5Txt:md5End md5TxtLen:sizeof(md5End) forConnection:connection];
         if (result != ARUTILS_OK)
         {
 #if ARUTILS_BLEFTP_ENABLE_LOG_ERROR
@@ -1066,28 +1070,6 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(ARUtils_BLEFtp, initBLEFtp)
                 if (result == ARUTILS_OK)
                 {
                     result = [self readPutDataWritten];
-
-                    if (abort == NO)
-                    {
-                        if (result == ARUTILS_OK)
-                        {
-                            tryBlockCount = 0;
-                        }
-                        else if ((result == ARUTILS_ERROR_FTP_CODE) && (tryBlockCount < BLE_FTP_PUT_RETRY_BLOCK_COUNT))
-                        {
-                            result = ARUTILS_OK;
-                            tryBlockCount++;
-                            totalPacket -= BLE_PACKET_BLOCK_PUTTING_COUNT;
-                            retSys = fseek(srcFile, -(BLE_PACKET_BLOCK_PUTTING_COUNT * BLE_PACKET_MAX_SIZE), SEEK_CUR);
-                            if (retSys != 0)
-                            {
-                                result = ARUTILS_ERROR_FTP_FILE;
-                            }
-#if ARUTILS_BLEFTP_ENABLE_LOG_ERROR
-                            NSLog(@"send PUT data retry: %d", tryBlockCount);
-#endif
-                        }
-                    }
                 }
             }
         }
@@ -1128,18 +1110,25 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(ARUtils_BLEFtp, initBLEFtp)
             NSLog(@"file size %d", totalSize);
 #endif
 
-            if (strncmp(md5Msg, md5End, CC_MD5_DIGEST_LENGTH * 2) != 0)
+            if (strncmp(md5Msg, md5End, CC_MD5_DIGEST_LENGTH * 2) == 0)
+            {
+#if ARUTILS_BLEFTP_ENABLE_LOG
+                NSLog(@"MD5 End OK");
+#endif
+            }
+            else if (memcmp(md5Msg, md5Zero, CC_MD5_DIGEST_LENGTH * 2) == 0)
+            {
+                //delos3 implementation return md5 content filled with zero in place of real md5
+#if ARUTILS_BLEFTP_ENABLE_LOG
+                NSLog(@"MD5 End OK (Zero)");
+#endif
+            }
+            else
             {
 #if ARUTILS_BLEFTP_ENABLE_LOG_ERROR
                 NSLog(@"MD5 End Failed");
 #endif
                 result = ARUTILS_ERROR_FTP_MD5;
-            }
-            else
-            {
-#if ARUTILS_BLEFTP_ENABLE_LOG
-                NSLog(@"MD5 End OK");
-#endif
             }
         }
     }
