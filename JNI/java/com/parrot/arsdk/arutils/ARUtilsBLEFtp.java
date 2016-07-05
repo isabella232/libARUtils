@@ -49,7 +49,6 @@ import java.util.concurrent.locks.ReentrantLock;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattService;
-import android.util.Log;
 import android.content.Context;
 
 import com.parrot.arsdk.arsal.ARSALBLEManager;
@@ -87,6 +86,7 @@ public class ARUtilsBLEFtp
 	private int port;
 	private int connectionCount = 0;
 	private Lock connectionLock = new ReentrantLock();
+	private volatile boolean isListing;
 
 	private BluetoothGattCharacteristic transferring = null;
 	private BluetoothGattCharacteristic getting = null;
@@ -290,7 +290,9 @@ public class ARUtilsBLEFtp
 	    boolean ret = true;
 
 	    connectionLock.lock();
+	    isListing = true;
 	    ret = listFiles(remotePath, resultList);
+	    isListing = false;
 	    connectionLock.unlock();
 
 	    return ret;
@@ -368,6 +370,10 @@ public class ARUtilsBLEFtp
 
 	private boolean cancelFile(Semaphore cancelSem)
 	{
+		if (isListing) {
+			return true;
+		}
+
 		boolean ret = true;
 
 		cancelSem.release();
