@@ -49,7 +49,9 @@
 #include <libARSAL/ARSAL_Print.h>
 #include <curl/curl.h>
 
+#if defined BUILD_LIBMUX
 #include <libmux.h>
+#endif
 
 #include "libARUtils/ARUTILS_Error.h"
 #include "libARUtils/ARUTILS_Manager.h"
@@ -92,8 +94,10 @@ ARUTILS_WifiFtp_Connection_t * ARUTILS_WifiFtp_Connection_New(ARSAL_Sem_t *cance
 {
     ARUTILS_WifiFtp_Connection_t *newConnection = NULL;
     eARUTILS_ERROR result = ARUTILS_OK;
+#if defined BUILD_LIBMUX
     const char *host;
     int ret;
+#endif
 
     ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_WIFIFTP_TAG, "server=%s, port=%d, mux=%p, user=%s", server ? server : "null", port, mux, username ? username : "null");
 
@@ -129,6 +133,7 @@ ARUTILS_WifiFtp_Connection_t * ARUTILS_WifiFtp_Connection_New(ARSAL_Sem_t *cance
      uint16_t ftp_port;
      if (mux != NULL)
      {
+#if defined BUILD_LIBMUX
         /* assume we want start ftp connection on drone if no server given */
         if (server && server[0] != '\0' && (strcmp(server, "0.0.0.0") != 0))
             host = server;
@@ -144,6 +149,9 @@ ARUTILS_WifiFtp_Connection_t * ARUTILS_WifiFtp_Connection_New(ARSAL_Sem_t *cance
 
         // use local mux server
         ftp_server = "127.0.0.1";
+#else
+        result = ARUTILS_ERROR_NOT_IMPLEMENTED;
+#endif
     }
     else
     {
@@ -204,10 +212,12 @@ void ARUTILS_WifiFtp_Connection_Delete(ARUTILS_WifiFtp_Connection_t **connection
 
             ARUTILS_WifiFtp_FreeCallbackData(&connection->cbdata);
 
+#if defined BUILD_LIBMUX
             if (connection->mux != NULL && connection->mux_channel != 0)
             {
             	mux_channel_close(connection->mux, connection->mux_channel);
             }
+#endif
             free(connection);
             *connectionAddr = NULL;
         }
