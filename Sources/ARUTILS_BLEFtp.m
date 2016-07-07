@@ -592,7 +592,7 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(ARUtils_BLEFtp, initBLEFtp)
     eARUTILS_ERROR resultSendPut = ARUTILS_OK;
 
 #if ARUTILS_BLEFTP_ENABLE_LOG
-    NSLog(@"%s %@", __FUNCTION__, remoteFile);
+    NSLog(@"%s %@, resume: %d", __FUNCTION__, remoteFile, resume);
 #endif
 
     remoteFile = [self normalizeName:remoteFile];
@@ -915,7 +915,7 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(ARUtils_BLEFtp, initBLEFtp)
     int totalSize = 0;
     int packetCount = 0;
     int totalPacket = 0;
-    int packetLen = BLE_PACKET_MAX_SIZE;
+    int packetLen = 0;
     BOOL endFile = NO;
     ARSAL_Sem_t timeSem;
     struct timespec timeout;
@@ -1017,9 +1017,12 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(ARUtils_BLEFtp, initBLEFtp)
         }
         else
         {
-            if (feof(srcFile))
+            if (abort == NO)
             {
-                endFile = YES;
+                if (feof(srcFile))
+                {
+                    endFile = YES;
+                }
             }
         }
 
@@ -1475,6 +1478,9 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(ARUtils_BLEFtp, initBLEFtp)
                     ARSALBLEManagerNotificationData *notificationData = receivedNotifications[i];
                     size_t packetLen = [[notificationData value] length];
                     uint8_t *packet = (uint8_t *)[[notificationData value] bytes];
+#if ARUTILS_BLEFTP_ENABLE_LOG
+                    NSLog(@"receivedNotifications packet %d", (int)packetLen);
+#endif
 
                     packetCount++;
                     totalPacket++;
