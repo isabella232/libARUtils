@@ -1121,7 +1121,7 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(ARUtils_BLEFtp, initBLEFtp)
             }
             else if (memcmp(md5Msg, md5Zero, CC_MD5_DIGEST_LENGTH * 2) == 0)
             {
-                //delos3 implementation return md5 content filled with zero in place of real md5
+                //delos3 implementation may return md5 content filled with zero in place of real md5
 #if ARUTILS_BLEFTP_ENABLE_LOG
                 NSLog(@"MD5 End OK (Zero)");
 #endif
@@ -1394,6 +1394,7 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(ARUtils_BLEFtp, initBLEFtp)
     uint8_t md5[CC_MD5_DIGEST_LENGTH];
     char md5Msg[(CC_MD5_DIGEST_LENGTH * 2) + 1];
     char md5Txt[(CC_MD5_DIGEST_LENGTH * 2) + 1];
+    char md5Zero[(CC_MD5_DIGEST_LENGTH * 2) + 1];
     int packetCount = 0;
     int totalSize = 0;
     int totalPacket = 0;
@@ -1414,6 +1415,8 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(ARUtils_BLEFtp, initBLEFtp)
 #endif
 
     CC_MD5_Init(&ctxEnd);
+    memset(md5Zero, 0, (CC_MD5_DIGEST_LENGTH * 2) + 1);
+
     while ((result == ARUTILS_OK) && (endMD5 == NO) && [self isConnected:connection])
     {
         BOOL blockMD5 = NO;
@@ -1493,7 +1496,7 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(ARUtils_BLEFtp, initBLEFtp)
 
                             if (packetLen == (CC_MD5_DIGEST_LENGTH * 2))
                             {
-                                strncpy(md5Msg, (char*)packet, CC_MD5_DIGEST_LENGTH * 2);
+                                memcpy(md5Msg, (char*)packet, CC_MD5_DIGEST_LENGTH * 2);
                                 md5Msg[CC_MD5_DIGEST_LENGTH * 2] = '\0';
 #if ARUTILS_BLEFTP_ENABLE_LOG
                                 NSLog(@"md5 END received %s", packet);
@@ -1694,18 +1697,26 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(ARUtils_BLEFtp, initBLEFtp)
         NSLog(@"received total size %d", totalSize);
 #endif
 
-        if (strncmp(md5Txt, md5Msg, CC_MD5_DIGEST_LENGTH * 2) != 0)
+        if (strncmp(md5Msg, md5Txt, CC_MD5_DIGEST_LENGTH * 2) == 0)
+        {
+#if ARUTILS_BLEFTP_ENABLE_LOG
+            NSLog(@"MD5 end OK");
+
+#endif
+        }
+        else if (memcmp(md5Msg, md5Zero, CC_MD5_DIGEST_LENGTH * 2) == 0)
+        {
+            //delos3 implementation may return md5 content filled with zero in place of real md5
+#if ARUTILS_BLEFTP_ENABLE_LOG
+            NSLog(@"MD5 End OK (Zero)");
+#endif
+        }
+        else
         {
 #if ARUTILS_BLEFTP_ENABLE_LOG
             NSLog(@"MD5 end Failed");
 #endif
             result = ARUTILS_ERROR_FTP_MD5;
-        }
-        else
-        {
-#if ARUTILS_BLEFTP_ENABLE_LOG
-            NSLog(@"MD5 end OK");
-#endif
         }
 
 #if ARUTILS_BLEFTP_ENABLE_LOG_ERROR
