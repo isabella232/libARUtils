@@ -290,9 +290,7 @@ public class ARUtilsBLEFtp
 	    boolean ret = true;
 
 	    connectionLock.lock();
-	    isListing = true;
 	    ret = listFiles(remotePath, resultList);
-	    isListing = false;
 	    connectionLock.unlock();
 
 	    return ret;
@@ -487,6 +485,8 @@ public class ARUtilsBLEFtp
 
 	private boolean listFiles(String remotePath, String[] resultList)
 	{
+		isListing = true;
+
 		boolean ret = true;
 
 		ARSALPrint.d("DBG", APP_TAG + "listFiles " + remotePath);
@@ -511,6 +511,8 @@ public class ARUtilsBLEFtp
 				resultList[0] = new String(data[0]);
 			}
 		}
+
+		isListing = false;
 
 		return ret;
 	}
