@@ -95,8 +95,8 @@ Java_com_parrot_arsdk_arutils_ARUtilsBLEFtp_nativeJNIInit(JNIEnv *env, jobject o
     ARUTILS_JNI_BLEFTP_METHOD_CONNECTION_RESET = (*env)->GetMethodID(env, jBLEFtpCls, "resetConnectionAL", "(Ljava/util/concurrent/Semaphore;)Z");
     ARUTILS_JNI_BLEFTP_METHOD_FTP_LIST = (*env)->GetMethodID(env, jBLEFtpCls, "listFilesAL", "(Ljava/lang/String;[Ljava/lang/String;)Z");
     ARUTILS_JNI_BLEFTP_METHOD_FTP_SIZE = (*env)->GetMethodID(env, jBLEFtpCls, "sizeFileAL", "(Ljava/lang/String;[D)Z");
-    ARUTILS_JNI_BLEFTP_METHOD_GET_WITH_BUFFER = (*env)->GetMethodID(env, jBLEFtpCls, "getFileWithBufferAL", "(Ljava/lang/String;[[BJLjava/util/concurrent/Semaphore;)Z");
-    ARUTILS_JNI_BLEFTP_METHOD_GET = (*env)->GetMethodID(env, jBLEFtpCls, "getFileAL", "(Ljava/lang/String;Ljava/lang/String;JLjava/util/concurrent/Semaphore;)Z");
+    ARUTILS_JNI_BLEFTP_METHOD_GET_WITH_BUFFER = (*env)->GetMethodID(env, jBLEFtpCls, "getFileWithBufferAL", "(Ljava/lang/String;[[BJZLjava/util/concurrent/Semaphore;)Z");
+    ARUTILS_JNI_BLEFTP_METHOD_GET = (*env)->GetMethodID(env, jBLEFtpCls, "getFileAL", "(Ljava/lang/String;Ljava/lang/String;JZLjava/util/concurrent/Semaphore;)Z");
     ARUTILS_JNI_BLEFTP_METHOD_PUT = (*env)->GetMethodID(env, jBLEFtpCls, "putFileAL", "(Ljava/lang/String;Ljava/lang/String;JZLjava/util/concurrent/Semaphore;)Z");
     ARUTILS_JNI_BLEFTP_METHOD_DELETE = (*env)->GetMethodID(env, jBLEFtpCls, "deleteFileAL", "(Ljava/lang/String;)Z");
     ARUTILS_JNI_BLEFTP_METHOD_RENAME = (*env)->GetMethodID(env, jBLEFtpCls, "renameFileAL", "(Ljava/lang/String;Ljava/lang/String;)Z");
@@ -842,10 +842,11 @@ eARUTILS_ERROR ARUTILS_BLEFtp_Get_WithBuffer(ARUTILS_BLEFtp_Connection_t *connec
         jobject cancelSemObject = connection->cancelSemObject;
         jstring jRemotePath = (*env)->NewStringUTF(env, remotePath);
         jclass objectClass = (*env)->FindClass(env, "[B");
+        jboolean wantProgress = callback->bleFtpProgressCallback != NULL;
 
         jobjectArray dataArray = (*env)->NewObjectArray(env, 1, objectClass, NULL);
 
-        ret = (*env)->CallBooleanMethod(env, bleFtpObject, ARUTILS_JNI_BLEFTP_METHOD_GET_WITH_BUFFER, jRemotePath, dataArray, (jlong)(intptr_t)callback, cancelSemObject);
+        ret = (*env)->CallBooleanMethod(env, bleFtpObject, ARUTILS_JNI_BLEFTP_METHOD_GET_WITH_BUFFER, jRemotePath, dataArray, (jlong)(intptr_t)callback, wantProgress, cancelSemObject);
 
         if ((*env)->ExceptionOccurred(env))
         {
@@ -973,9 +974,10 @@ eARUTILS_ERROR ARUTILS_BLEFtp_Get(ARUTILS_BLEFtp_Connection_t *connection, const
         jobject cancelSemObject = connection->cancelSemObject;
         jstring jRemotePath = (*env)->NewStringUTF(env, remotePath);
         jstring jDstFile = (*env)->NewStringUTF(env, dstFile);
+        jboolean wantProgress = callback->bleFtpProgressCallback != NULL;
 
         ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_JNI_BLEFTP_TAG, " %x %x", callback, callback->bleFtpProgressCallback);
-        ret = (*env)->CallBooleanMethod(env, bleFtpObject, ARUTILS_JNI_BLEFTP_METHOD_GET, jRemotePath, jDstFile, (jlong)(intptr_t)callback, cancelSemObject);
+        ret = (*env)->CallBooleanMethod(env, bleFtpObject, ARUTILS_JNI_BLEFTP_METHOD_GET, jRemotePath, jDstFile, (jlong)(intptr_t)callback, wantProgress, cancelSemObject);
 
         if ((*env)->ExceptionOccurred(env))
         {

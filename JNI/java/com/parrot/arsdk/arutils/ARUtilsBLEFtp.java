@@ -307,23 +307,23 @@ public class ARUtilsBLEFtp
         return ret;
     }
 
-	public boolean getFileAL(String remotePath, String localFile, long nativeCallbackObject, Semaphore cancelSem)
+	public boolean getFileAL(String remotePath, String localFile, long nativeCallbackObject, boolean wantProgress, Semaphore cancelSem)
     {
         boolean ret = false;
 
         connectionLock.lock();
-        ret = getFile(remotePath, localFile, nativeCallbackObject, cancelSem);
+        ret = getFile(remotePath, localFile, nativeCallbackObject, wantProgress, cancelSem);
         connectionLock.unlock();
 
         return ret;
     }
 
-    public boolean getFileWithBufferAL(String remotePath, byte[][] data, long nativeCallbackObject, Semaphore cancelSem)
+    public boolean getFileWithBufferAL(String remotePath, byte[][] data, long nativeCallbackObject, boolean wantProgress, Semaphore cancelSem)
     {
         boolean ret = false;
 
         connectionLock.lock();
-        ret = getFileWithBuffer(remotePath, data, nativeCallbackObject, cancelSem);
+        ret = getFileWithBuffer(remotePath, data, nativeCallbackObject, wantProgress, cancelSem);
         connectionLock.unlock();
 
         return ret;
@@ -517,25 +517,25 @@ public class ARUtilsBLEFtp
 		return ret;
 	}
 
-	private boolean getFile(String remoteFile, String localFile, long nativeCallbackObject, Semaphore cancelSem)
+	private boolean getFile(String remoteFile, String localFile, long nativeCallbackObject, boolean wantProgress, Semaphore cancelSem)
 	{
 		boolean ret = true;
 
-		ret = getFileInternal(remoteFile, localFile, null, nativeCallbackObject, cancelSem);
+		ret = getFileInternal(remoteFile, localFile, null, nativeCallbackObject, wantProgress, cancelSem);
 
 		return ret;
 	}
 
-	private boolean getFileWithBuffer(String remoteFile, byte[][] data, long nativeCallbackObject, Semaphore cancelSem)
+	private boolean getFileWithBuffer(String remoteFile, byte[][] data, long nativeCallbackObject, boolean wantProgress, Semaphore cancelSem)
 	{
 		boolean ret = true;
 
-		ret = getFileInternal(remoteFile, null, data, nativeCallbackObject, cancelSem);
+		ret = getFileInternal(remoteFile, null, data, nativeCallbackObject, wantProgress, cancelSem);
 
 		return ret;
 	}
 
-	private boolean getFileInternal(String remoteFile, String localFile, byte[][] data, long nativeCallbackObject, Semaphore cancelSem)
+	private boolean getFileInternal(String remoteFile, String localFile, byte[][] data, long nativeCallbackObject, boolean wantProgress, Semaphore cancelSem)
 	{
 		FileOutputStream dst = null;
 		boolean ret = true;
@@ -546,7 +546,10 @@ public class ARUtilsBLEFtp
 
 		remoteFile = normalizePathName(remoteFile);
 
-		ret = sizeFile(remoteFile, totalSize);
+		if (wantProgress)
+		{
+			ret = sizeFile(remoteFile, totalSize);
+		}
 
         if ((ret == true) && (localFile != null))
         {
@@ -1415,9 +1418,9 @@ public class ARUtilsBLEFtp
 									data[0] = newData;
 								}
 
-								if (nativeCallbackObject != 0)
+								if (nativeCallbackObject != 0 && fileSize != 0)
 								{
-									nativeProgressCallback(nativeCallbackObject, ((float)totalSize / (float)fileSize) * 100.f);
+									nativeProgressCallback(nativeCallbackObject, ((float)totalSize / fileSize) * 100.f);
 								}
 							}
 						}
