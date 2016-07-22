@@ -71,7 +71,7 @@ eARUTILS_ERROR ARUTILS_FileSystem_IsExist(const char *namePath)
     
     if (namePath == NULL)
     {
-        result = ARUTILS_ERROR_BAD_PARAMETER;
+        return ARUTILS_ERROR_BAD_PARAMETER;
     }
     
     resultSys = stat(namePath, &statbuf);
@@ -105,7 +105,7 @@ eARUTILS_ERROR ARUTILS_FileSystem_GetFileSize(const char *namePath, int64_t *siz
 
     if (namePath == NULL)
     {
-        result = ARUTILS_ERROR_BAD_PARAMETER;
+        return ARUTILS_ERROR_BAD_PARAMETER;
     }
     
 #ifdef stat64
@@ -169,11 +169,14 @@ eARUTILS_ERROR ARUTILS_FileSystem_RemoveFile(const char *localPath)
     return result;
 }
 
-int ARUTILS_FileSystem_RemoveDirCallback(const char* fpath, const struct stat *sb, eARSAL_FTW_TYPE typeflag, ARSAL_FTW_t *ftwbuf)
+static int ARUTILS_FileSystem_RemoveDirCallback(const char* fpath, const struct stat *sb, eARSAL_FTW_TYPE typeflag, ARSAL_FTW_t *ftwbuf)
 {
-	if(typeflag == ARSAL_FTW_F)
+    int ret;
+     if(typeflag == ARSAL_FTW_F)
     {
-		remove(fpath);
+       ret = remove(fpath);
+       if (ret < 0 && errno != ENOENT)
+            ARSAL_PRINT(ARSAL_PRINT_ERROR, ARUTILS_FILE_SYSTEM_TAG, "remove '%s' error: %s", fpath, strerror(errno));
     }
     else if(typeflag == ARSAL_FTW_D)
     {

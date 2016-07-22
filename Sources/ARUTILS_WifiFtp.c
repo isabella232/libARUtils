@@ -107,7 +107,11 @@ ARUTILS_WifiFtp_Connection_t * ARUTILS_WifiFtp_Connection_New(ARSAL_Sem_t *cance
 
     if (result == ARUTILS_OK)
     {
-        newConnection->curlSocket = -1;
+        int index;
+        for(index = 0; index < ARUTILS_FTP_MAX_SOCKET_SIZE; index ++)
+        {
+            newConnection->curlSocket[index] = -1;
+        }
         newConnection->cancelSem = cancelSem;
         newConnection->cbdata.fileFd = -1;
     }
@@ -247,10 +251,13 @@ eARUTILS_ERROR ARUTILS_WifiFtp_Connection_Cancel(ARUTILS_WifiFtp_Connection_t *c
     
     if (result == ARUTILS_OK)
     {
-        if (connection->curlSocket != -1)
+        int index;
+        for(index = 0; index < ARUTILS_FTP_MAX_SOCKET_SIZE; index ++)
         {
-            shutdown(connection->curlSocket, SHUT_RDWR);
-            connection->curlSocket = -1;
+            if(connection->curlSocket[index] != -1)
+            {
+                shutdown(connection->curlSocket[index], SHUT_RDWR);
+            }
         }
     }
 
@@ -309,7 +316,7 @@ eARUTILS_ERROR ARUTILS_WifiFtp_List(ARUTILS_WifiFtp_Connection_t *connection, co
     // check that the given folder exist on the server
     if (result == ARUTILS_OK)
     {
-        if (*namePath == '\0')
+        if (!namePath || (namePath[0] == '\0'))
         {
             strncpy(fileUrl, "/", ARUTILS_FTP_MAX_URL_SIZE);
             fileUrl[ARUTILS_FTP_MAX_URL_SIZE - 1] = '\0';
@@ -337,8 +344,10 @@ eARUTILS_ERROR ARUTILS_WifiFtp_List(ARUTILS_WifiFtp_Connection_t *connection, co
     {
         strncpy(fileUrl, connection->serverUrl, ARUTILS_FTP_MAX_URL_SIZE);
         fileUrl[ARUTILS_FTP_MAX_URL_SIZE - 1] = '\0';
-        strncat(fileUrl, namePath, ARUTILS_FTP_MAX_URL_SIZE - strlen(fileUrl) - 1);
-        if ((namePath != NULL) && (strlen(namePath) > 0))
+        if (namePath)
+            strncat(fileUrl, namePath, ARUTILS_FTP_MAX_URL_SIZE - strlen(fileUrl) - 1);
+
+        if (namePath && namePath[0] != '\0')
         {
             strncat(fileUrl, "/", ARUTILS_FTP_MAX_URL_SIZE - strlen(fileUrl) - 1);
         }
@@ -1240,8 +1249,9 @@ eARUTILS_ERROR ARUTILS_WifiFtp_Put(ARUTILS_WifiFtp_Connection_t *connection, con
     long ftpCode = 0L;
     double remoteSize = 0.f;
     int64_t localSize = 0;
+    eARUTILS_FTP_RESUME resumeFlag = resume;
 
-    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_WIFIFTP_TAG, "%s, %s, %d", namePath ? namePath : "null", srcFile ? srcFile : "null", resume);
+    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_WIFIFTP_TAG, "%s, %s, %d", namePath ? namePath : "null", srcFile ? srcFile : "null", resumeFlag);
 
     if ((connection == NULL) || (connection->curl == NULL) || (namePath == NULL) || (srcFile == NULL))
     {
@@ -1263,7 +1273,7 @@ eARUTILS_ERROR ARUTILS_WifiFtp_Put(ARUTILS_WifiFtp_Connection_t *connection, con
         result = ARUTILS_WifiFtp_ResetOptions(connection);
     }
 
-    if ((result == ARUTILS_OK) && (resume == FTP_RESUME_TRUE))
+    if ((result == ARUTILS_OK) && (resumeFlag == FTP_RESUME_TRUE))
     {
         resultResume = ARUTILS_WifiFtp_Size(connection, namePath, &remoteSize);
 
@@ -1285,7 +1295,8 @@ eARUTILS_ERROR ARUTILS_WifiFtp_Put(ARUTILS_WifiFtp_Connection_t *connection, con
             }
             else
             {
-                result = ARUTILS_ERROR_FTP_RESUME;
+                ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_WIFIFTP_TAG, "Remote File is bigger than local file, force to re-put file from zero");
+                resumeFlag = FTP_RESUME_FALSE;
             }
         }
     }
@@ -1317,7 +1328,7 @@ eARUTILS_ERROR ARUTILS_WifiFtp_Put(ARUTILS_WifiFtp_Connection_t *connection, con
             result = ARUTILS_ERROR_SYSTEM;
         }
 
-        if ((result == ARUTILS_OK) && (resultResume == ARUTILS_OK) && (resume == FTP_RESUME_TRUE))
+        if ((result == ARUTILS_OK) && (resultResume == ARUTILS_OK) && (resumeFlag == FTP_RESUME_TRUE))
         {
 #ifdef O_LARGEFILE
             off64_t fileResult = lseek64(connection->cbdata.fileFd, (off64_t)remoteSize, SEEK_SET);
@@ -1379,7 +1390,7 @@ eARUTILS_ERROR ARUTILS_WifiFtp_Put(ARUTILS_WifiFtp_Connection_t *connection, con
         connection->cbdata.progressCallback = progressCallback;
         connection->cbdata.progressArg = progressArg;
         connection->cbdata.totalSize = (double)localSize;
-        if (resume == FTP_RESUME_TRUE)
+        if (resumeFlag == FTP_RESUME_TRUE)
         {
             connection->cbdata.resumeSize = remoteSize;
         }
@@ -1447,7 +1458,7 @@ eARUTILS_ERROR ARUTILS_WifiFtp_Put(ARUTILS_WifiFtp_Connection_t *connection, con
             //ok
         }
         else if ((resultResume == ARUTILS_OK)
-                 && (resume == FTP_RESUME_TRUE) && (localSize == (int64_t)remoteSize)
+                 && (resumeFlag == FTP_RESUME_TRUE) && (localSize == (int64_t)remoteSize)
                  && (ftpCode == 229))
         {
             //ok
@@ -1491,7 +1502,7 @@ drwxr-xr-x    2 0        0             160 Jan  1  2000 data
 drwxr-xr-x    4 122      128          4096 Jan 24 14:34 AR.Drone
 drwxr-xr-x    4 122      128          4096 Jan 24 14:34 Jumping Sumo
 */
-const char * ARUTILS_Ftp_List_GetNextItem(const char *list, const char **nextItem, const char *prefix, int isDirectory, const char **indexItem, int *itemLen, char *lineData, int lineDataLen)
+const char * ARUTILS_Ftp_List_GetNextItem(const char *list, const char **nextItem, const char *prefix, int isDirectory, const char **indexItem, int *itemLen, char *lineData, size_t lineDataLen)
 {
     char *item = NULL;
     const char *line = NULL;
@@ -1741,7 +1752,7 @@ eARUTILS_ERROR ARUTILS_WifiFtp_ResetOptions(ARUTILS_WifiFtp_Connection_t *connec
     
     if (result == ARUTILS_OK)
     {
-        code = curl_easy_setopt(connection->curl, CURLOPT_OPENSOCKETDATA, &connection->curlSocket);
+        code = curl_easy_setopt(connection->curl, CURLOPT_OPENSOCKETDATA, connection);
         
         if (code != CURLE_OK)
         {
@@ -1762,7 +1773,7 @@ eARUTILS_ERROR ARUTILS_WifiFtp_ResetOptions(ARUTILS_WifiFtp_Connection_t *connec
 
     if (result == ARUTILS_OK)
     {
-        code = curl_easy_setopt(connection->curl, CURLOPT_CLOSESOCKETDATA, &connection->curlSocket);
+        code = curl_easy_setopt(connection->curl, CURLOPT_CLOSESOCKETDATA, connection);
 
         if (code != CURLE_OK)
         {
@@ -1852,7 +1863,7 @@ size_t ARUTILS_WifiFtp_WriteDataCallback(void *ptr, size_t size, size_t nmemb, v
             else
             {
                 ssize_t len = write(connection->cbdata.fileFd, ptr, size * nmemb);
-                if ((len == -1) || (len != size * nmemb))
+                if ((len < 0) || ((size_t)len != size * nmemb))
                 {
                     connection->cbdata.error = ARUTILS_ERROR_SYSTEM;
                 }
@@ -1933,14 +1944,20 @@ curl_socket_t ARUTILS_WifiFtp_OpensocketCallback(void *clientp, curlsocktype pur
 {
     curl_socket_t sock = 0;
     //ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_WIFIFTP_TAG, "%x", clientp);
+    ARUTILS_WifiFtp_Connection_t *connection = (ARUTILS_WifiFtp_Connection_t *)clientp;
     
     if ((address != NULL) && (purpose == CURLSOCKTYPE_IPCXN))
     {
         sock = socket(address->family, address->socktype, address->protocol);
         
-        if (clientp != NULL)
+        int index;
+        for(index = 0; index < ARUTILS_FTP_MAX_SOCKET_SIZE; index ++)
         {
-            *((int*)clientp) = sock;
+            if(connection->curlSocket[index] == -1)
+            {
+                connection->curlSocket[index] = sock;
+                break;
+            }
         }
     }
     
@@ -1950,9 +1967,17 @@ curl_socket_t ARUTILS_WifiFtp_OpensocketCallback(void *clientp, curlsocktype pur
 void ARUTILS_WifiFtp_ClosesocketCallback(void *clientp, curl_socket_t sock)
 {
     close(sock);
-    if (clientp != NULL)
+
+    ARUTILS_WifiFtp_Connection_t *connection = (ARUTILS_WifiFtp_Connection_t *)clientp;
+    
+    int index;
+    for(index = 0; index < ARUTILS_FTP_MAX_SOCKET_SIZE; index ++)
     {
-        *((int*)clientp) = -1;
+        if(connection->curlSocket[index] == (int)sock)
+        {
+            connection->curlSocket[index] = -1;
+            break;
+        }
     }
 }
 

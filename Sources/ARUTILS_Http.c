@@ -1116,7 +1116,7 @@ eARUTILS_ERROR ARUTILS_Http_ResetOptions(ARUTILS_Http_Connection_t *connection)
     
     if (result == ARUTILS_OK)
     {
-        code = curl_easy_setopt(connection->curl, CURLOPT_OPENSOCKETDATA, &connection->curlSocket);
+        code = curl_easy_setopt(connection->curl, CURLOPT_OPENSOCKETDATA, connection);
         
         if (code != CURLE_OK)
         {
@@ -1136,7 +1136,7 @@ eARUTILS_ERROR ARUTILS_Http_ResetOptions(ARUTILS_Http_Connection_t *connection)
 
     if (result == ARUTILS_OK)
     {
-        code = curl_easy_setopt(connection->curl, CURLOPT_CLOSESOCKETDATA, &connection->curlSocket);
+        code = curl_easy_setopt(connection->curl, CURLOPT_CLOSESOCKETDATA, connection);
 
         if (code != CURLE_OK)
         {
@@ -1335,6 +1335,7 @@ int ARUTILS_Http_ProgressCallback(void *userData, double dltotal, double dlnow, 
 
 curl_socket_t ARUTILS_Http_OpensocketCallback(void *clientp, curlsocktype purpose, struct curl_sockaddr *address)
 {
+    ARUTILS_Http_Connection_t *connection = clientp;
     curl_socket_t sock = 0;
     //ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_HTTP_TAG, "%x", clientp);
     
@@ -1342,9 +1343,9 @@ curl_socket_t ARUTILS_Http_OpensocketCallback(void *clientp, curlsocktype purpos
     {
         sock = socket(address->family, address->socktype, address->protocol);
         
-        if (clientp != NULL)
+        if (connection != NULL)
         {
-            *((int*)clientp) = sock;
+            connection->curlSocket = sock;
         }
     }
     
@@ -1353,10 +1354,12 @@ curl_socket_t ARUTILS_Http_OpensocketCallback(void *clientp, curlsocktype purpos
 
 void ARUTILS_Http_ClosesocketCallback(void *clientp, curl_socket_t sock)
 {
+    ARUTILS_Http_Connection_t *connection = clientp;
+
     close(sock);
-    if (clientp != NULL)
+    if (connection != NULL)
     {
-        *((int*)clientp) = -1;
+        connection->curlSocket = -1;
     }
 }
 
