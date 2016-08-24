@@ -8,7 +8,7 @@
       notice, this list of conditions and the following disclaimer.
     * Redistributions in binary form must reproduce the above copyright
       notice, this list of conditions and the following disclaimer in
-      the documentation and/or other materials provided with the 
+      the documentation and/or other materials provided with the
       distribution.
     * Neither the name of Parrot nor the names
       of its contributors may be used to endorse or promote products
@@ -22,7 +22,7 @@
     COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
     INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
     BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS
-    OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED 
+    OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
     AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
     OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
     OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
@@ -87,6 +87,7 @@ public class ARUtilsBLEFtp
 	private int connectionCount = 0;
 	private Lock connectionLock = new ReentrantLock();
 	private volatile boolean isListing;
+	private volatile boolean mReadDataCanceled;
 
 	private BluetoothGattCharacteristic transferring = null;
 	private BluetoothGattCharacteristic getting = null;
@@ -138,13 +139,13 @@ public class ARUtilsBLEFtp
 	public boolean registerDevice(BluetoothGatt gattDevice, int port)
 	{
 	    boolean ret = true;
-        
+
         if (connectionCount == 0)
         {
             this.gattDevice = gattDevice;
             this.port = port;
             connectionCount++;
-            
+
             ret = registerCharacteristics();
         }
         else if ((this.gattDevice == gattDevice) && (this.port == port))
@@ -372,13 +373,14 @@ public class ARUtilsBLEFtp
 			return true;
 		}
 
-		boolean ret = true;
-
 		cancelSem.release();
 
-		bleManager.cancelReadNotification(BLE_GETTING_KEY);
+		boolean retVal = bleManager.cancelReadNotification(BLE_GETTING_KEY);
+		if (retVal) {
+			mReadDataCanceled = true;
+		}
 
-		return ret;
+		return retVal;
 	}
 
 	private boolean isConnectionCanceled(Semaphore cancelSem)
@@ -1308,6 +1310,7 @@ public class ARUtilsBLEFtp
 		ARUtilsMD5 md5 = new ARUtilsMD5();
 		ARUtilsMD5 md5End = new ARUtilsMD5();
 
+		mReadDataCanceled = false;
 		while ((ret == true) && (endMD5 == false))
 		{
 			boolean blockMD5 = false;
@@ -1316,11 +1319,11 @@ public class ARUtilsBLEFtp
 			do
 			{
 				ret = readBufferBlocks(notificationArray);
-				if (ret == false)
+				if (!ret && !mReadDataCanceled)
 				{
 					ret = bleManager.isDeviceConnected();
 				}
-				else
+				else if (ret)
 				{
 					//for (int i=0; (i < receivedNotifications.size()) && (ret == true) && (blockMD5 == false) && (endMD5 == false); i++)
 					if ((ret == true) && (notificationArray[0] != null) && (blockMD5 == false) && (endMD5 == false))
