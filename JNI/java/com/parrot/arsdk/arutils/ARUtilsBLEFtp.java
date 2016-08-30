@@ -87,7 +87,6 @@ public class ARUtilsBLEFtp
 	private int connectionCount = 0;
 	private Lock connectionLock = new ReentrantLock();
 	private volatile boolean isListing;
-	private volatile boolean mReadDataCanceled;
 
 	private BluetoothGattCharacteristic transferring = null;
 	private BluetoothGattCharacteristic getting = null;
@@ -376,9 +375,6 @@ public class ARUtilsBLEFtp
 		cancelSem.release();
 
 		boolean retVal = bleManager.cancelReadNotification(BLE_GETTING_KEY);
-		if (retVal) {
-			mReadDataCanceled = true;
-		}
 
 		return retVal;
 	}
@@ -1310,7 +1306,6 @@ public class ARUtilsBLEFtp
 		ARUtilsMD5 md5 = new ARUtilsMD5();
 		ARUtilsMD5 md5End = new ARUtilsMD5();
 
-		mReadDataCanceled = false;
 		while ((ret == true) && (endMD5 == false))
 		{
 			boolean blockMD5 = false;
@@ -1319,7 +1314,7 @@ public class ARUtilsBLEFtp
 			do
 			{
 				ret = readBufferBlocks(notificationArray);
-				if (!ret && !mReadDataCanceled)
+				if (!ret)
 				{
 					ret = bleManager.isDeviceConnected();
 				}
@@ -1387,7 +1382,11 @@ public class ARUtilsBLEFtp
 									ARSALPrint.d("DBG", APP_TAG + "md5 failed size " + packetLen);
 								}
 							}
-							else if (compareToString(packet, packetLen, "error"))
+							/**
+							 * when receiving the error "Error : Local file doesn't exist" message from drone, and if it isn't recognized,
+							 * the process will be blocked to waiting data, which means this task never stop
+							 */
+							else if (compareToStringIgnoreCase(packet, packetLen, "error")) // the error "Error : Local file doesn't exist" should be recognized
 							{
 								ARSALPrint.e("DBG", APP_TAG + "Error received");
 								ret = false;
@@ -1832,7 +1831,32 @@ public class ARUtilsBLEFtp
 	    return item;
 	}
 
-	private boolean compareToString(byte[] buffer, int len, String str)
+    private boolean compareToStringIgnoreCase(byte[] buffer, int len, String str)
+    {
+        try
+        {
+            byte[] strBytes = str.toLowerCase().getBytes("UTF8");
+            if (len >= strBytes.length)
+            {
+                int delta = 'A' - 'a';
+                for (int i = 0; i < strBytes.length; i++)
+                {
+                    if (buffer[i] != strBytes[i] && buffer[i] != (strBytes[i] + delta))
+                    {
+                        return false;
+                    }
+                }
+                return true;
+            }
+        }
+        catch (UnsupportedEncodingException e)
+        {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    private boolean compareToString(byte[] buffer, int len, String str)
     {
         boolean ret = false;
         byte[] strBytes = null;
@@ -1866,7 +1890,7 @@ public class ARUtilsBLEFtp
         return ret;
     }
 
-	private String normalizePathName(String name)
+    private String normalizePathName(String name)
     {
         String newName = name;
         if (name.charAt(0) != '/')
