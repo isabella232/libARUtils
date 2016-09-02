@@ -871,10 +871,23 @@ eARUTILS_ERROR ARUTILS_BLEFtp_Get_WithBuffer(ARUTILS_BLEFtp_Connection_t *connec
                 {
                     *data = malloc(size * sizeof(uint8_t));
                     memcpy(*data, javaData, size);
-                    (*env)->ReleaseByteArrayElements(env, javaByteArray, javaData, JNI_ABORT);
+                }
+                else
+                {
+                    error = ARUTILS_ERROR_SYSTEM;
                 }
                 *dataLen = size;
+
+                if (javaData != NULL)
+                {
+                    (*env)->ReleaseByteArrayElements(env, javaByteArray, javaData, JNI_ABORT);
+                }
                 (*env)->DeleteLocalRef(env, javaByteArray);
+            }
+            else
+            {
+                //we come here if the file content is empty
+                error = ARUTILS_ERROR_SYSTEM;
             }
 
         }
