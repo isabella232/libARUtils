@@ -14,6 +14,7 @@ LOCAL_SRC_FILES := \
 LOCAL_LDLIBS := -llog -lz
 LOCAL_SHARED_LIBRARIES := \
 	libARUtils \
-	libARSAL
+	libARSAL \
+	libmux
 
 include $(BUILD_SHARED_LIBRARY)

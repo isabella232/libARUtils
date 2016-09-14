@@ -43,10 +43,15 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <sys/socket.h>
+#include <arpa/inet.h>
 
 #include <libARSAL/ARSAL_Sem.h>
 #include <libARSAL/ARSAL_Print.h>
 #include <curl/curl.h>
+
+#if defined BUILD_LIBMUX
+#include <libmux.h>
+#endif
 
 #include "libARUtils/ARUTILS_Error.h"
 #include "libARUtils/ARUTILS_Manager.h"
@@ -83,19 +88,25 @@
  *
  *****************************************/
 
-ARUTILS_WifiFtp_Connection_t * ARUTILS_WifiFtp_Connection_New(ARSAL_Sem_t *cancelSem, const char *server, int port, const char *username, const char* password, eARUTILS_ERROR *error)
+ARUTILS_WifiFtp_Connection_t * ARUTILS_WifiFtp_Connection_New(ARSAL_Sem_t *cancelSem, const char *server, int port,
+		struct mux_ctx* mux, const char *username, const char* password, eARUTILS_ERROR *error)
+
 {
     ARUTILS_WifiFtp_Connection_t *newConnection = NULL;
     eARUTILS_ERROR result = ARUTILS_OK;
+#if defined BUILD_LIBMUX
+    const char *host;
+    int ret;
+#endif
 
-    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_WIFIFTP_TAG, "%s, %d, %s", server ? server : "null", port, username ? username : "null");
+    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_WIFIFTP_TAG, "server=%s, port=%d, mux=%p, user=%s", server ? server : "null", port, mux, username ? username : "null");
 
-    if (server == NULL)
+    if (server == NULL && mux == NULL)
     {
         result = ARUTILS_ERROR_BAD_PARAMETER;
     }
 
-    if (result == ARUTILS_OK)
+     if (result == ARUTILS_OK)
     {
         newConnection = (ARUTILS_WifiFtp_Connection_t *)calloc(1, sizeof(ARUTILS_WifiFtp_Connection_t));
 
@@ -114,11 +125,43 @@ ARUTILS_WifiFtp_Connection_t * ARUTILS_WifiFtp_Connection_New(ARSAL_Sem_t *cance
         }
         newConnection->cancelSem = cancelSem;
         newConnection->cbdata.fileFd = -1;
+        newConnection->mux = mux;
+        newConnection->mux_channel = 0;
+    }
+
+     const char* ftp_server;
+     uint16_t ftp_port;
+     if (mux != NULL)
+     {
+#if defined BUILD_LIBMUX
+        /* assume we want start ftp connection on drone if no server given */
+        if (server && server[0] != '\0' && (strcmp(server, "0.0.0.0") != 0))
+            host = server;
+        else
+            host = "drone";
+
+        /* open mux ftp channel */
+        ret = mux_channel_open_ftp(mux, host, port, &ftp_port, &newConnection->mux_channel);
+        if (ret < 0) {
+            ARSAL_PRINT(ARSAL_PRINT_ERROR, ARUTILS_WIFIFTP_TAG, " Error opening mux ftp %d", ret);
+            result = ARUTILS_ERROR_SYSTEM;
+        }
+
+        // use local mux server
+        ftp_server = "127.0.0.1";
+#else
+        result = ARUTILS_ERROR_NOT_IMPLEMENTED;
+#endif
+    }
+    else
+    {
+    	ftp_server = server;
+    	ftp_port = port;
     }
 
     if (result == ARUTILS_OK)
     {
-        sprintf(newConnection->serverUrl, "ftp://%s:%d/", server, port);
+        sprintf(newConnection->serverUrl, "ftp://%s:%d/", ftp_server, ftp_port);
     }
 
     if ((result == ARUTILS_OK) && (username != NULL))
@@ -169,13 +212,19 @@ void ARUTILS_WifiFtp_Connection_Delete(ARUTILS_WifiFtp_Connection_t **connection
 
             ARUTILS_WifiFtp_FreeCallbackData(&connection->cbdata);
 
+#if defined BUILD_LIBMUX
+            if (connection->mux != NULL && connection->mux_channel != 0)
+            {
+            	mux_channel_close(connection->mux, connection->mux_channel);
+            }
+#endif
             free(connection);
             *connectionAddr = NULL;
         }
     }
 }
 
-eARUTILS_ERROR ARUTILS_WifiFtp_Connection_Disconnect(ARUTILS_WifiFtp_Connection_t *connection)
+static eARUTILS_ERROR ARUTILS_WifiFtp_Connection_Disconnect(ARUTILS_WifiFtp_Connection_t *connection)
 {
     eARUTILS_ERROR result = ARUTILS_OK;
     
@@ -199,7 +248,7 @@ eARUTILS_ERROR ARUTILS_WifiFtp_Connection_Disconnect(ARUTILS_WifiFtp_Connection_
     return result;
 }
 
-eARUTILS_ERROR ARUTILS_WifiFtp_Connection_Reconnect(ARUTILS_WifiFtp_Connection_t *connection)
+static eARUTILS_ERROR ARUTILS_WifiFtp_Connection_Reconnect(ARUTILS_WifiFtp_Connection_t *connection)
 {
     eARUTILS_ERROR result = ARUTILS_OK;
     
@@ -880,6 +929,7 @@ eARUTILS_ERROR ARUTILS_WifiFtp_Command(ARUTILS_WifiFtp_Connection_t *connection,
     if (result == ARUTILS_OK)
     {
         code = curl_easy_perform(connection->curl);
+        ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_WIFIFTP_TAG, "curl_easy_perform %d", code);
 
         if (code != CURLE_OK)
         {
@@ -938,7 +988,7 @@ eARUTILS_ERROR ARUTILS_WifiFtp_Delete(ARUTILS_WifiFtp_Connection_t *connection, 
     return result;
 }
 
-eARUTILS_ERROR ARUTILS_WifiFtp_RemoveDir(ARUTILS_WifiFtp_Connection_t *connection, const char *namePath)
+static eARUTILS_ERROR ARUTILS_WifiFtp_RemoveDir(ARUTILS_WifiFtp_Connection_t *connection, const char *namePath)
 {
     eARUTILS_ERROR result = ARUTILS_OK;
     long ftpCode = 0L;
@@ -976,6 +1026,7 @@ eARUTILS_ERROR ARUTILS_WifiFtp_Cd(ARUTILS_WifiFtp_Connection_t *connection, cons
             result = ARUTILS_ERROR_FTP_CODE;
         }
     }
+    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_WIFIFTP_TAG, "result %d", result);
 
     return result;
 }
@@ -2082,6 +2133,16 @@ eARUTILS_ERROR ARUTILS_WifiFtp_GetErrorFromCode(ARUTILS_WifiFtp_Connection_t *co
 
 eARUTILS_ERROR ARUTILS_Manager_InitWifiFtp(ARUTILS_Manager_t *manager, const char *server, int port, const char *username, const char* password)
 {
+    return ARUTILS_Manager_InitWifiFtpOverMux(manager,
+                                              server,
+                                              port,
+                                              NULL,
+                                              username,
+                                              password);
+}
+
+eARUTILS_ERROR ARUTILS_Manager_InitWifiFtpOverMux(ARUTILS_Manager_t *manager, const char *server, int port, struct mux_ctx *mux, const char *username, const char* password)
+{
     eARUTILS_ERROR result = ARUTILS_OK;
     int resultSys = 0;
 
@@ -2101,7 +2162,7 @@ eARUTILS_ERROR ARUTILS_Manager_InitWifiFtp(ARUTILS_Manager_t *manager, const cha
 
     if (result == ARUTILS_OK)
     {
-        manager->connectionObject = ARUTILS_WifiFtp_Connection_New(&manager->cancelSem, server, port, username, password, &result);
+        manager->connectionObject = ARUTILS_WifiFtp_Connection_New(&manager->cancelSem, server, port, mux, username, password, &result);
     }
 
     if (result == ARUTILS_OK)

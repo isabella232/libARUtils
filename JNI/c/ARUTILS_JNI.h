@@ -51,19 +51,6 @@
 extern JavaVM* ARUTILS_JNI_Manager_VM;
 
 /**
- * @brief JNI FtpConnection structure
- * @param cancelSem The Ftp cancel semaphore
- * @param ftpConnection The Ftp connection
- * @see Java_com_parrot_arsdk_arutils_ARUtilsFtpConnection_nativeNewFtpConnection
- */
-typedef struct _ARUTILS_JNI_FtpConnection_t_
-{
-    ARSAL_Sem_t cancelSem;
-    ARUTILS_WifiFtp_Connection_t *ftpConnection;
-
-} ARUTILS_JNI_FtpConnection_t;
-
-/**
  * @brief FtpConnection Callbacks structure
  * @param jProgressListener The progress Listener
  * @param jProgressArg The progress Arg object

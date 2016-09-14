@@ -8,7 +8,14 @@ LOCAL_CATEGORY_PATH := dragon/libs
 
 LOCAL_MODULE_FILENAME := libarutils.so
 
-LOCAL_LIBRARIES := libARSAL libARDiscovery libARCommands curl
+LOCAL_LIBRARIES := \
+	libARSAL \
+	libARDiscovery \
+	libARCommands \
+	curl
+
+LOCAL_CONDITIONAL_LIBRARIES := \
+	OPTIONAL:libmux
 
 LOCAL_C_INCLUDES := \
 	$(LOCAL_PATH)/Includes \

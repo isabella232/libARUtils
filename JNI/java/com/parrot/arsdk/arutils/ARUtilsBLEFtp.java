@@ -8,7 +8,7 @@
       notice, this list of conditions and the following disclaimer.
     * Redistributions in binary form must reproduce the above copyright
       notice, this list of conditions and the following disclaimer in
-      the documentation and/or other materials provided with the 
+      the documentation and/or other materials provided with the
       distribution.
     * Neither the name of Parrot nor the names
       of its contributors may be used to endorse or promote products
@@ -22,7 +22,7 @@
     COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
     INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
     BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS
-    OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED 
+    OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
     AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
     OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
     OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
@@ -49,7 +49,6 @@ import java.util.concurrent.locks.ReentrantLock;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattService;
-import android.util.Log;
 import android.content.Context;
 
 import com.parrot.arsdk.arsal.ARSALBLEManager;
@@ -87,6 +86,7 @@ public class ARUtilsBLEFtp
 	private int port;
 	private int connectionCount = 0;
 	private Lock connectionLock = new ReentrantLock();
+	private volatile boolean isListing;
 
 	private BluetoothGattCharacteristic transferring = null;
 	private BluetoothGattCharacteristic getting = null;
@@ -138,13 +138,13 @@ public class ARUtilsBLEFtp
 	public boolean registerDevice(BluetoothGatt gattDevice, int port)
 	{
 	    boolean ret = true;
-        
+
         if (connectionCount == 0)
         {
             this.gattDevice = gattDevice;
             this.port = port;
             connectionCount++;
-            
+
             ret = registerCharacteristics();
         }
         else if ((this.gattDevice == gattDevice) && (this.port == port))
@@ -307,23 +307,23 @@ public class ARUtilsBLEFtp
         return ret;
     }
 
-	public boolean getFileAL(String remotePath, String localFile, long nativeCallbackObject, Semaphore cancelSem)
+	public boolean getFileAL(String remotePath, String localFile, long nativeCallbackObject, boolean wantProgress, Semaphore cancelSem)
     {
         boolean ret = false;
 
         connectionLock.lock();
-        ret = getFile(remotePath, localFile, nativeCallbackObject, cancelSem);
+        ret = getFile(remotePath, localFile, nativeCallbackObject, wantProgress, cancelSem);
         connectionLock.unlock();
 
         return ret;
     }
 
-    public boolean getFileWithBufferAL(String remotePath, byte[][] data, long nativeCallbackObject, Semaphore cancelSem)
+    public boolean getFileWithBufferAL(String remotePath, byte[][] data, long nativeCallbackObject, boolean wantProgress, Semaphore cancelSem)
     {
         boolean ret = false;
 
         connectionLock.lock();
-        ret = getFileWithBuffer(remotePath, data, nativeCallbackObject, cancelSem);
+        ret = getFileWithBuffer(remotePath, data, nativeCallbackObject, wantProgress, cancelSem);
         connectionLock.unlock();
 
         return ret;
@@ -368,13 +368,15 @@ public class ARUtilsBLEFtp
 
 	private boolean cancelFile(Semaphore cancelSem)
 	{
-		boolean ret = true;
+		if (isListing) {
+			return true;
+		}
 
 		cancelSem.release();
 
-		bleManager.cancelReadNotification(BLE_GETTING_KEY);
+		boolean retVal = bleManager.cancelReadNotification(BLE_GETTING_KEY);
 
-		return ret;
+		return retVal;
 	}
 
 	private boolean isConnectionCanceled(Semaphore cancelSem)
@@ -481,6 +483,8 @@ public class ARUtilsBLEFtp
 
 	private boolean listFiles(String remotePath, String[] resultList)
 	{
+		isListing = true;
+
 		boolean ret = true;
 
 		ARSALPrint.d("DBG", APP_TAG + "listFiles " + remotePath);
@@ -506,28 +510,30 @@ public class ARUtilsBLEFtp
 			}
 		}
 
+		isListing = false;
+
 		return ret;
 	}
 
-	private boolean getFile(String remoteFile, String localFile, long nativeCallbackObject, Semaphore cancelSem)
+	private boolean getFile(String remoteFile, String localFile, long nativeCallbackObject, boolean wantProgress, Semaphore cancelSem)
 	{
 		boolean ret = true;
 
-		ret = getFileInternal(remoteFile, localFile, null, nativeCallbackObject, cancelSem);
+		ret = getFileInternal(remoteFile, localFile, null, nativeCallbackObject, wantProgress, cancelSem);
 
 		return ret;
 	}
 
-	private boolean getFileWithBuffer(String remoteFile, byte[][] data, long nativeCallbackObject, Semaphore cancelSem)
+	private boolean getFileWithBuffer(String remoteFile, byte[][] data, long nativeCallbackObject, boolean wantProgress, Semaphore cancelSem)
 	{
 		boolean ret = true;
 
-		ret = getFileInternal(remoteFile, null, data, nativeCallbackObject, cancelSem);
+		ret = getFileInternal(remoteFile, null, data, nativeCallbackObject, wantProgress, cancelSem);
 
 		return ret;
 	}
 
-	private boolean getFileInternal(String remoteFile, String localFile, byte[][] data, long nativeCallbackObject, Semaphore cancelSem)
+	private boolean getFileInternal(String remoteFile, String localFile, byte[][] data, long nativeCallbackObject, boolean wantProgress, Semaphore cancelSem)
 	{
 		FileOutputStream dst = null;
 		boolean ret = true;
@@ -538,7 +544,10 @@ public class ARUtilsBLEFtp
 
 		remoteFile = normalizePathName(remoteFile);
 
-		ret = sizeFile(remoteFile, totalSize);
+		if (wantProgress)
+		{
+			ret = sizeFile(remoteFile, totalSize);
+		}
 
         if ((ret == true) && (localFile != null))
         {
@@ -1305,11 +1314,11 @@ public class ARUtilsBLEFtp
 			do
 			{
 				ret = readBufferBlocks(notificationArray);
-				if (ret == false)
+				if (!ret)
 				{
 					ret = bleManager.isDeviceConnected();
 				}
-				else
+				else if (ret)
 				{
 					//for (int i=0; (i < receivedNotifications.size()) && (ret == true) && (blockMD5 == false) && (endMD5 == false); i++)
 					if ((ret == true) && (notificationArray[0] != null) && (blockMD5 == false) && (endMD5 == false))
@@ -1373,7 +1382,11 @@ public class ARUtilsBLEFtp
 									ARSALPrint.d("DBG", APP_TAG + "md5 failed size " + packetLen);
 								}
 							}
-							else if (compareToString(packet, packetLen, "error"))
+							/**
+							 * when receiving the error "Error : Local file doesn't exist" message from drone, and if it isn't recognized,
+							 * the process will be blocked to waiting data, which means this task never stop
+							 */
+							else if (compareToStringIgnoreCase(packet, packetLen, "error")) // the error "Error : Local file doesn't exist" should be recognized
 							{
 								ARSALPrint.e("DBG", APP_TAG + "Error received");
 								ret = false;
@@ -1407,9 +1420,9 @@ public class ARUtilsBLEFtp
 									data[0] = newData;
 								}
 
-								if (nativeCallbackObject != 0)
+								if (nativeCallbackObject != 0 && fileSize != 0)
 								{
-									nativeProgressCallback(nativeCallbackObject, ((float)totalSize / (float)fileSize) * 100.f);
+									nativeProgressCallback(nativeCallbackObject, ((float)totalSize / fileSize) * 100.f);
 								}
 							}
 						}
@@ -1818,7 +1831,32 @@ public class ARUtilsBLEFtp
 	    return item;
 	}
 
-	private boolean compareToString(byte[] buffer, int len, String str)
+    private boolean compareToStringIgnoreCase(byte[] buffer, int len, String str)
+    {
+        try
+        {
+            byte[] strBytes = str.toLowerCase().getBytes("UTF8");
+            if (len >= strBytes.length)
+            {
+                int delta = 'A' - 'a';
+                for (int i = 0; i < strBytes.length; i++)
+                {
+                    if (buffer[i] != strBytes[i] && buffer[i] != (strBytes[i] + delta))
+                    {
+                        return false;
+                    }
+                }
+                return true;
+            }
+        }
+        catch (UnsupportedEncodingException e)
+        {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    private boolean compareToString(byte[] buffer, int len, String str)
     {
         boolean ret = false;
         byte[] strBytes = null;
@@ -1852,7 +1890,7 @@ public class ARUtilsBLEFtp
         return ret;
     }
 
-	private String normalizePathName(String name)
+    private String normalizePathName(String name)
     {
         String newName = name;
         if (name.charAt(0) != '/')

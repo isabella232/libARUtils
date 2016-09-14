@@ -49,6 +49,7 @@ typedef enum
     ARUTILS_ERROR_ALLOC, /**< Memory allocation error */
     ARUTILS_ERROR_BAD_PARAMETER, /**< Bad parameters error */
     ARUTILS_ERROR_SYSTEM, /**< System error */
+    ARUTILS_ERROR_NOT_IMPLEMENTED, /**< Function not implemented */
 
     ARUTILS_ERROR_CURL_ALLOC = -2000, /**< curl allocation error */
     ARUTILS_ERROR_CURL_SETOPT, /**< curl set option error */
