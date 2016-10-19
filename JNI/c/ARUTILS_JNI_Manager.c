@@ -76,6 +76,8 @@ typedef struct _ARUTILS_JNI_FtpCommandCallbacks_t_
 
 } ARUTILS_JNI_FtpCommandCallbacks_t;
 
+int ARUTILS_JNI_InitFtpListenersJNI(JNIEnv *env);
+
 /*****************************************
  *
  *             JNI implementation :
@@ -152,6 +154,7 @@ Java_com_parrot_arsdk_arutils_ARUtilsManager_nativeDelete
 
     ARUTILS_Manager_t *manager = (ARUTILS_Manager_t*) (intptr_t) jManager;
     ARUTILS_Manager_Delete(&manager);
+    return 0;
 }
 
 /*
@@ -276,6 +279,7 @@ Java_com_parrot_arsdk_arutils_ARUtilsManager_nativeCloseBLEFtp
 
         ARSAL_Sem_Destroy(&manager->cancelSem);
     }
+    return 0;
 }
 
 /*
@@ -288,12 +292,12 @@ Java_com_parrot_arsdk_arutils_ARUtilsManager_nativeInitRFCommFtp
 {
     ARUTILS_Manager_t *manager = (ARUTILS_Manager_t*) (intptr_t) jManager;
     eARUTILS_ERROR error = ARUTILS_OK;
-    
+
     if (error == ARUTILS_OK)
     {
         manager->connectionObject = ARUTILS_RFCommFtp_Connection_New(jRFCommFtp, jCancelSem, &error);
     }
-    
+
     if (manager)
     {
         manager->ftpConnectionDisconnect = ARUTILS_RFCommFtpAL_Connection_Disconnect;
@@ -303,7 +307,7 @@ Java_com_parrot_arsdk_arutils_ARUtilsManager_nativeInitRFCommFtp
         manager->ftpConnectionReset = ARUTILS_RFCommFtpAL_Connection_Reset;
         manager->ftpPut = ARUTILS_RFCommFtpAL_Put;
     }
-    
+
     return error;
 }
 
@@ -316,13 +320,14 @@ Java_com_parrot_arsdk_arutils_ARUtilsManager_nativeCloseRFCommFtp
 (JNIEnv *env, jobject obj, jlong jManager)
 {
     ARUTILS_Manager_t *manager = (ARUTILS_Manager_t*) (intptr_t) jManager;
-    
+
     if (manager != NULL)
     {
         ARUTILS_RFCommFtp_Connection_Delete((ARUTILS_RFCommFtp_Connection_t **)&manager->connectionObject);
-        
+
         ARSAL_Sem_Destroy(&manager->cancelSem);
     }
+    return 0;
 }
 
 void ARUTILS_JNI_Ftp_ProgressCallback(void* arg, float percent)
@@ -418,7 +423,7 @@ Java_com_parrot_arsdk_arutils_ARUtilsManager_nativeBLEFtpSize
     ARUTILS_Manager_t *manager = (ARUTILS_Manager_t*) (intptr_t) jManager;
     eARUTILS_ERROR error = ARUTILS_OK;
     jdouble result = 0.f;
-    
+
     if (manager == NULL || jRemotePath == NULL)
     {
         ARSAL_PRINT(ARSAL_PRINT_ERROR, ARUTILS_JNI_MANAGER_TAG, "Wrong parameter: %d %d", manager, jRemotePath);
@@ -636,7 +641,7 @@ Java_com_parrot_arsdk_arutils_ARUtilsManager_nativeBLEFtpGetWithBuffer
 
         const char *namePath = (*env)->GetStringUTFChars(env, jRemotePath, 0);
 
-        int dataLen;
+        uint32_t dataLen;
         uint8_t *data;
 
         error = ARUTILS_BLEFtpAL_Get_WithBuffer(manager, namePath, &data, &dataLen, ARUTILS_JNI_Ftp_ProgressCallback, callback);
@@ -646,7 +651,7 @@ Java_com_parrot_arsdk_arutils_ARUtilsManager_nativeBLEFtpGetWithBuffer
         if (error == ARUTILS_OK)
         {
             result = (*env)->NewByteArray(env, dataLen);
-            (*env)->SetByteArrayRegion(env, result, 0, dataLen, data);
+            (*env)->SetByteArrayRegion(env, result, 0, dataLen, (const jbyte*)data);
         }
     }
 
@@ -682,7 +687,7 @@ Java_com_parrot_arsdk_arutils_ARUtilsManager_nativeBLEFtpConnectionDisconnect
 
     if (error == ARUTILS_OK)
     {
-        error = error = ARUTILS_BLEFtpAL_Connection_Disconnect(manager);
+        error = ARUTILS_BLEFtpAL_Connection_Disconnect(manager);
     }
     return error;
  }
@@ -702,7 +707,7 @@ Java_com_parrot_arsdk_arutils_ARUtilsManager_nativeBLEFtpConnectionReconnect
 
     if (error == ARUTILS_OK)
     {
-        error = error = ARUTILS_BLEFtpAL_Connection_Reconnect(manager);
+        error = ARUTILS_BLEFtpAL_Connection_Reconnect(manager);
     }
     return error;
  }

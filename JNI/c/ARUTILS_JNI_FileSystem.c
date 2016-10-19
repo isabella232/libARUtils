@@ -54,6 +54,7 @@
 #include "libARUtils/ARUTILS_Error.h"
 #include "libARUtils/ARUTILS_Http.h"
 #include "libARUtils/ARUTILS_Ftp.h"
+#include "libARUtils/ARUTILS_FileSystem.h"
 
 #include "ARUTILS_JNI.h"
 
