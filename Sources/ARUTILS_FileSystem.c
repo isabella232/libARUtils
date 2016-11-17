@@ -175,8 +175,10 @@ static int ARUTILS_FileSystem_RemoveDirCallback(const char* fpath, const struct 
      if(typeflag == ARSAL_FTW_F)
     {
        ret = remove(fpath);
-       if (ret < 0 && errno != ENOENT)
-            ARSAL_PRINT(ARSAL_PRINT_ERROR, ARUTILS_FILE_SYSTEM_TAG, "remove '%s' error: %s", fpath, strerror(errno));
+       if (ret < 0 && errno != ENOENT) {
+            ret = errno;
+            ARSAL_PRINT(ARSAL_PRINT_ERROR, ARUTILS_FILE_SYSTEM_TAG, "remove '%s' error: %s", fpath, strerror(ret));
+       }
     }
     else if(typeflag == ARSAL_FTW_D)
     {
@@ -186,7 +188,7 @@ static int ARUTILS_FileSystem_RemoveDirCallback(const char* fpath, const struct 
         }
     }
 
-	return 0;
+    return 0;
 }
 
 eARUTILS_ERROR ARUTILS_FileSystem_RemoveDir(const char *localPath)
@@ -243,11 +245,3 @@ eARUTILS_ERROR ARUTILS_FileSystem_GetFreeSpace(const char *localPath, double *fr
     *freeSpace = freeBytes;
     return result;
 }
-
-
-
-
-
-
-
-
