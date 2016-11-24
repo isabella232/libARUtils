@@ -97,7 +97,7 @@ JNIEXPORT void JNICALL
 Java_com_parrot_arsdk_arutils_ARUtilsRFCommFtp_nativeProgressCallback(JNIEnv *env, jobject obj, jlong jCallback, jfloat percent)
 {
     ARUTILS_RFCommFtp_Command_t * callback = (ARUTILS_RFCommFtp_Command_t*)(intptr_t) jCallback;
-    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_JNI_RFCOMMFTP_TAG, " %x %f ", callback, percent);
+    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_JNI_RFCOMMFTP_TAG, " %p %f ", callback, percent);
     if (callback != NULL && callback->rfcommFtpProgressCallback != NULL)
     {
         callback->rfcommFtpProgressCallback(callback->rfcommProgressArg, percent);
