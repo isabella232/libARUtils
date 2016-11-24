@@ -2135,6 +2135,8 @@ eARUTILS_ERROR ARUTILS_Manager_InitBLEFtp(ARUTILS_Manager_t *manager, ARUTILS_BL
         manager->ftpPut = ARUTILS_BLEFtpAL_Put;
         manager->ftpDelete = ARUTILS_BLEFtpAL_Delete;
         manager->ftpRename = ARUTILS_BLEFtpAL_Rename;
+
+        manager->networkType = ARDISCOVERY_NETWORK_TYPE_BLE;
     }
 
     return result;

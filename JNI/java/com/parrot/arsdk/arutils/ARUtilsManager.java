@@ -37,6 +37,13 @@ import android.content.pm.PackageManager;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.parrot.arsdk.ardiscovery.ARDiscoveryDevice;
+import com.parrot.arsdk.ardiscovery.ARDISCOVERY_NETWORK_TYPE_ENUM;
+import com.parrot.arsdk.ardiscovery.ARDiscoveryDeviceBLEService;
+import com.parrot.arsdk.ardiscovery.ARDiscoveryDeviceNetService;
+import com.parrot.arsdk.ardiscovery.ARDiscoveryDeviceService;
+import com.parrot.arsdk.ardiscovery.UsbAccessoryMux;
+import com.parrot.arsdk.arsal.ARSALBLEManager;
 import com.parrot.mux.Mux;
 
 import java.util.concurrent.Semaphore;
@@ -155,6 +162,64 @@ public class ARUtilsManager
     public boolean isCorrectlyInitialized ()
     {
         return m_initOk;
+    }
+
+    /**
+     * Initialize ftp for the given device
+     */
+    public ARUTILS_ERROR_ENUM initFtp(Context ctx, ARDiscoveryDeviceService device, int port, String username, String password)
+    {
+        if (device == null) {
+            return ARUTILS_ERROR_ENUM.ARUTILS_ERROR_BAD_PARAMETER;
+        }
+
+        ARUTILS_ERROR_ENUM ret;
+
+        switch(device.getNetworkType()) {
+            case ARDISCOVERY_NETWORK_TYPE_NET:
+                ARDiscoveryDeviceNetService ns = (ARDiscoveryDeviceNetService)device.getDevice();
+                ret = initWifiFtp(ns.getIp(), port, username, password);
+                break;
+            case ARDISCOVERY_NETWORK_TYPE_BLE:
+                ret = initBLEFtp(ctx, ARSALBLEManager.getInstance(ctx).getGatt(), port);
+                break;
+            case ARDISCOVERY_NETWORK_TYPE_USBMUX:
+                Mux.Ref muxref = UsbAccessoryMux.get(ctx.getApplicationContext()).getMux().newMuxRef();
+                ret = initWifiFtp(muxref, port, username, password);
+                muxref.release();
+                break;
+            default:
+                ret = ARUTILS_ERROR_ENUM.ARUTILS_ERROR_BAD_PARAMETER;
+                break;
+        }
+
+        return ret;
+    }
+
+    public ARUTILS_ERROR_ENUM closeFtp(Context ctx, ARDiscoveryDeviceService device)
+    {
+        if (device == null) {
+            return ARUTILS_ERROR_ENUM.ARUTILS_ERROR_BAD_PARAMETER;
+        }
+
+        ARUTILS_ERROR_ENUM ret;
+
+        switch(device.getNetworkType()) {
+            case ARDISCOVERY_NETWORK_TYPE_NET:
+                ret = closeWifiFtp();
+                break;
+            case ARDISCOVERY_NETWORK_TYPE_BLE:
+                ret = closeBLEFtp(ctx);
+                break;
+            case ARDISCOVERY_NETWORK_TYPE_USBMUX:
+                ret = closeWifiFtp();
+                break;
+            default:
+                ret = ARUTILS_ERROR_ENUM.ARUTILS_ERROR_BAD_PARAMETER;
+                break;
+        }
+
+        return ret;
     }
 
     /**

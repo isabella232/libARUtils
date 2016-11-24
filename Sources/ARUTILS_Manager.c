@@ -43,6 +43,7 @@
 
 #include <libARSAL/ARSAL_Sem.h>
 #include <libARSAL/ARSAL_Print.h>
+#include <libARDiscovery/ARDISCOVERY_Discovery.h>
 #include <curl/curl.h>
 
 #include "libARUtils/ARUTILS_Error.h"
@@ -62,11 +63,13 @@ ARUTILS_Manager_t* ARUTILS_Manager_New(eARUTILS_ERROR *error)
     ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_MANAGER_TAG, "%s", "");
 
     newManager = calloc(1, sizeof(ARUTILS_Manager_t));
-    if (newManager == NULL)
-    {
+    if (newManager == NULL) {
         result = ARUTILS_ERROR_ALLOC;
+        goto out;
     }
+    newManager->networkType = ARDISCOVERY_NETWORK_TYPE_UNKNOWN;
 
+out:
     *error = result;
     return newManager;
 }

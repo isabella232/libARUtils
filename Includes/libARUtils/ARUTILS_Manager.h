@@ -38,6 +38,7 @@
 #ifndef _ARUTILS_MANAGER_H_
 #define _ARUTILS_MANAGER_H_
 
+#include <libARDiscovery/ARDISCOVERY_Discovery.h>
 
 #include "libARUtils/ARUTILS_Ftp.h"
 #include "libARUtils/ARUTILS_Ftp.h"
@@ -446,6 +447,8 @@ struct ARUTILS_Manager_t
     ARUTILS_Manager_Ftp_Delete_t ftpDelete;
     ARUTILS_Manager_Ftp_Delete_t ftpRemoveDir;
     ARUTILS_Manager_Ftp_Rename_t ftpRename;
+
+    eARDISCOVERY_NETWORK_TYPE networkType;
 
     ARSAL_Sem_t cancelSem;
     void *connectionObject;

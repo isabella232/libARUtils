@@ -2181,6 +2181,11 @@ eARUTILS_ERROR ARUTILS_Manager_InitWifiFtpOverMux(ARUTILS_Manager_t *manager, co
         manager->ftpDelete = ARUTILS_WifiFtpAL_Delete;
         manager->ftpRemoveDir = ARUTILS_WifiFtpAL_RemoveDir;
         manager->ftpRename = ARUTILS_WifiFtpAL_Rename;
+
+        if (mux != NULL)
+            manager->networkType = ARDISCOVERY_NETWORK_TYPE_USBMUX;
+        else
+            manager->networkType = ARDISCOVERY_NETWORK_TYPE_NET;
     }
 
     return result;
