@@ -248,7 +248,7 @@ eARUTILS_ERROR ARUTILS_RFCommFtp_Connection_Cancel(ARUTILS_RFCommFtp_Connection_
     jint getEnvResult = JNI_OK;
     jboolean ret = 0;
 
-    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_JNI_RFCOMMFTP_TAG, "");
+    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_JNI_RFCOMMFTP_TAG, "%s", "");
 
     if (connection == NULL)
     {
@@ -313,7 +313,7 @@ eARUTILS_ERROR ARUTILS_RFCommFtp_Connection_IsCanceled(ARUTILS_RFCommFtp_Connect
     jint getEnvResult = JNI_OK;
     jboolean ret = 0;
 
-    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_JNI_RFCOMMFTP_TAG, "");
+    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_JNI_RFCOMMFTP_TAG, "%s", "");
 
     if (connection == NULL)
     {
@@ -382,7 +382,7 @@ eARUTILS_ERROR ARUTILS_RFCommFtp_Connection_Reset(ARUTILS_RFCommFtp_Connection_t
     jint getEnvResult = JNI_OK;
     jboolean ret = 0;
 
-    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_JNI_RFCOMMFTP_TAG, "");
+    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_JNI_RFCOMMFTP_TAG, "%s", "");
 
     if (connection == NULL)
     {
@@ -543,13 +543,13 @@ eARUTILS_ERROR ARUTILS_RFCommFtp_Put(ARUTILS_RFCommFtp_Connection_t *connection,
 
 eARUTILS_ERROR ARUTILS_RFCommFtpAL_Connection_Disconnect(ARUTILS_Manager_t *manager)
 {
-    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_JNI_RFCOMMFTP_TAG, "");
+    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_JNI_RFCOMMFTP_TAG, "%s", "");
     return ARUTILS_OK;
 }
 
 eARUTILS_ERROR ARUTILS_RFCommFtpAL_Connection_Reconnect(ARUTILS_Manager_t *manager)
 {
-    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_JNI_RFCOMMFTP_TAG, "");
+    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_JNI_RFCOMMFTP_TAG, "%s", "");
     return ARUTILS_OK;
 }
 

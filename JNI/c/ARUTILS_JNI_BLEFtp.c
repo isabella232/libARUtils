@@ -260,7 +260,7 @@ eARUTILS_ERROR ARUTILS_BLEFtp_Connection_Cancel(ARUTILS_BLEFtp_Connection_t *con
     jint getEnvResult = JNI_OK;
     jboolean ret = 0;
 
-    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_JNI_BLEFTP_TAG, "");
+    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_JNI_BLEFTP_TAG, "%s", "");
 
     if (connection == NULL)
     {
@@ -325,7 +325,7 @@ eARUTILS_ERROR ARUTILS_BLEFtp_Connection_IsCanceled(ARUTILS_BLEFtp_Connection_t 
     jint getEnvResult = JNI_OK;
     jboolean ret = 0;
 
-    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_JNI_BLEFTP_TAG, "");
+    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_JNI_BLEFTP_TAG, "%s", "");
 
     if (connection == NULL)
     {
@@ -394,7 +394,7 @@ eARUTILS_ERROR ARUTILS_BLEFtp_Connection_Reset(ARUTILS_BLEFtp_Connection_t *conn
     jint getEnvResult = JNI_OK;
     jboolean ret = 0;
 
-    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_JNI_BLEFTP_TAG, "");
+    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_JNI_BLEFTP_TAG, "%s", "");
 
     if (connection == NULL)
     {
@@ -1223,13 +1223,13 @@ eARUTILS_ERROR ARUTILS_BLEFtp_Rename(ARUTILS_BLEFtp_Connection_t *connection, co
 
 eARUTILS_ERROR ARUTILS_BLEFtpAL_Connection_Disconnect(ARUTILS_Manager_t *manager)
 {
-    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_JNI_BLEFTP_TAG, "");
+    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_JNI_BLEFTP_TAG, "%s", "");
     return ARUTILS_OK;
 }
 
 eARUTILS_ERROR ARUTILS_BLEFtpAL_Connection_Reconnect(ARUTILS_Manager_t *manager)
 {
-    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_JNI_BLEFTP_TAG, "");
+    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_JNI_BLEFTP_TAG, "%s", "");
     return ARUTILS_OK;
 }
 

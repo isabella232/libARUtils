@@ -96,7 +96,7 @@ JNIEXPORT jlong JNICALL Java_com_parrot_arsdk_arutils_ARUtilsFileSystem_nativeGe
     jlong jSize = 0;
     eARUTILS_ERROR result = ARUTILS_OK;
 
-    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_JNI_FILESYSTEM_TAG, "");
+    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_JNI_FILESYSTEM_TAG, "%s", "");
 
     result = ARUTILS_FileSystem_GetFileSize(nativeNamePath, &nativeSize);
 
@@ -125,7 +125,7 @@ JNIEXPORT jint JNICALL Java_com_parrot_arsdk_arutils_ARUtilsFileSystem_nativeRen
     const char *nativeNewName = (*env)->GetStringUTFChars(env, jNewName, 0);
     eARUTILS_ERROR result = ARUTILS_OK;
 
-    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_JNI_FILESYSTEM_TAG, "");
+    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_JNI_FILESYSTEM_TAG, "%s", "");
 
     result = ARUTILS_FileSystem_Rename(nativeOldName, nativeNewName);
 
@@ -147,7 +147,7 @@ JNIEXPORT jint JNICALL Java_com_parrot_arsdk_arutils_ARUtilsFileSystem_nativeRem
     const char *nativeLocalPath = (*env)->GetStringUTFChars(env, jLocalPath, 0);
     eARUTILS_ERROR result = ARUTILS_OK;
 
-    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_JNI_FILESYSTEM_TAG, "");
+    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_JNI_FILESYSTEM_TAG, "%s", "");
 
     result = ARUTILS_FileSystem_RemoveFile(nativeLocalPath);
 
@@ -164,7 +164,7 @@ JNIEXPORT jint JNICALL Java_com_parrot_arsdk_arutils_ARUtilsFileSystem_nativeRem
     const char *nativeLocalPath = (*env)->GetStringUTFChars(env, jLocalPath, 0);
     eARUTILS_ERROR result = ARUTILS_OK;
 
-    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_JNI_FILESYSTEM_TAG, "");
+    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_JNI_FILESYSTEM_TAG, "%s", "");
 
     result = ARUTILS_FileSystem_RemoveDir(nativeLocalPath);
 
@@ -183,7 +183,7 @@ JNIEXPORT jdouble JNICALL Java_com_parrot_arsdk_arutils_ARUtilsFileSystem_native
     double nativeFreeSpace = 0.f;
     eARUTILS_ERROR result = ARUTILS_OK;
 
-    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_JNI_FILESYSTEM_TAG, "");
+    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_JNI_FILESYSTEM_TAG, "%s", "");
 
     result = ARUTILS_FileSystem_GetFreeSpace(nativeLocalPath, &nativeFreeSpace);
 

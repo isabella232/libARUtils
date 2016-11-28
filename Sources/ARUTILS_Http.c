@@ -140,7 +140,7 @@ ARUTILS_Http_Connection_t * ARUTILS_Http_Connection_New(ARSAL_Sem_t *cancelSem, 
 
 void ARUTILS_Http_Connection_Delete(ARUTILS_Http_Connection_t **connectionAddr)
 {
-    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_HTTP_TAG, "");
+    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_HTTP_TAG, "%s", "");
 
     if (connectionAddr != NULL)
     {
@@ -166,7 +166,7 @@ eARUTILS_ERROR ARUTILS_Http_Connection_Cancel(ARUTILS_Http_Connection_t *connect
     eARUTILS_ERROR result = ARUTILS_OK;
     int resutlSys = 0;
 
-    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_HTTP_TAG, "");
+    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_HTTP_TAG, "%s", "");
 
     if ((connection == NULL) || (connection->cancelSem == NULL))
     {

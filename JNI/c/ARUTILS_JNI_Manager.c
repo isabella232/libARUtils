@@ -333,7 +333,7 @@ Java_com_parrot_arsdk_arutils_ARUtilsManager_nativeCloseRFCommFtp
 void ARUTILS_JNI_Ftp_ProgressCallback(void* arg, float percent)
 {
     ARUTILS_JNI_FtpCommandCallbacks_t *callback = (ARUTILS_JNI_FtpCommandCallbacks_t*)arg;
-    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_JNI_MANAGER_TAG, "");
+    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_JNI_MANAGER_TAG, "%s", "");
 
     if (callback != NULL)
     {
@@ -814,7 +814,7 @@ int ARUTILS_JNI_NewARUtilsExceptionJNI(JNIEnv *env)
 
     if (classException == NULL)
     {
-        ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_JNI_MANAGER_TAG, "");
+        ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_JNI_MANAGER_TAG, "%s", "");
 
         if (env == NULL)
         {
@@ -859,7 +859,7 @@ int ARUTILS_JNI_NewARUtilsExceptionJNI(JNIEnv *env)
 
 void ARUTILS_JNI_FreeARUtilsExceptionJNI(JNIEnv *env)
 {
-    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_JNI_MANAGER_TAG, "");
+    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_JNI_MANAGER_TAG, "%s", "");
 
     if (env != NULL)
     {
@@ -935,7 +935,7 @@ int ARUTILS_JNI_InitFtpListenersJNI(JNIEnv *env)
     jclass classFtpProgressListener = NULL;
     int error = JNI_OK;
 
-    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_JNI_MANAGER_TAG, "");
+    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_JNI_MANAGER_TAG, "%s", "");
 
     if (env == NULL)
     {

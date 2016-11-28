@@ -1802,7 +1802,7 @@ eARUTILS_ERROR ARUTILS_BLEFtp_Connection_Cancel(ARUTILS_BLEFtp_Connection_t *con
     ARUtils_BLEFtp *bleFtpObject = nil;
     eARUTILS_ERROR result = ARUTILS_OK;
 
-    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_BLEFTP_TAG, "");
+    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_BLEFTP_TAG, "%s", "");
 
     if (connection == NULL)
     {
