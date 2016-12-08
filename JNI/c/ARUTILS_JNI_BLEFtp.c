@@ -109,7 +109,7 @@ JNIEXPORT void JNICALL
 Java_com_parrot_arsdk_arutils_ARUtilsBLEFtp_nativeProgressCallback(JNIEnv *env, jobject obj, jlong jCallback, jfloat percent)
 {
     ARUTILS_BLEFtp_Command_t * callback = (ARUTILS_BLEFtp_Command_t*)(intptr_t) jCallback;
-    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_JNI_BLEFTP_TAG, " %x %f ", callback, percent);
+    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_JNI_BLEFTP_TAG, " %p %f ", callback, percent);
     if (callback != NULL && callback->bleFtpProgressCallback != NULL)
     {
         callback->bleFtpProgressCallback(callback->bleProgressArg, percent);
@@ -260,7 +260,7 @@ eARUTILS_ERROR ARUTILS_BLEFtp_Connection_Cancel(ARUTILS_BLEFtp_Connection_t *con
     jint getEnvResult = JNI_OK;
     jboolean ret = 0;
 
-    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_JNI_BLEFTP_TAG, "");
+    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_JNI_BLEFTP_TAG, "%s", "");
 
     if (connection == NULL)
     {
@@ -325,7 +325,7 @@ eARUTILS_ERROR ARUTILS_BLEFtp_Connection_IsCanceled(ARUTILS_BLEFtp_Connection_t 
     jint getEnvResult = JNI_OK;
     jboolean ret = 0;
 
-    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_JNI_BLEFTP_TAG, "");
+    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_JNI_BLEFTP_TAG, "%s", "");
 
     if (connection == NULL)
     {
@@ -394,7 +394,7 @@ eARUTILS_ERROR ARUTILS_BLEFtp_Connection_Reset(ARUTILS_BLEFtp_Connection_t *conn
     jint getEnvResult = JNI_OK;
     jboolean ret = 0;
 
-    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_JNI_BLEFTP_TAG, "");
+    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_JNI_BLEFTP_TAG, "%s", "");
 
     if (connection == NULL)
     {
@@ -989,7 +989,7 @@ eARUTILS_ERROR ARUTILS_BLEFtp_Get(ARUTILS_BLEFtp_Connection_t *connection, const
         jstring jDstFile = (*env)->NewStringUTF(env, dstFile);
         jboolean wantProgress = callback->bleFtpProgressCallback != NULL;
 
-        ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_JNI_BLEFTP_TAG, " %x %x", callback, callback->bleFtpProgressCallback);
+        ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_JNI_BLEFTP_TAG, " %p %p", callback, callback->bleFtpProgressCallback);
         ret = (*env)->CallBooleanMethod(env, bleFtpObject, ARUTILS_JNI_BLEFTP_METHOD_GET, jRemotePath, jDstFile, (jlong)(intptr_t)callback, wantProgress, cancelSemObject);
 
         if ((*env)->ExceptionOccurred(env))
@@ -1146,7 +1146,7 @@ eARUTILS_ERROR ARUTILS_BLEFtp_Put(ARUTILS_BLEFtp_Connection_t *connection, const
 
 eARUTILS_ERROR ARUTILS_BLEFtp_Rename(ARUTILS_BLEFtp_Connection_t *connection, const char *oldNamePath, const char *newNamePath)
 {
-    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_JNI_BLEFTP_TAG, " connection = %d, oldNamePath = %s, newNamePath = %s ", connection, oldNamePath, newNamePath);
+    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_JNI_BLEFTP_TAG, " connection = %p, oldNamePath = %s, newNamePath = %s ", connection, oldNamePath, newNamePath);
     /* local declarations */
     JNIEnv *env = NULL;
     jint getEnvResult = JNI_OK;
@@ -1223,13 +1223,13 @@ eARUTILS_ERROR ARUTILS_BLEFtp_Rename(ARUTILS_BLEFtp_Connection_t *connection, co
 
 eARUTILS_ERROR ARUTILS_BLEFtpAL_Connection_Disconnect(ARUTILS_Manager_t *manager)
 {
-    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_JNI_BLEFTP_TAG, "");
+    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_JNI_BLEFTP_TAG, "%s", "");
     return ARUTILS_OK;
 }
 
 eARUTILS_ERROR ARUTILS_BLEFtpAL_Connection_Reconnect(ARUTILS_Manager_t *manager)
 {
-    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_JNI_BLEFTP_TAG, "");
+    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_JNI_BLEFTP_TAG, "%s", "");
     return ARUTILS_OK;
 }
 

@@ -197,7 +197,7 @@ ARUTILS_WifiFtp_Connection_t * ARUTILS_WifiFtp_Connection_New(ARSAL_Sem_t *cance
 
 void ARUTILS_WifiFtp_Connection_Delete(ARUTILS_WifiFtp_Connection_t **connectionAddr)
 {
-    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_WIFIFTP_TAG, "");
+    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_WIFIFTP_TAG, "%s", "");
 
     if (connectionAddr != NULL)
     {
@@ -281,7 +281,7 @@ eARUTILS_ERROR ARUTILS_WifiFtp_Connection_Cancel(ARUTILS_WifiFtp_Connection_t *c
     eARUTILS_ERROR result = ARUTILS_OK;
     int resutlSys = 0;
 
-    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_WIFIFTP_TAG, "");
+    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_WIFIFTP_TAG, "%s", "");
 
     if ((connection == NULL) || (connection->cancelSem == NULL))
     {
@@ -317,7 +317,7 @@ eARUTILS_ERROR ARUTILS_WifiFtp_Connection_Reset(ARUTILS_WifiFtp_Connection_t *co
 {
     eARUTILS_ERROR result = ARUTILS_OK;
 
-    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_WIFIFTP_TAG, "");
+    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_WIFIFTP_TAG, "%s", "");
 
     if ((connection == NULL) || (connection->cancelSem == NULL))
     {

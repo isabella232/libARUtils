@@ -97,7 +97,7 @@ JNIEXPORT void JNICALL
 Java_com_parrot_arsdk_arutils_ARUtilsRFCommFtp_nativeProgressCallback(JNIEnv *env, jobject obj, jlong jCallback, jfloat percent)
 {
     ARUTILS_RFCommFtp_Command_t * callback = (ARUTILS_RFCommFtp_Command_t*)(intptr_t) jCallback;
-    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_JNI_RFCOMMFTP_TAG, " %x %f ", callback, percent);
+    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_JNI_RFCOMMFTP_TAG, " %p %f ", callback, percent);
     if (callback != NULL && callback->rfcommFtpProgressCallback != NULL)
     {
         callback->rfcommFtpProgressCallback(callback->rfcommProgressArg, percent);
@@ -248,7 +248,7 @@ eARUTILS_ERROR ARUTILS_RFCommFtp_Connection_Cancel(ARUTILS_RFCommFtp_Connection_
     jint getEnvResult = JNI_OK;
     jboolean ret = 0;
 
-    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_JNI_RFCOMMFTP_TAG, "");
+    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_JNI_RFCOMMFTP_TAG, "%s", "");
 
     if (connection == NULL)
     {
@@ -313,7 +313,7 @@ eARUTILS_ERROR ARUTILS_RFCommFtp_Connection_IsCanceled(ARUTILS_RFCommFtp_Connect
     jint getEnvResult = JNI_OK;
     jboolean ret = 0;
 
-    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_JNI_RFCOMMFTP_TAG, "");
+    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_JNI_RFCOMMFTP_TAG, "%s", "");
 
     if (connection == NULL)
     {
@@ -382,7 +382,7 @@ eARUTILS_ERROR ARUTILS_RFCommFtp_Connection_Reset(ARUTILS_RFCommFtp_Connection_t
     jint getEnvResult = JNI_OK;
     jboolean ret = 0;
 
-    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_JNI_RFCOMMFTP_TAG, "");
+    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_JNI_RFCOMMFTP_TAG, "%s", "");
 
     if (connection == NULL)
     {
@@ -543,13 +543,13 @@ eARUTILS_ERROR ARUTILS_RFCommFtp_Put(ARUTILS_RFCommFtp_Connection_t *connection,
 
 eARUTILS_ERROR ARUTILS_RFCommFtpAL_Connection_Disconnect(ARUTILS_Manager_t *manager)
 {
-    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_JNI_RFCOMMFTP_TAG, "");
+    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_JNI_RFCOMMFTP_TAG, "%s", "");
     return ARUTILS_OK;
 }
 
 eARUTILS_ERROR ARUTILS_RFCommFtpAL_Connection_Reconnect(ARUTILS_Manager_t *manager)
 {
-    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_JNI_RFCOMMFTP_TAG, "");
+    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_JNI_RFCOMMFTP_TAG, "%s", "");
     return ARUTILS_OK;
 }
 

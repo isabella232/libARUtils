@@ -985,6 +985,15 @@ public class ARUtilsBLEFtp
 			if (receivedNotifications.size() == 0)
 			{
 				ret = bleManager.readDataNotificationData(receivedNotifications, 1, BLE_GETTING_KEY);
+				/** we need continue to read notification until the end message, even though it's failed due to cancel operation
+				 * (cancel --> semaphore release --> no notification to read --> failed)
+				 * This is very useful when a message is cut into small pieces (HEADER_START, HEADER_CONTINUE, HEADER_CONTINUE ..., HEADER_STOP),
+				 * we need insure that a complete message is read in this function
+				 */
+				if (! ret)
+				{
+					ret = bleManager.isDeviceConnected();
+				}
 			}
 
 			if ((ret == true) && (receivedNotifications.size() > 0))

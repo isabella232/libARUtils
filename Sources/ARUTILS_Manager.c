@@ -59,7 +59,7 @@ ARUTILS_Manager_t* ARUTILS_Manager_New(eARUTILS_ERROR *error)
     ARUTILS_Manager_t *newManager = NULL;
     eARUTILS_ERROR result = ARUTILS_OK;
 
-    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_MANAGER_TAG, "");
+    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_MANAGER_TAG, "%s", "");
 
     newManager = calloc(1, sizeof(ARUTILS_Manager_t));
     if (newManager == NULL)
@@ -73,7 +73,7 @@ ARUTILS_Manager_t* ARUTILS_Manager_New(eARUTILS_ERROR *error)
 
 void ARUTILS_Manager_Delete(ARUTILS_Manager_t **managerAddr)
 {
-    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_MANAGER_TAG, "");
+    ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_MANAGER_TAG, "%s", "");
 
     if (managerAddr != NULL)
     {
