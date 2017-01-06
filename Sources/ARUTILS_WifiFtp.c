@@ -155,8 +155,8 @@ ARUTILS_WifiFtp_Connection_t * ARUTILS_WifiFtp_Connection_New(ARSAL_Sem_t *cance
     }
     else
     {
-    	ftp_server = server;
-    	ftp_port = port;
+        ftp_server = server;
+        ftp_port = port;
     }
 
     if (result == ARUTILS_OK)

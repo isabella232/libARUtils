@@ -44,6 +44,7 @@
 #include <libARSAL/ARSAL_Sem.h>
 #include <libARSAL/ARSAL_Print.h>
 #include <libARDiscovery/ARDISCOVERY_Discovery.h>
+#include <libARDiscovery/ARDISCOVERY_Device.h>
 #include <curl/curl.h>
 
 #include "libARUtils/ARUTILS_Error.h"
@@ -52,6 +53,13 @@
 #include "ARUTILS_Manager.h"
 
 #define ARUTILS_MANAGER_TAG "Manager"
+
+#define FTP_GENERIC 21
+#define FTP_GENERIC_SKY 121
+#define FTP_UPDATE 51
+#define FTP_UPDATE_SKY 151
+#define FTP_FLIGHTPLAN 61
+#define FTP_FLIGHTPLAN_SKY 161
 
 
 
@@ -86,6 +94,111 @@ void ARUTILS_Manager_Delete(ARUTILS_Manager_t **managerAddr)
             free(manager);
         }
         *managerAddr = NULL;
+    }
+}
+
+eARUTILS_ERROR ARUTILS_Manager_InitFtp(ARUTILS_Manager_t *manager,
+                                       ARDISCOVERY_Device_t *device,
+                                       eARUTILS_DESTINATION destination,
+                                       eARUTILS_FTP_TYPE type)
+{
+    int sky, old_sky, new_sky, wifi;
+    int port;
+    static const char *drone = "drone";
+    static const char *skyctrl = "skycontroller";
+    const char *dest;
+    char ip[16];
+    struct mux_ctx *mux;
+
+    eARDISCOVERY_PRODUCT product;
+    eARUTILS_ERROR err = ARUTILS_OK;
+    eARDISCOVERY_ERROR derr;
+    ARNETWORKAL_BLEDevice_t *bleDevice;
+
+    if (!manager || !device)
+        return ARUTILS_ERROR_BAD_PARAMETER;
+
+    product = ARDISCOVERY_getProductFromProductID(device->productID);
+    sky = (ARDISCOVERY_getProductFamily(product) ==
+           ARDISCOVERY_PRODUCT_FAMILY_SKYCONTROLLER);
+    old_sky = (product == ARDISCOVERY_PRODUCT_SKYCONTROLLER);
+    new_sky = (sky && !old_sky);
+    wifi = (device->networkType == ARDISCOVERY_NETWORK_TYPE_NET);
+
+
+    if (!new_sky && destination != ARUTILS_DESTINATION_DRONE)
+        return ARUTILS_ERROR_BAD_PARAMETER;
+
+    if (type == ARUTILS_FTP_TYPE_FLIGHTPLAN &&
+        destination == ARUTILS_DESTINATION_SKYCONTROLLER)
+        return ARUTILS_ERROR_BAD_PARAMETER;
+
+    switch(type) {
+    case ARUTILS_FTP_TYPE_GENERIC:
+        port = (new_sky && wifi && destination == ARUTILS_DESTINATION_DRONE) ? FTP_GENERIC_SKY : FTP_GENERIC;
+        break;
+    case ARUTILS_FTP_TYPE_UPDATE:
+        port = (new_sky && wifi && destination == ARUTILS_DESTINATION_DRONE) ? FTP_UPDATE_SKY : FTP_UPDATE;
+        break;
+    case ARUTILS_FTP_TYPE_FLIGHTPLAN:
+        port = (new_sky && wifi) ? FTP_FLIGHTPLAN_SKY : FTP_FLIGHTPLAN;
+        break;
+    default:
+        err = ARUTILS_ERROR_BAD_PARAMETER;
+        goto out;
+    }
+
+    switch(device->networkType) {
+    case ARDISCOVERY_NETWORK_TYPE_NET:
+        derr = ARDISCOVERY_DEVICE_WifiGetIpAddress(device, ip, sizeof(ip));
+        if (derr == ARDISCOVERY_OK)
+            err = ARUTILS_Manager_InitWifiFtp(manager, ip, port,
+                                              ARUTILS_FTP_ANONYMOUS, "");
+        else
+            err = ARUTILS_ERROR_SYSTEM;
+        break;
+    case ARDISCOVERY_NETWORK_TYPE_BLE:
+        derr = ARDISCOVERY_Device_BLEGetDevice(device, &bleDevice);
+        if (derr == ARDISCOVERY_OK)
+            err = ARUTILS_Manager_InitBLEFtp(manager, bleDevice, port);
+        else
+            err = ARUTILS_ERROR_SYSTEM;
+        break;
+    case ARDISCOVERY_NETWORK_TYPE_USBMUX:
+        dest = (destination == ARUTILS_DESTINATION_DRONE) ? drone : skyctrl;
+        derr = ARDISCOVERY_Device_UsbGetMux(device, &mux);
+        if (derr == ARDISCOVERY_OK)
+            err = ARUTILS_Manager_InitWifiFtpOverMux(manager, dest, port, mux,
+                                                     ARUTILS_FTP_ANONYMOUS, "");
+        else
+            err = ARUTILS_ERROR_SYSTEM;
+        break;
+    default:
+        err = ARUTILS_ERROR_BAD_PARAMETER;
+        break;
+    }
+
+out:
+    return err;
+
+}
+
+void ARUTILS_Manager_CloseFtp(ARUTILS_Manager_t *manager,
+                              ARDISCOVERY_Device_t *device)
+{
+    if (!manager || !device)
+        return;
+
+    switch(device->networkType) {
+    case ARDISCOVERY_NETWORK_TYPE_NET:
+    case ARDISCOVERY_NETWORK_TYPE_USBMUX:
+        ARUTILS_Manager_CloseWifiFtp(manager);
+        break;
+    case ARDISCOVERY_NETWORK_TYPE_BLE:
+        ARUTILS_Manager_CloseBLEFtp(manager);
+        break;
+    default:
+        break;
     }
 }
 
