@@ -118,7 +118,7 @@ eARUTILS_ERROR ARUTILS_Manager_InitFtp(ARUTILS_Manager_t *manager,
     if (!manager || !device)
         return ARUTILS_ERROR_BAD_PARAMETER;
 
-    product = ARDISCOVERY_getProductFromProductID(device->productID);
+    product = device->productID;
     sky = (ARDISCOVERY_getProductFamily(product) ==
            ARDISCOVERY_PRODUCT_FAMILY_SKYCONTROLLER);
     old_sky = (product == ARDISCOVERY_PRODUCT_SKYCONTROLLER);
