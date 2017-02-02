@@ -309,7 +309,6 @@ public class ARUtilsManager
             muxRef.getCPtr();
             int intError = nativeInitWifiFtpOverMux(m_managerPtr, dest, port, muxRef.getCPtr(), username, password);
             error = ARUTILS_ERROR_ENUM.getFromValue(intError);
-            muxRef.release();
             mIsWifiFtpInited = (error == ARUTILS_ERROR_ENUM.ARUTILS_OK);
         }
         else
