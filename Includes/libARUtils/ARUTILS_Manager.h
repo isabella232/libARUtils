@@ -38,11 +38,28 @@
 #ifndef _ARUTILS_MANAGER_H_
 #define _ARUTILS_MANAGER_H_
 
+#include <libARDiscovery/ARDISCOVERY_Discovery.h>
+#include <libARDiscovery/ARDISCOVERY_Device.h>
 
 #include "libARUtils/ARUTILS_Ftp.h"
 #include "libARUtils/ARUTILS_Ftp.h"
 
 struct mux_ctx;
+
+typedef enum {
+    ARUTILS_DESTINATION_DRONE = 0,
+    ARUTILS_DESTINATION_SKYCONTROLLER,
+
+    ARUTILS_DESTINATION_MAX,
+} eARUTILS_DESTINATION;
+
+typedef enum {
+    ARUTILS_FTP_TYPE_GENERIC = 0,
+    ARUTILS_FTP_TYPE_UPDATE,
+    ARUTILS_FTP_TYPE_FLIGHTPLAN,
+
+    ARUTILS_FTP_TYPE_MAX,
+} eARUTILS_FTP_TYPE;
 
 /**
  * @brief Ftp MANAGER structure
@@ -81,12 +98,31 @@ ARUTILS_Manager_t* ARUTILS_Manager_New(eARUTILS_ERROR *error);
  */
 void ARUTILS_Manager_Delete(ARUTILS_Manager_t **managerAddr);
 
+/**
+ * @brief Create a new Ftp connection for the given device
+ * @warning This function allocates memory
+ * @param manager The manager
+ * @param device The device which will handle the connection
+ * @param destination The ftp connection destination
+ * @param type The type of ftp connection
+ * @retval On success, returns an ARUTILS_OK. Otherwise an error number of eARUTILS_ERROR
+ * @see ARUTILS_Manager_CloseFtp ()
+ */
+eARUTILS_ERROR ARUTILS_Manager_InitFtp(ARUTILS_Manager_t *manager, ARDISCOVERY_Device_t *device, eARUTILS_DESTINATION destination, eARUTILS_FTP_TYPE type);
+
+/**
+ * @brief Delete an Ftp Connection
+ * @warning This function frees memory
+ * @param manager The address of the pointer on the Ftp Connection
+ * @param device The device which did handle the connection
+ * @see ARUTILS_Manager_InitFtp ()
+ */
+void ARUTILS_Manager_CloseFtp(ARUTILS_Manager_t *manager, ARDISCOVERY_Device_t *device);
 
 /**
  * @brief Create a new WifiFtp Connection
  * @warning This function allocates memory
  * @param manager The Manager
- * @param cancelSem The pointer of the Ftp get/put cancel semaphore or null
  * @param server The Ftp server IP address
  * @param port The Ftp server port
  * @param username The Ftp server account name
@@ -99,7 +135,6 @@ eARUTILS_ERROR ARUTILS_Manager_InitWifiFtp(ARUTILS_Manager_t *manager, const cha
  * @brief Create a new WifiFtp Connection
  * @warning This function allocates memory
  * @param manager The Manager
- * @param cancelSem The pointer of the Ftp get/put cancel semaphore or null
  * @param server The Ftp server IP address
  * @param port The Ftp server port
  * @param mux The Mux instance to use
@@ -446,6 +481,8 @@ struct ARUTILS_Manager_t
     ARUTILS_Manager_Ftp_Delete_t ftpDelete;
     ARUTILS_Manager_Ftp_Delete_t ftpRemoveDir;
     ARUTILS_Manager_Ftp_Rename_t ftpRename;
+
+    eARDISCOVERY_NETWORK_TYPE networkType;
 
     ARSAL_Sem_t cancelSem;
     void *connectionObject;

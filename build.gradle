@@ -18,6 +18,7 @@ android {
 }
 
 dependencies {
+    compile project(':libARDiscovery')
     compile project(':libARNetworkAL')
     compile project(':libmux')
     compile project(':libARSAL')

@@ -258,6 +258,8 @@ Java_com_parrot_arsdk_arutils_ARUtilsManager_nativeInitBLEFtp
         manager->ftpPut = ARUTILS_BLEFtpAL_Put;
         manager->ftpRename = ARUTILS_BLEFtpAL_Rename;
         manager->ftpDelete = ARUTILS_BLEFtpAL_Delete;
+
+        manager->networkType = ARDISCOVERY_NETWORK_TYPE_BLE;
     }
 
     return error;
@@ -306,6 +308,8 @@ Java_com_parrot_arsdk_arutils_ARUtilsManager_nativeInitRFCommFtp
         manager->ftpConnectionIsCanceled = ARUTILS_RFCommFtpAL_Connection_IsCanceled;
         manager->ftpConnectionReset = ARUTILS_RFCommFtpAL_Connection_Reset;
         manager->ftpPut = ARUTILS_RFCommFtpAL_Put;
+
+        manager->networkType = ARDISCOVERY_NETWORK_TYPE_BLE;
     }
 
     return error;

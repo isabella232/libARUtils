@@ -89,7 +89,7 @@ NSString* const kARUTILS_BLEFtp_Getting = @"kARUTILS_BLEFtp_Getting";
 //#define BLE_PACKET_WRITE_SLEEP             18000000 /* 18ms */
 #define BLE_PACKET_WRITE_SLEEP               24000000
 
-#define BLE_READ_NOTIFICATION_TIMEOUT        1.0f
+#define BLE_READ_NOTIFICATION_TIMEOUT        2.0f
 #define BLE_PUT_WRITTEN_NOTIFICATION_TIMEOUT 5.0f
 #define BLE_PUT_READ_NOTIFICATION_TIMEOUT    20.0f
 
@@ -2135,6 +2135,8 @@ eARUTILS_ERROR ARUTILS_Manager_InitBLEFtp(ARUTILS_Manager_t *manager, ARUTILS_BL
         manager->ftpPut = ARUTILS_BLEFtpAL_Put;
         manager->ftpDelete = ARUTILS_BLEFtpAL_Delete;
         manager->ftpRename = ARUTILS_BLEFtpAL_Rename;
+
+        manager->networkType = ARDISCOVERY_NETWORK_TYPE_BLE;
     }
 
     return result;

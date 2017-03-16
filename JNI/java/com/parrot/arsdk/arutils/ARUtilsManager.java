@@ -37,6 +37,14 @@ import android.content.pm.PackageManager;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.parrot.arsdk.ardiscovery.ARDISCOVERY_NETWORK_TYPE_ENUM;
+import com.parrot.arsdk.ardiscovery.ARDISCOVERY_PRODUCT_ENUM;
+import com.parrot.arsdk.ardiscovery.ARDISCOVERY_PRODUCT_FAMILY_ENUM;
+import com.parrot.arsdk.ardiscovery.ARDiscoveryDeviceNetService;
+import com.parrot.arsdk.ardiscovery.ARDiscoveryDeviceService;
+import com.parrot.arsdk.ardiscovery.ARDiscoveryService;
+import com.parrot.arsdk.ardiscovery.UsbAccessoryMux;
+import com.parrot.arsdk.arsal.ARSALBLEManager;
 import com.parrot.mux.Mux;
 
 import java.util.concurrent.Semaphore;
@@ -48,6 +56,13 @@ public class ARUtilsManager
 {
     private static final String TAG = "ARUtilsManager";
     public final static String FTP_ANONYMOUS = "anonymous";
+
+    private final static int FTP_GENERIC = 21;
+    private final static int FTP_GENERIC_SKY = 121;
+    private final static int FTP_UPDATE = 51;
+    private final static int FTP_UPDATE_SKY = 151;
+    private final static int FTP_FLIGHTPLAN = 61;
+    private final static int FTP_FLIGHTPLAN_SKY = 161;
 
     /* Native Functions */
     private native static boolean nativeStaticInit();
@@ -158,6 +173,104 @@ public class ARUtilsManager
     }
 
     /**
+     * Initialize ftp for the given device
+     */
+    public ARUTILS_ERROR_ENUM initFtp(Context ctx, ARDiscoveryDeviceService device, ARUTILS_DESTINATION_ENUM destination, ARUTILS_FTP_TYPE_ENUM type)
+    {
+        if (device == null || ctx == null) {
+            return ARUTILS_ERROR_ENUM.ARUTILS_ERROR_BAD_PARAMETER;
+        }
+        ARDISCOVERY_PRODUCT_ENUM product = ARDiscoveryService.getProductFromProductID(device.getProductID());
+        boolean sky = ARDiscoveryService.getProductFamily(product) == ARDISCOVERY_PRODUCT_FAMILY_ENUM.ARDISCOVERY_PRODUCT_FAMILY_SKYCONTROLLER;
+        boolean old_sky = (product == ARDISCOVERY_PRODUCT_ENUM.ARDISCOVERY_PRODUCT_SKYCONTROLLER);
+        boolean new_sky = (sky && !old_sky);
+        boolean wifi = device.getNetworkType() == ARDISCOVERY_NETWORK_TYPE_ENUM.ARDISCOVERY_NETWORK_TYPE_NET;
+
+
+        if (!new_sky && destination != ARUTILS_DESTINATION_ENUM.ARUTILS_DESTINATION_DRONE) {
+            return ARUTILS_ERROR_ENUM.ARUTILS_ERROR_BAD_PARAMETER;
+        }
+        if (destination == ARUTILS_DESTINATION_ENUM.ARUTILS_DESTINATION_SKYCONTROLLER &&
+                type == ARUTILS_FTP_TYPE_ENUM.ARUTILS_FTP_TYPE_FLIGHTPLAN) {
+            return ARUTILS_ERROR_ENUM.ARUTILS_ERROR_BAD_PARAMETER;
+        }
+
+        int port;
+
+        switch (type) {
+            case ARUTILS_FTP_TYPE_GENERIC:
+                port = (new_sky && wifi && destination == ARUTILS_DESTINATION_ENUM.ARUTILS_DESTINATION_DRONE) ? FTP_GENERIC_SKY : FTP_GENERIC;
+                break;
+            case ARUTILS_FTP_TYPE_UPDATE:
+                port = (new_sky && wifi && destination == ARUTILS_DESTINATION_ENUM.ARUTILS_DESTINATION_DRONE) ? FTP_UPDATE_SKY : FTP_UPDATE;
+                break;
+            case ARUTILS_FTP_TYPE_FLIGHTPLAN:
+                port = (new_sky && wifi) ? FTP_FLIGHTPLAN_SKY : FTP_FLIGHTPLAN;
+                break;
+            default:
+                return ARUTILS_ERROR_ENUM.ARUTILS_ERROR_BAD_PARAMETER;
+        }
+
+        ARUTILS_ERROR_ENUM ret;
+
+        switch(device.getNetworkType()) {
+            case ARDISCOVERY_NETWORK_TYPE_NET:
+                ARDiscoveryDeviceNetService ns = (ARDiscoveryDeviceNetService)device.getDevice();
+                ret = initWifiFtp(ns.getIp(), port, ARUtilsManager.FTP_ANONYMOUS, "");
+                break;
+            case ARDISCOVERY_NETWORK_TYPE_BLE:
+                if (destination == ARUTILS_DESTINATION_ENUM.ARUTILS_DESTINATION_DRONE &&
+                        type == ARUTILS_FTP_TYPE_ENUM.ARUTILS_FTP_TYPE_UPDATE)
+                    ret = initRFCommFtp(ctx, ARSALBLEManager.getInstance(ctx).getGatt(), port);
+                else
+                    ret = initBLEFtp(ctx, ARSALBLEManager.getInstance(ctx).getGatt(), port);
+                break;
+            case ARDISCOVERY_NETWORK_TYPE_USBMUX:
+                Mux.Ref muxref = UsbAccessoryMux.get(ctx.getApplicationContext()).getMux().newMuxRef();
+                String dest = (destination == ARUTILS_DESTINATION_ENUM.ARUTILS_DESTINATION_DRONE) ? "drone" : "skycontroller";
+                ret = initWifiFtp(muxref, dest, port, ARUtilsManager.FTP_ANONYMOUS, "");
+                muxref.release();
+                break;
+            default:
+                ret = ARUTILS_ERROR_ENUM.ARUTILS_ERROR_BAD_PARAMETER;
+                break;
+        }
+
+        return ret;
+    }
+
+    public ARUTILS_ERROR_ENUM closeFtp(Context ctx, ARDiscoveryDeviceService device)
+    {
+        if (device == null) {
+            return ARUTILS_ERROR_ENUM.ARUTILS_ERROR_BAD_PARAMETER;
+        }
+
+        ARUTILS_ERROR_ENUM ret;
+
+        switch(device.getNetworkType()) {
+            case ARDISCOVERY_NETWORK_TYPE_NET:
+                ret = closeWifiFtp();
+                break;
+            case ARDISCOVERY_NETWORK_TYPE_BLE:
+                if (mIsBLEFtpInited)
+                    ret = closeBLEFtp(ctx);
+                else if (mIsRFCommFtpInited)
+                    ret = closeRFCommFtp(ctx);
+                else
+                    ret = ARUTILS_ERROR_ENUM.ARUTILS_ERROR_BAD_PARAMETER;
+                break;
+            case ARDISCOVERY_NETWORK_TYPE_USBMUX:
+                ret = closeWifiFtp();
+                break;
+            default:
+                ret = ARUTILS_ERROR_ENUM.ARUTILS_ERROR_BAD_PARAMETER;
+                break;
+        }
+
+        return ret;
+    }
+
+    /**
      * Initialize Wifi network to send and receive data
      */
     public ARUTILS_ERROR_ENUM initWifiFtp(String addr, int port, String username, String password)
@@ -187,16 +300,15 @@ public class ARUtilsManager
     /**
      * Initialize Wifi network to send and receive data
      */
-    public ARUTILS_ERROR_ENUM initWifiFtp(Mux.Ref muxRef, int port, String username, String password)
+    public ARUTILS_ERROR_ENUM initWifiFtp(Mux.Ref muxRef, String dest, int port, String username, String password)
     {
         Log.i(TAG, "initWifiFtp on mux, port " + port);
         ARUTILS_ERROR_ENUM error = ARUTILS_ERROR_ENUM.ARUTILS_ERROR;
 
         if(! mIsWifiFtpInited) {
             muxRef.getCPtr();
-            int intError = nativeInitWifiFtpOverMux(m_managerPtr, "", port, muxRef.getCPtr(), username, password);
+            int intError = nativeInitWifiFtpOverMux(m_managerPtr, dest, port, muxRef.getCPtr(), username, password);
             error = ARUTILS_ERROR_ENUM.getFromValue(intError);
-            muxRef.release();
             mIsWifiFtpInited = (error == ARUTILS_ERROR_ENUM.ARUTILS_OK);
         }
         else

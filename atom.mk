@@ -40,10 +40,16 @@ LOCAL_INSTALL_HEADERS := \
 	Includes/libARUtils/ARUTILS_Manager.h:usr/include/libARUtils/
 
 ifeq ("$(TARGET_OS)","darwin")
-ifneq ("$(TARGET_OS_FLAVOUR)","native")
+  ifneq ("$(TARGET_OS_FLAVOUR)","native")
 LOCAL_SRC_FILES += \
 	Sources/ARUTILS_BLEFtp.m
-endif
+  else
+LOCAL_SRC_FILES += \
+	Sources/ARUTILS_BLEFtp_stub.c
+  endif
+else
+LOCAL_SRC_FILES += \
+	Sources/ARUTILS_BLEFtp_stub.c
 endif
 
 include $(BUILD_LIBRARY)
