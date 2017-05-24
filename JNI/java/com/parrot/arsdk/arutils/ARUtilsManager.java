@@ -226,10 +226,17 @@ public class ARUtilsManager
                     ret = initBLEFtp(ctx, ARSALBLEManager.getInstance(ctx).getGatt(), port);
                 break;
             case ARDISCOVERY_NETWORK_TYPE_USBMUX:
-                Mux.Ref muxref = UsbAccessoryMux.get(ctx.getApplicationContext()).getMux().newMuxRef();
-                String dest = (destination == ARUTILS_DESTINATION_ENUM.ARUTILS_DESTINATION_DRONE) ? "drone" : "skycontroller";
-                ret = initWifiFtp(muxref, dest, port, ARUtilsManager.FTP_ANONYMOUS, "");
-                muxref.release();
+                Mux mux = UsbAccessoryMux.get(ctx.getApplicationContext()).getMux();
+                if (mux != null) {
+                    Mux.Ref muxref = mux.newMuxRef();
+                    String dest = (destination == ARUTILS_DESTINATION_ENUM.ARUTILS_DESTINATION_DRONE) ? "drone" : "skycontroller";
+                    ret = initWifiFtp(muxref, dest, port, ARUtilsManager.FTP_ANONYMOUS, "");
+                    muxref.release();
+                }
+                else {
+                    Log.w(TAG, "initFtp ARDISCOVERY_NETWORK_TYPE_USB failed, mux is null");
+                    ret = ARUTILS_ERROR_ENUM.ARUTILS_ERROR;
+                }
                 break;
             default:
                 ret = ARUTILS_ERROR_ENUM.ARUTILS_ERROR_BAD_PARAMETER;
