@@ -65,9 +65,11 @@
 
 eARUTILS_ERROR ARUTILS_FileSystem_IsExist(const char *namePath)
 {
-    struct stat statbuf = { 0 };
+	struct stat statbuf;
     eARUTILS_ERROR result = ARUTILS_OK;
     int resultSys = 0;
+
+    memset(&statbuf, 0, sizeof(statbuf));
     
     if (namePath == NULL)
     {
@@ -93,13 +95,15 @@ eARUTILS_ERROR ARUTILS_FileSystem_IsExist(const char *namePath)
 eARUTILS_ERROR ARUTILS_FileSystem_GetFileSize(const char *namePath, int64_t *size)
 {
 #ifdef stat64
-    struct stat64 statbuf = { 0 };
+    struct stat64 statbuf;
 #else
-    struct stat statbuf = { 0 };
+    struct stat statbuf;
 #endif
     int64_t fileSize = 0;
     eARUTILS_ERROR result = ARUTILS_OK;
     int resultSys = 0;
+
+    memset(&statbuf, 0, sizeof(statbuf));
 
     ARSAL_PRINT(ARSAL_PRINT_DEBUG, ARUTILS_FILE_SYSTEM_TAG, "%s", namePath ? namePath : "null");
 
