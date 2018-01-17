@@ -285,7 +285,7 @@ eARUTILS_ERROR ARUTILS_Manager_Ftp_Get_WithBuffer(ARUTILS_Manager_t *manager, co
 eARUTILS_ERROR ARUTILS_Manager_Ftp_Get(ARUTILS_Manager_t *manager, const char *namePath, const char *dstFile, ARUTILS_Ftp_ProgressCallback_t progressCallback, void* progressArg, eARUTILS_FTP_RESUME resume);
 
 /**
- * @brief Put an remote Ftp server file
+ * @brief Put an remote Ftp server file (create missing directories)
  * @param manager The address of the pointer on the Ftp Manager
  * @param namePath The string of the file name path on the remote Ftp server
  * @param srcFile The string of the local file name path to be put

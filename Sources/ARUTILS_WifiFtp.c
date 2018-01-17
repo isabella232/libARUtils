@@ -1466,6 +1466,16 @@ eARUTILS_ERROR ARUTILS_WifiFtp_Put(ARUTILS_WifiFtp_Connection_t *connection, con
 
     if (result == ARUTILS_OK)
     {
+        code = curl_easy_setopt(connection->curl, CURLOPT_FTP_CREATE_MISSING_DIRS, CURLFTP_CREATE_DIR);
+
+        if (code != CURLE_OK)
+        {
+            result = ARUTILS_ERROR_CURL_SETOPT;
+        }
+    }
+
+    if (result == ARUTILS_OK)
+    {
         code = curl_easy_setopt(connection->curl, CURLOPT_NOPROGRESS, 0L);
 
         if (code != CURLE_OK)
